@@ -1,0 +1,3 @@
+*.pth
+
+vit_leaf_classifier.pth

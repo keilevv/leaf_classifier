@@ -1,0 +1,174 @@
+"use client"
+
+import { useState, useRef, useCallback } from "react"
+import { FaCloudUploadAlt, FaImage, FaTrash, FaSpinner } from "react-icons/fa"
+
+export default function FileUpload({ onUpload }) {
+  const [selectedFile, setSelectedFile] = useState(null)
+  const [previewUrl, setPreviewUrl] = useState(null)
+  const [isDragOver, setIsDragOver] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
+  const fileInputRef = useRef(null)
+
+  const handleFileSelect = useCallback((file) => {
+    if (file && file.type.startsWith("image/")) {
+      setSelectedFile(file)
+      const url = URL.createObjectURL(file)
+      setPreviewUrl(url)
+    }
+  }, [])
+
+  const handleFileInputChange = (e) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      handleFileSelect(file)
+    }
+  }
+
+  const handleDragOver = (e) => {
+    e.preventDefault()
+    setIsDragOver(true)
+  }
+
+  const handleDragLeave = (e) => {
+    e.preventDefault()
+    setIsDragOver(false)
+  }
+
+  const handleDrop = (e) => {
+    e.preventDefault()
+    setIsDragOver(false)
+
+    const file = e.dataTransfer.files[0]
+    if (file) {
+      handleFileSelect(file)
+    }
+  }
+
+  const handleRemoveFile = () => {
+    setSelectedFile(null)
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl)
+      setPreviewUrl(null)
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+  }
+
+  const handleSubmit = async () => {
+    if (!selectedFile) return
+
+    setIsUploading(true)
+
+    // Simulate AI classification - replace with actual API call
+    setTimeout(() => {
+      const mockClassifications = [
+        { name: "Acer rubrum (Red Maple)", confidence: 0.92 },
+        { name: "Quercus robur (English Oak)", confidence: 0.88 },
+        { name: "Betula pendula (Silver Birch)", confidence: 0.85 },
+        { name: "Fagus sylvatica (European Beech)", confidence: 0.91 },
+      ]
+
+      const randomClassification = mockClassifications[Math.floor(Math.random() * mockClassifications.length)]
+
+      const newUpload = {
+        id: Date.now().toString(),
+        filename: selectedFile.name,
+        imageUrl: previewUrl,
+        classification: randomClassification.name,
+        confidence: randomClassification.confidence,
+        uploadDate: new Date().toISOString(),
+      }
+
+      onUpload(newUpload)
+      handleRemoveFile()
+      setIsUploading(false)
+    }, 2000)
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white rounded-lg shadow-lg">
+        <div className="p-6 border-b border-gray-200">
+          <h2 className="text-xl font-semibold text-gray-900">Upload Plant Leaf Image</h2>
+          <p className="text-gray-600 mt-1">Upload an image of a plant leaf to get AI-powered classification results</p>
+        </div>
+        <div className="p-6">
+          {!selectedFile ? (
+            <div
+              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                isDragOver ? "border-green-500 bg-green-50" : "border-gray-300 hover:border-gray-400"
+              }`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              <FaCloudUploadAlt className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <p className="text-lg font-medium text-gray-900 mb-2">Drop your image here, or click to browse</p>
+              <p className="text-sm text-gray-500 mb-4">Supports JPG, PNG, and other image formats</p>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+              >
+                Select File
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileInputChange}
+                className="hidden"
+              />
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
+                <div className="flex items-center space-x-3">
+                  <FaImage className="h-5 w-5 text-green-600" />
+                  <div>
+                    <p className="font-medium text-green-900">{selectedFile.name}</p>
+                    <p className="text-sm text-green-700">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleRemoveFile}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded-md transition-colors"
+                >
+                  <FaTrash className="h-4 w-4" />
+                </button>
+              </div>
+
+              {previewUrl && (
+                <div className="flex justify-center">
+                  <img
+                    src={previewUrl || "/placeholder.svg"}
+                    alt="Preview"
+                    className="max-w-xs max-h-64 rounded-lg shadow-md object-cover"
+                  />
+                </div>
+              )}
+
+              <div className="flex justify-center">
+                <button
+                  onClick={handleSubmit}
+                  disabled={isUploading}
+                  className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-medium py-2 px-8 rounded-md transition-colors flex items-center"
+                >
+                  {isUploading ? (
+                    <>
+                      <FaSpinner className="animate-spin h-4 w-4 mr-2" />
+                      Classifying...
+                    </>
+                  ) : (
+                    "Classify Plant"
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
