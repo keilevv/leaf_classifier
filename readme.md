@@ -31,9 +31,28 @@ bun run dev
 
 ```bash
 cd classifier
-python3 app.py
 ```
 
+#### Instalar dependencias
+crear un entorno virtual
+
+```bash
+python -m venv env
+```
+
+activar el entorno virtual
+
+```bash
+source env/bin/activate
+```
+
+```bash
+pip install -r requirements.txt
+```
+#### Ejecutar el classifier
+```bash
+python3 app.py
+```
 ## Notas
 
 - El backend corre en el puerto configurado en `src/server.ts`.

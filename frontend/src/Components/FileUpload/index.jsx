@@ -1,112 +1,103 @@
-"use client"
+"use client";
 
-import { useState, useRef, useCallback } from "react"
-import { FaCloudUploadAlt, FaImage, FaTrash, FaSpinner } from "react-icons/fa"
+import { useState, useRef, useCallback } from "react";
+import { FaCloudUploadAlt, FaImage, FaTrash, FaSpinner } from "react-icons/fa";
+import useClassifier from "../../hooks/useClassifier";
 
 export default function FileUpload({ onUpload }) {
-  const [selectedFile, setSelectedFile] = useState(null)
-  const [previewUrl, setPreviewUrl] = useState(null)
-  const [isDragOver, setIsDragOver] = useState(false)
-  const [isUploading, setIsUploading] = useState(false)
-  const fileInputRef = useRef(null)
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef(null);
+  const { uploadImage } = useClassifier();
 
   const handleFileSelect = useCallback((file) => {
     if (file && file.type.startsWith("image/")) {
-      setSelectedFile(file)
-      const url = URL.createObjectURL(file)
-      setPreviewUrl(url)
+      setSelectedFile(file);
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
     }
-  }, [])
+  }, []);
 
   const handleFileInputChange = (e) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      handleFileSelect(file)
+      handleFileSelect(file);
     }
-  }
+  };
 
   const handleDragOver = (e) => {
-    e.preventDefault()
-    setIsDragOver(true)
-  }
+    e.preventDefault();
+    setIsDragOver(true);
+  };
 
   const handleDragLeave = (e) => {
-    e.preventDefault()
-    setIsDragOver(false)
-  }
+    e.preventDefault();
+    setIsDragOver(false);
+  };
 
   const handleDrop = (e) => {
-    e.preventDefault()
-    setIsDragOver(false)
+    e.preventDefault();
+    setIsDragOver(false);
 
-    const file = e.dataTransfer.files[0]
+    const file = e.dataTransfer.files[0];
     if (file) {
-      handleFileSelect(file)
+      handleFileSelect(file);
     }
-  }
+  };
 
   const handleRemoveFile = () => {
-    setSelectedFile(null)
+    setSelectedFile(null);
     if (previewUrl) {
-      URL.revokeObjectURL(previewUrl)
-      setPreviewUrl(null)
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
     }
     if (fileInputRef.current) {
-      fileInputRef.current.value = ""
+      fileInputRef.current.value = "";
     }
-  }
-
+  };
   const handleSubmit = async () => {
-    if (!selectedFile) return
+    if (!selectedFile) return;
 
-    setIsUploading(true)
+    const formData = new FormData();
+    formData.append("image", selectedFile);
 
-    // Simulate AI classification - replace with actual API call
-    setTimeout(() => {
-      const mockClassifications = [
-        { name: "Acer rubrum (Red Maple)", confidence: 0.92 },
-        { name: "Quercus robur (English Oak)", confidence: 0.88 },
-        { name: "Betula pendula (Silver Birch)", confidence: 0.85 },
-        { name: "Fagus sylvatica (European Beech)", confidence: 0.91 },
-      ]
-
-      const randomClassification = mockClassifications[Math.floor(Math.random() * mockClassifications.length)]
-
-      const newUpload = {
-        id: Date.now().toString(),
-        filename: selectedFile.name,
-        imageUrl: previewUrl,
-        classification: randomClassification.name,
-        confidence: randomClassification.confidence,
-        uploadDate: new Date().toISOString(),
-      }
-
-      onUpload(newUpload)
-      handleRemoveFile()
-      setIsUploading(false)
-    }, 2000)
-  }
+    const response = await uploadImage(formData);
+    console.log(response);
+  };
 
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-lg">
         <div className="p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Upload Plant Leaf Image</h2>
-          <p className="text-gray-600 mt-1">Upload an image of a plant leaf to get AI-powered classification results</p>
+          <h2 className="text-xl font-semibold text-gray-900">
+            Upload Plant Leaf Image
+          </h2>
+          <p className="text-gray-600 mt-1">
+            Upload an image of a plant leaf to get AI-powered classification
+            results
+          </p>
         </div>
         <div className="p-6">
           {!selectedFile ? (
             <div
               className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-                isDragOver ? "border-green-500 bg-green-50" : "border-gray-300 hover:border-gray-400"
+                isDragOver
+                  ? "border-green-500 bg-green-50"
+                  : "border-gray-300 hover:border-gray-400"
               }`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
             >
               <FaCloudUploadAlt className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <p className="text-lg font-medium text-gray-900 mb-2">Drop your image here, or click to browse</p>
-              <p className="text-sm text-gray-500 mb-4">Supports JPG, PNG, and other image formats</p>
+              <p className="text-lg font-medium text-gray-900 mb-2">
+                Drop your image here, or click to browse
+              </p>
+              <p className="text-sm text-gray-500 mb-4">
+                Supports JPG, PNG, and other image formats
+              </p>
               <button
                 onClick={() => fileInputRef.current?.click()}
                 className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
@@ -127,8 +118,12 @@ export default function FileUpload({ onUpload }) {
                 <div className="flex items-center space-x-3">
                   <FaImage className="h-5 w-5 text-green-600" />
                   <div>
-                    <p className="font-medium text-green-900">{selectedFile.name}</p>
-                    <p className="text-sm text-green-700">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                    <p className="font-medium text-green-900">
+                      {selectedFile.name}
+                    </p>
+                    <p className="text-sm text-green-700">
+                      {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
                   </div>
                 </div>
                 <button
@@ -170,5 +165,5 @@ export default function FileUpload({ onUpload }) {
         </div>
       </div>
     </div>
-  )
+  );
 }
