@@ -1,39 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tab } from "@headlessui/react";
 import { FaLeaf, FaSignOutAlt } from "react-icons/fa";
 import FileUpload from "../../Components/FileUpload";
 import UploadHistory from "../../Components/UploadHistory";
+import useClassifier from "../../hooks/useClassifier";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
 export default function Dashboard({ user, onLogout }) {
-  const [uploads, setUploads] = useState([
-    // Mock data for demonstration
-    {
-      id: "1",
-      filename: "maple_leaf.jpg",
-      imageUrl: "/placeholder.svg?height=200&width=200",
-      classification: "Acer saccharum (Sugar Maple)",
-      confidence: 0.94,
-      uploadDate: "2024-01-15T10:30:00Z",
-    },
-    {
-      id: "2",
-      filename: "oak_leaf.jpg",
-      imageUrl: "/placeholder.svg?height=200&width=200",
-      classification: "Quercus alba (White Oak)",
-      confidence: 0.87,
-      uploadDate: "2024-01-14T14:22:00Z",
-    },
-  ]);
+  const { getUploads, addUpload, uploads, isLoading, error } = useClassifier();
 
   const handleNewUpload = (upload) => {
-    setUploads((prev) => [upload, ...prev]);
+    addUpload(upload);
   };
+
+  useEffect(() => {
+    getUploads(1, 10, "createdAt", "desc");
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -49,7 +36,9 @@ export default function Dashboard({ user, onLogout }) {
                 <h1 className="text-xl font-semibold text-gray-900">
                   Plant Classifier
                 </h1>
-                <p className="text-sm text-gray-500">Welcome, {user?.fullName}</p>
+                <p className="text-sm text-gray-500">
+                  Welcome, {user?.fullName}
+                </p>
               </div>
             </div>
             <button

@@ -9,6 +9,20 @@ export default function UploadHistory({ uploads }) {
   const [selectedUpload, setSelectedUpload] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
 
+  // Construct image URL from imagePath
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return "/vite.svg";
+    const apiUrl = import.meta.env.VITE_LOCAL_PATH || "http://localhost:3000";
+    const fullUrl = `${apiUrl}/${imagePath}`;
+    return fullUrl;
+  };
+
+  // Test URL construction
+  if (uploads.length > 0) {
+    const testUrl = getImageUrl(uploads[0].imagePath);
+    console.log("Test URL for first upload:", testUrl);
+  }
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -65,28 +79,47 @@ export default function UploadHistory({ uploads }) {
         </div>
       </div>
 
+      {/* Debug info */}
+      <div className="bg-yellow-100 p-4 rounded-lg mb-4">
+        <h3 className="font-bold">Debug Info:</h3>
+        <p>Number of uploads: {uploads.length}</p>
+        <p>First upload imagePath: {uploads[0]?.imagePath}</p>
+        <p>
+          First upload URL:{" "}
+          {uploads[0] ? getImageUrl(uploads[0].imagePath) : "N/A"}
+        </p>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {uploads.map((upload) => (
           <div
             key={upload.id}
             className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
           >
-            <div className="aspect-square relative">
+            <div className="relative" style={{ height: "200px" }}>
               <img
-                src={upload.imageUrl || "/placeholder.svg"}
-                alt={upload.filename}
+                src={getImageUrl(upload.imagePath)}
+                alt={upload.originalFilename}
                 className="w-full h-full object-cover"
+                style={{ border: "1px solid #ccc" }}
+                onError={(e) => {
+                  console.error("Failed to load image:", e.target.src);
+                  e.target.src = "/vite.svg";
+                }}
+                onLoad={() => {
+                  console.log("Successfully loaded image:", upload.imagePath);
+                }}
               />
             </div>
             <div className="p-4">
               <div className="space-y-3">
                 <div>
                   <h3 className="font-medium text-gray-900 truncate">
-                    {upload.filename}
+                    {upload.originalFilename}
                   </h3>
                   <div className="flex items-center text-sm text-gray-500 mt-1">
                     <FaCalendarAlt className="h-3 w-3 mr-1" />
-                    {formatDate(upload.uploadDate)}
+                    {formatDate(upload.createdAt)}
                   </div>
                 </div>
 
@@ -154,7 +187,7 @@ export default function UploadHistory({ uploads }) {
                       as="h3"
                       className="text-lg font-medium leading-6 text-gray-900"
                     >
-                      {selectedUpload?.filename}
+                      {selectedUpload?.originalFilename}
                     </Dialog.Title>
                     <button
                       onClick={closeModal}
@@ -168,9 +201,22 @@ export default function UploadHistory({ uploads }) {
                     <div className="space-y-4">
                       <div className="flex justify-center">
                         <img
-                          src={selectedUpload.imageUrl || "/placeholder.svg"}
-                          alt={selectedUpload.filename}
+                          src={getImageUrl(selectedUpload.imagePath)}
+                          alt={selectedUpload.originalFilename}
                           className="max-w-full max-h-96 rounded-lg object-contain"
+                          onError={(e) => {
+                            console.error(
+                              "Failed to load modal image:",
+                              e.target.src
+                            );
+                            e.target.src = "/vite.svg";
+                          }}
+                          onLoad={() => {
+                            console.log(
+                              "Successfully loaded modal image:",
+                              selectedUpload.imagePath
+                            );
+                          }}
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-4 text-sm">
@@ -199,7 +245,7 @@ export default function UploadHistory({ uploads }) {
                             Upload Date:
                           </p>
                           <p className="text-gray-700">
-                            {formatDate(selectedUpload.uploadDate)}
+                            {formatDate(selectedUpload.createdAt)}
                           </p>
                         </div>
                         <div>

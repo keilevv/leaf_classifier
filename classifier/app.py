@@ -10,7 +10,7 @@ class_names = ['Elíptica', 'Imparipinnada', 'Lanceolada', 'Obovada', 'Ovada', '
 classifier = LeafClassifier("vit_leaf_classifier.pth", class_names)
 
 @app.route("/api/upload", methods=["POST"])
-def classify_leaf():
+def classify_leaf():    
     if "image" not in request.files:
         return jsonify({"error": "No image uploaded"}), 400
 

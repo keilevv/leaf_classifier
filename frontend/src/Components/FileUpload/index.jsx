@@ -60,11 +60,25 @@ export default function FileUpload({ onUpload }) {
   const handleSubmit = async () => {
     if (!selectedFile) return;
 
-    const formData = new FormData();
-    formData.append("image", selectedFile);
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("image", selectedFile);
 
-    const response = await uploadImage(formData);
-    console.log(response);
+      const response = await uploadImage(formData);
+      
+      // Call onUpload with the classification data
+      if (onUpload && response.classification) {
+        onUpload(response.classification);
+      }
+      
+      // Reset form
+      handleRemoveFile();
+    } catch (error) {
+      console.error("Upload failed:", error);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (

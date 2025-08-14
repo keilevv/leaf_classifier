@@ -11,5 +11,10 @@ const plantClassifierService = {
       },
     });
   },
+  getClassifications(page, limit, sortBy, sortOrder) {
+    return axios.get(`${apiUrl}/plant-classifier/classifications`, {
+      params: { page, limit, sortBy, sortOrder },
+    });
+  },
 };
 export default plantClassifierService;

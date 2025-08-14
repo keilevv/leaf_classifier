@@ -1,5 +1,10 @@
 import plantClassifierService from "../Services/plantClassifier";
+import { useState } from "react";
 function useClassifier() {
+  const [uploads, setUploads] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   function uploadImage(imageData) {
     return plantClassifierService
       .uploadImage(imageData)
@@ -15,6 +20,25 @@ function useClassifier() {
         throw error;
       });
   }
-  return { uploadImage };
+
+  function getUploads(page, limit, sortBy, sortOrder) {
+    return plantClassifierService
+      .getClassifications(page, limit, sortBy, sortOrder)
+      .then((response) => {
+        setUploads(response.data.results);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching uploads:", error);
+        setError(error);
+        setIsLoading(false);
+      });
+  }
+
+  function addUpload(upload) {
+    setUploads((prev) => [upload, ...prev]);
+  }
+
+  return { uploadImage, getUploads, addUpload, uploads, isLoading, error };
 }
 export default useClassifier;

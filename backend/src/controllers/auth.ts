@@ -136,6 +136,7 @@ function authController() {
     res: Response,
     _next: NextFunction
   ) => {
+    console.log("Checking authentication status...");
     if (!req.user) return res.status(401).json({ error: "Not logged in" });
     // Optionally, issue a new access token
     const accessToken = generateAccessToken(req.user as any);
