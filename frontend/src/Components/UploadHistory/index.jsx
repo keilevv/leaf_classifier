@@ -80,7 +80,7 @@ export default function UploadHistory({ uploads }) {
       </div>
 
       {/* Debug info */}
-      <div className="bg-yellow-100 p-4 rounded-lg mb-4">
+      {/* <div className="bg-yellow-100 p-4 rounded-lg mb-4">
         <h3 className="font-bold">Debug Info:</h3>
         <p>Number of uploads: {uploads.length}</p>
         <p>First upload imagePath: {uploads[0]?.imagePath}</p>
@@ -88,7 +88,7 @@ export default function UploadHistory({ uploads }) {
           First upload URL:{" "}
           {uploads[0] ? getImageUrl(uploads[0].imagePath) : "N/A"}
         </p>
-      </div>
+      </div> */}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {uploads.map((upload) => (
