@@ -9,7 +9,7 @@ import {
   FaSpinner,
 } from "react-icons/fa";
 import useAuth from "../../hooks/useAuth";
-import { showNotification } from "..//Notification";
+import { showNotification } from "../Notification";
 import useStore from "../../hooks/useStore";
 
 const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
@@ -103,14 +103,11 @@ export default function LoginForm({
               },
             },
           });
-          onLogin({
-            email: response.email,
-            name: response.fullName,
-          });
         })
         .catch((error) => {
+          console.error("Login failed:", error);
           showNotification({
-            message: "error loggin in",
+            message: error.response?.data?.error || "Login failed",
             type: "error",
           });
           setIsLoading(false);
@@ -118,7 +115,7 @@ export default function LoginForm({
     }
   };
 
-  const handleGoogleLogin = async (redirectTo = "/dashboard") => {
+  const handleGoogleLogin = async (redirectTo = "/upload") => {
     window.location.href = `${apiUrl}/auth/google?redirectTo=${encodeURIComponent(
       redirectTo
     )}`;
@@ -142,7 +139,7 @@ export default function LoginForm({
             .then(() => {
               if (comesFrom.pathname === "/booking") {
               } else {
-                navigate("/dashboard");
+                navigate("/upload");
                 setIsLoading(false);
                 setUiState({
                   login: {
@@ -157,7 +154,7 @@ export default function LoginForm({
             })
             .catch((error) => {
               showNotification({
-                message: "error loggin in",
+                message: "Error loggin in",
                 type: "error",
               });
               setIsLoading(false);
@@ -165,7 +162,7 @@ export default function LoginForm({
         })
         .catch((error) => {
           showNotification({
-            message: error.response.data.message,
+            message: error.response.data.error || "Registration failed",
             type: "error",
           });
           setIsLoading(false);

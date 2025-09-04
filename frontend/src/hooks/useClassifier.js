@@ -4,6 +4,7 @@ function useClassifier() {
   const [uploads, setUploads] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [pages, setPages] = useState(1);
 
   function uploadImage(imageData) {
     return plantClassifierService
@@ -27,6 +28,7 @@ function useClassifier() {
       .then((response) => {
         setUploads(response.data.results);
         setIsLoading(false);
+        setPages(response.data.pages);
       })
       .catch((error) => {
         console.error("Error fetching uploads:", error);
@@ -39,6 +41,14 @@ function useClassifier() {
     setUploads((prev) => [upload, ...prev]);
   }
 
-  return { uploadImage, getUploads, addUpload, uploads, isLoading, error };
+  return {
+    uploadImage,
+    getUploads,
+    addUpload,
+    uploads,
+    isLoading,
+    error,
+    pages,
+  };
 }
 export default useClassifier;

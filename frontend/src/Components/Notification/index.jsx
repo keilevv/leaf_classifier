@@ -27,6 +27,7 @@ function NotificationItem({
   message,
   duration = 3000,
   onClose,
+  onClick,
 }) {
   useEffect(() => {
     if (duration > 0) {
@@ -71,6 +72,7 @@ function NotificationItem({
       leaveTo="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2"
     >
       <div
+        onClick={onClick}
         className={`pointer-events-auto w-full max-w-sm rounded-lg border p-4 shadow-md ${styles[type]}`}
       >
         <div className="flex items-start">

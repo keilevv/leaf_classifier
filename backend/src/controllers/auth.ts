@@ -13,7 +13,7 @@ const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
 function authController() {
   // These now return middleware functions that Express can use
   const googleLogin = (req: Request, res: Response, next: NextFunction) => {
-    const redirectTo = req.query.redirectTo || "/dashboard";
+    const redirectTo = req.query.redirectTo || "/upload";
     const state = Buffer.from(JSON.stringify({ redirectTo })).toString(
       "base64"
     );
@@ -36,7 +36,7 @@ function authController() {
       try {
         // Get the state parameter and parse it
         const state = req.query.state as string;
-        let redirectPath = "/dashboard";
+        let redirectPath = "/upload";
         if (state) {
           const decodedState = JSON.parse(
             Buffer.from(state, "base64").toString()
@@ -54,7 +54,7 @@ function authController() {
         return res.redirect(redirectUrl);
       } catch (error) {
         console.error("Error processing callback:", error);
-        res.redirect(`${frontendUrl}/dashboard`); // Fallback to dashboard
+        res.redirect(`${frontendUrl}/upload`); // Fallback to dashboard
       }
     },
   ];

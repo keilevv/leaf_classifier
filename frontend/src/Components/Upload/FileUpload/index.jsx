@@ -2,7 +2,9 @@
 
 import { useState, useRef, useCallback } from "react";
 import { FaCloudUploadAlt, FaImage, FaTrash, FaSpinner } from "react-icons/fa";
-import useClassifier from "../../hooks/useClassifier";
+import useClassifier from "../../../hooks/useClassifier";
+import UploadModal from "../UploadModal";
+import { showNotification } from "../../Notification";
 
 export default function FileUpload({ onUpload }) {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -11,6 +13,8 @@ export default function FileUpload({ onUpload }) {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
   const { uploadImage } = useClassifier();
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedUpload, setSelectedUpload] = useState(null);
 
   const handleFileSelect = useCallback((file) => {
     if (file && file.type.startsWith("image/")) {
@@ -57,6 +61,12 @@ export default function FileUpload({ onUpload }) {
       fileInputRef.current.value = "";
     }
   };
+
+  const closeModal = () => {
+    setOpenModal(false);
+    setSelectedUpload(null);
+  };
+
   const handleSubmit = async () => {
     if (!selectedFile) return;
 
@@ -65,15 +75,35 @@ export default function FileUpload({ onUpload }) {
       const formData = new FormData();
       formData.append("image", selectedFile);
 
-      const response = await uploadImage(formData);
-      
-      // Call onUpload with the classification data
-      if (onUpload && response.classification) {
-        onUpload(response.classification);
-      }
-      
-      // Reset form
-      handleRemoveFile();
+      uploadImage(formData)
+        .then((response) => {
+          if (response && response.classification) {
+            showNotification({
+              type: "success",
+              message:
+                "Image classified successfully! Click here to view details.",
+              onClick: () => {
+                setSelectedUpload(response.classification);
+                setOpenModal(true);
+              },
+              duration: 5000,
+            });
+          }
+
+          // Call onUpload with the classification data
+          if (onUpload && response.classification) {
+            onUpload(response.classification);
+          }
+
+          // Reset form
+          handleRemoveFile();
+        })
+        .catch((error) => {
+          showNotification({
+            message: "Upload failed. Please try again.",
+            type: "error",
+          });
+        });
     } catch (error) {
       console.error("Upload failed:", error);
     } finally {
@@ -178,6 +208,11 @@ export default function FileUpload({ onUpload }) {
           )}
         </div>
       </div>
+      <UploadModal
+        isOpen={openModal}
+        selectedUpload={selectedUpload}
+        closeModal={closeModal}
+      />
     </div>
   );
 }

@@ -1,26 +1,22 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { Tab } from "@headlessui/react";
 import { FaLeaf, FaSignOutAlt } from "react-icons/fa";
-import FileUpload from "../../Components/FileUpload";
-import UploadHistory from "../../Components/UploadHistory";
+import { useNavigate } from "react-router-dom";
+import FileUpload from "../../Components/Upload/FileUpload";
+import UploadHistory from "../../Components//History/UploadHistory";
 import useClassifier from "../../hooks/useClassifier";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function Dashboard({ user, onLogout }) {
-  const { getUploads, addUpload, uploads, isLoading, error } = useClassifier();
+export default function Layout({ user, onLogout, initialTab = 0 }) {
+  const { addUpload } = useClassifier();
+  const navigate = useNavigate();
 
   const handleNewUpload = (upload) => {
     addUpload(upload);
   };
-
-  useEffect(() => {
-    getUploads(1, 10, "createdAt", "desc");
-  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -54,9 +50,10 @@ export default function Dashboard({ user, onLogout }) {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tab.Group>
+        <Tab.Group defaultIndex={initialTab}>
           <Tab.List className="flex space-x-1 rounded-xl bg-blue-900/20 p-1 mb-8">
             <Tab
+              onClick={() => navigate("/upload")}
               className={({ selected }) =>
                 classNames(
                   "w-full rounded-lg py-2.5 text-sm font-medium leading-5",
@@ -70,6 +67,7 @@ export default function Dashboard({ user, onLogout }) {
               Upload & Classify
             </Tab>
             <Tab
+              onClick={() => navigate("/history")}
               className={({ selected }) =>
                 classNames(
                   "w-full rounded-lg py-2.5 text-sm font-medium leading-5",
@@ -88,7 +86,7 @@ export default function Dashboard({ user, onLogout }) {
               <FileUpload onUpload={handleNewUpload} />
             </Tab.Panel>
             <Tab.Panel>
-              <UploadHistory uploads={uploads} />
+              <UploadHistory />
             </Tab.Panel>
           </Tab.Panels>
         </Tab.Group>
