@@ -9,7 +9,7 @@ import {
   FaSpinner,
 } from "react-icons/fa";
 import useAuth from "../../hooks/useAuth";
-import { showNotification } from "../Notification";
+import { showNotification } from "../Common/Notification";
 import useStore from "../../hooks/useStore";
 
 const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
@@ -91,7 +91,6 @@ export default function LoginForm({
             type: "success",
           });
           navigate("/");
-          console.log("Login successful:", response);
 
           setIsLoading(false);
           setUiState({

@@ -1,6 +1,8 @@
 import plantClassifierService from "../Services/plantClassifier";
 import { useState } from "react";
+import useStore from "../hooks/useStore";
 function useClassifier() {
+  const { accessToken } = useStore();
   const [uploads, setUploads] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,7 +26,7 @@ function useClassifier() {
 
   function getUploads(page, limit, sortBy, sortOrder) {
     return plantClassifierService
-      .getClassifications(page, limit, sortBy, sortOrder)
+      .getClassifications(page, limit, sortBy, sortOrder, accessToken)
       .then((response) => {
         setUploads(response.data.results);
         setIsLoading(false);
@@ -36,6 +38,27 @@ function useClassifier() {
         setIsLoading(false);
       });
   }
+  function updateClassification(id, data) {
+    return plantClassifierService
+      .updateClassification(id, data, accessToken)
+      .then((response) => {
+        if (response.status === 200) {
+          // Update the local state
+          setUploads((prevUploads) =>
+            prevUploads.map((upload) =>
+              upload.id === id ? { ...upload, ...data } : upload
+            )
+          );
+          return response.data;
+        } else {
+          throw new Error("Failed to update classification");
+        }
+      })
+      .catch((error) => {
+        console.error("Error updating classification:", error);
+        throw error;
+      });
+  }
 
   function addUpload(upload) {
     setUploads((prev) => [upload, ...prev]);
@@ -45,6 +68,7 @@ function useClassifier() {
     uploadImage,
     getUploads,
     addUpload,
+    updateClassification,
     uploads,
     isLoading,
     error,

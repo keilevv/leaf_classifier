@@ -17,6 +17,8 @@ model User {
   googleId       String?  @unique
   createdAt      DateTime @default(now())
   classifications Classification[] // <-- Add this line
+  role           String   @default("user")
+  updatedAt     DateTime @default(now())
 }
 
 
@@ -29,4 +31,6 @@ model Classification {
   createdAt     DateTime @default(now())
   user          User     @relation(fields: [userId], references: [id])
   userId        String
+  isArchived    Boolean  @default(false)
+  updatedAt     DateTime @default(now())
 }

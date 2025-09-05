@@ -4,7 +4,7 @@ import Upload from "./Pages/Upload";
 import History from "./Pages/History";
 import Login from "./Pages/Login";
 import ProtectedRoute from "./Components/ProtectedRoute";
-import { Notification } from "./Components/Notification";
+import { Notification } from "./Components/Common/Notification";
 import "./App.css";
 
 function App() {

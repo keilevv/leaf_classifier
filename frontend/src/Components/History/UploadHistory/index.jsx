@@ -3,19 +3,23 @@ import {
   FaImage,
   FaEye,
   FaCalendarAlt,
-  FaTimes,
   FaSpinner,
+  FaArchive,
 } from "react-icons/fa";
 import UploadModal from "../../Upload/UploadModal";
+import ConfirmationModal from "../../Common/ConfirmationModal";
 import { getConfidenceColor, getImageUrl, formatDate } from "../../../utils";
 import Pagination from "../Pagination";
 import useClassifier from "../../../hooks/useClassifier";
+import { showNotification } from "../../Common/Notification";
 
 export default function UploadHistory() {
   const [selectedUpload, setSelectedUpload] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [openConfirm, setOpenConfirm] = useState(false);
   const [page, setPage] = useState(1);
-  const { getUploads, uploads, isLoading, pages } = useClassifier();
+  const { getUploads, uploads, isLoading, pages, updateClassification } =
+    useClassifier();
 
   // Test URL construction
   if (uploads.length > 0) {
@@ -27,6 +31,11 @@ export default function UploadHistory() {
     setIsOpen(true);
   };
 
+  const openConfirmModal = (upload) => {
+    setSelectedUpload(upload);
+    setOpenConfirm(true);
+  };
+
   const closeModal = () => {
     setIsOpen(false);
     setSelectedUpload(null);
@@ -36,7 +45,19 @@ export default function UploadHistory() {
     getUploads(page, 10, "createdAt", "desc");
   }, [page]);
 
-  console.log("page", page);
+  const onConfirmArchive = () => {
+    updateClassification(selectedUpload.id, { isArchived: true })
+      .then(() => {
+        // Refresh uploads after archiving
+        showNotification({ message: "Upload archived", type: "success" });
+        getUploads(page, 10, "createdAt", "desc");
+        setOpenConfirm(false);
+        closeModal();
+      })
+      .catch((error) => {
+        showNotification({ message: error.response.data.error, type: "error" });
+      });
+  };
 
   if (uploads.length === 0) {
     return (
@@ -67,7 +88,6 @@ export default function UploadHistory() {
           </p>
         </div>
       </div>
-
       {/* Debug info */}
       {/* <div className="bg-yellow-100 p-4 rounded-lg mb-4">
         <h3 className="font-bold">Debug Info:</h3>
@@ -117,22 +137,31 @@ export default function UploadHistory() {
                     </p>
                   </div>
 
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getConfidenceColor(
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium w-auto self-start ${getConfidenceColor(
                         upload.confidence
                       )}`}
                     >
                       {Math.round(upload.confidence * 100)}% confident
                     </span>
 
-                    <button
-                      onClick={() => openModal(upload)}
-                      className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      <FaEye className="h-4 w-4" />
-                      <span>View</span>
-                    </button>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => openConfirmModal(upload)}
+                        className="flex items-center space-x-1 px-3 py-1 text-sm text-gray-700 hover:text-red-400 transition-colors cursor-pointer"
+                      >
+                        <FaArchive className="h-4 w-4" />
+                        <span>Archive</span>
+                      </button>
+                      <button
+                        onClick={() => openModal(upload)}
+                        className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                      >
+                        <FaEye className="h-4 w-4" />
+                        <span>View</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -140,12 +169,19 @@ export default function UploadHistory() {
           ))
         )}
       </div>
-
       {/* Modal */}
       <UploadModal
         isOpen={isOpen}
         closeModal={closeModal}
         selectedUpload={selectedUpload}
+      />
+      <ConfirmationModal
+        message={
+          "Are you sure you want to archive this upload? This action cannot be undone."
+        }
+        isOpen={openConfirm}
+        closeModal={() => setOpenConfirm(false)}
+        onConfirm={onConfirmArchive}
       />
     </div>
   );

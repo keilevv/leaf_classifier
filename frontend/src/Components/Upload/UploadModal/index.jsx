@@ -61,12 +61,7 @@ function UploadModal({ isOpen, closeModal, selectedUpload }) {
                             );
                             e.target.src = "/vite.svg";
                           }}
-                          onLoad={() => {
-                            console.log(
-                              "Successfully loaded modal image:",
-                              selectedUpload.imagePath
-                            );
-                          }}
+                          onLoad={() => {}}
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-4 text-sm">

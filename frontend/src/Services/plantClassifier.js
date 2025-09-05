@@ -11,10 +11,18 @@ const plantClassifierService = {
       },
     });
   },
-  getClassifications(page, limit, sortBy, sortOrder) {
+  getClassifications(page, limit, sortBy, sortOrder, accessToken) {
     return axios.get(`${apiUrl}/plant-classifier/classifications`, {
       params: { page, limit, sortBy, sortOrder },
+      headers: { Authorization: `Bearer ${accessToken}` },
     });
+  },
+  updateClassification(id, data, accessToken) {
+    return axios.patch(
+      `${apiUrl}/plant-classifier/classifications/${id}`,
+      data,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
   },
 };
 export default plantClassifierService;

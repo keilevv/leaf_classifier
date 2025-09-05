@@ -49,9 +49,7 @@ function plantClassifierController() {
           fs.createReadStream(uploadPath),
           image.originalname
         );
-
-        console.log("Sending image to classifier service...");
-
+        // Send image to classification service
         const response = await axios.post(
           `${classifierServiceUrl}/upload`,
           formData,
@@ -102,14 +100,58 @@ function plantClassifierController() {
         return;
       }
 
+      // Build Prisma where filter
+      const where: any = {};
+
+      // Only allow admin to filter by userId, otherwise restrict to own
+      if (req.user.role === "admin" && req.query.userId) {
+        where.userId = req.query.userId;
+      } else {
+        where.userId = req.user.id;
+      }
+
+      // Filter by isArchived, default to false if not provided
+      if (typeof req.query.isArchived !== "undefined") {
+        if (req.query.isArchived === "true") where.isArchived = true;
+        else if (req.query.isArchived === "false") where.isArchived = false;
+      } else {
+        where.isArchived = false;
+      }
+
+      // Filter by classification (exact match)
+      if (req.query.classification) {
+        where.classification = req.query.classification;
+      }
+
+      // Filter by originalFilename (partial match)
+      if (req.query.originalFilename) {
+        where.originalFilename = {
+          contains: req.query.originalFilename as string,
+          mode: "insensitive",
+        };
+      }
+
+      // Date filters
+      if (req.query.createdAt_gte || req.query.createdAt_lte) {
+        where.createdAt = {};
+        if (req.query.createdAt_gte) {
+          where.createdAt.gte = new Date(req.query.createdAt_gte as string);
+        }
+        if (req.query.createdAt_lte) {
+          where.createdAt.lte = new Date(req.query.createdAt_lte as string);
+        }
+      }
+
+      // Add more filters as needed...
+
       const [classifications, count] = await Promise.all([
         prisma.classification.findMany({
-          where: { userId: req.user.id },
+          where,
           orderBy: { [sortBy]: sortOrder },
           skip,
           take: limit,
         }),
-        prisma.classification.count({ where: { userId: req.user.id } }),
+        prisma.classification.count({ where }),
       ]);
 
       const totalPages = Math.ceil(count / limit);
@@ -127,9 +169,84 @@ function plantClassifierController() {
     }
   }
 
+  async function updateClassification(
+    req: AuthenticatedRequest,
+    res: Response
+  ): Promise<void> {
+    try {
+      const { id } = req.params;
+      const { isArchived, classification } = req.body;
+      const userId = req.user.id;
+      const userRole = req.user.role;
+
+      // Fetch the classification
+      const existing = await prisma.classification.findUnique({
+        where: { id },
+      });
+
+      if (!existing) {
+        res.status(404).json({ error: "Classification not found" });
+        return;
+      }
+
+      // Only allow if admin or owner
+      const isOwner = existing.userId === userId;
+      const isAdmin = userRole === "admin";
+      const isExpert = userRole === "expert-user";
+
+      if (!isAdmin && !isOwner) {
+        res
+          .status(403)
+          .json({ error: "Not authorized to update this classification" });
+        return;
+      }
+
+      // Only allow isArchived change for owner, admin, or expert-user
+      // Only allow classification change for admin or expert-user
+      const updateData: any = {};
+
+      if (typeof isArchived !== "undefined") {
+        if (isAdmin || isOwner || isExpert) {
+          updateData.isArchived = isArchived;
+        } else {
+          res
+            .status(403)
+            .json({ error: "Not authorized to update isArchived" });
+          return;
+        }
+      }
+
+      if (typeof classification !== "undefined") {
+        if (isAdmin || isExpert) {
+          updateData.classification = classification;
+        } else {
+          res
+            .status(403)
+            .json({ error: "Not authorized to update classification" });
+          return;
+        }
+      }
+
+      if (Object.keys(updateData).length === 0) {
+        res.status(400).json({ error: "No valid fields to update" });
+        return;
+      }
+
+      const updated = await prisma.classification.update({
+        where: { id },
+        data: updateData,
+      });
+
+      res.json({ message: "Classification updated", classification: updated });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
   return {
     uploadImage,
     getClassifications,
+    updateClassification,
   };
 }
 

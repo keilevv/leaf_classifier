@@ -4,7 +4,7 @@ import { useState, useRef, useCallback } from "react";
 import { FaCloudUploadAlt, FaImage, FaTrash, FaSpinner } from "react-icons/fa";
 import useClassifier from "../../../hooks/useClassifier";
 import UploadModal from "../UploadModal";
-import { showNotification } from "../../Notification";
+import { showNotification } from "../../Common/Notification";
 
 export default function FileUpload({ onUpload }) {
   const [selectedFile, setSelectedFile] = useState(null);

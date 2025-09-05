@@ -7,6 +7,7 @@ import {
   generateRefreshToken,
   verifyRefreshToken,
 } from "../utils/jwt";
+import { sanitizeUser } from "../utils";
 
 const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
 
@@ -79,7 +80,7 @@ function authController() {
         const refreshToken = generateRefreshToken(user);
         return res.json({
           message: "Login successful",
-          user,
+          user: sanitizeUser(user),
           accessToken,
         });
       });
@@ -117,7 +118,7 @@ function authController() {
         res.status(200).send({
           status: "success",
           message: "Registration successful",
-          user,
+          user: sanitizeUser(user),
           accessToken,
         });
       });
@@ -136,11 +137,10 @@ function authController() {
     res: Response,
     _next: NextFunction
   ) => {
-    console.log("Checking authentication status...");
     if (!req.user) return res.status(401).json({ error: "Not logged in" });
     // Optionally, issue a new access token
     const accessToken = generateAccessToken(req.user as any);
-    res.json({ user: req.user, accessToken });
+    res.json({ user: sanitizeUser(req.user), accessToken });
   };
 
   const refreshToken = (req: Request, res: Response) => {
