@@ -37,6 +37,10 @@ const useStore = create(
         set((state) => ({
           uiState: { ...state.uiState, ...newUiState },
         })),
+      setSelectedPage: (newPage) =>
+        set((state) => ({
+          uiState: { ...state.uiState, selectedPage: newPage },
+        })),
     })),
 
     {

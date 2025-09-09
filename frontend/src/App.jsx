@@ -3,6 +3,7 @@ import Home from "./Pages/Home";
 import Upload from "./Pages/Upload";
 import History from "./Pages/History";
 import Login from "./Pages/Login";
+import About from "./Pages/About";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import { Notification } from "./Components/Common/Notification";
 import "./App.css";
@@ -13,6 +14,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/about" element={<About />} />
         <Route
           path="/dashboard"
           element={

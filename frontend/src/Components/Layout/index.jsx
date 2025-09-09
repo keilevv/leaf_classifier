@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Tab } from "@headlessui/react";
 import { FaLeaf, FaSignOutAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import Header from "./Header";
 import FileUpload from "../../Components/Upload/FileUpload";
 import UploadHistory from "../../Components//History/UploadHistory";
 import useClassifier from "../../hooks/useClassifier";
@@ -21,32 +22,7 @@ export default function Layout({ user, onLogout, initialTab = 0 }) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <FaLeaf className="h-6 w-6 text-green-600" />
-              </div>
-              <div>
-                <h1 className="text-xl font-semibold text-gray-900">
-                  Plant Classifier
-                </h1>
-                <p className="text-sm text-gray-500">
-                  Welcome, {user?.fullName}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={onLogout}
-              className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              <FaSignOutAlt className="h-4 w-4" />
-              <span>Sign Out</span>
-            </button>
-          </div>
-        </div>
-      </header>
+      <Header user={user} onLogout={onLogout} />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

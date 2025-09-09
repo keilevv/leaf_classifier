@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import {
   FaLeaf,
@@ -22,10 +20,16 @@ import {
   FaAward,
   FaBookOpen,
 } from "react-icons/fa";
+import utbLogo from "../../../public/images/utblogo.png";
+import { useNavigate } from "react-router-dom";
+import Header from "../../Components/Layout/Header";
 
-export default function Home({ onGetStarted }) {
+export default function Home() {
   const [activeStep, setActiveStep] = useState(0);
-
+  const navigate = useNavigate();
+  const onGetStarted = () => {
+    navigate("/upload");
+  };
   const steps = [
     {
       icon: FaCamera,
@@ -94,17 +98,21 @@ export default function Home({ onGetStarted }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
+      <Header className="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50" />
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center">
-            <div className="flex justify-center mb-8">
-              <div className="relative">
-                <div className="p-6 bg-green-100 rounded-full">
-                  <FaLeaf className="h-16 w-16 text-green-600" />
-                </div>
-                <div className="absolute -top-2 -right-2 p-2 bg-blue-100 rounded-full">
-                  <FaBrain className="h-6 w-6 text-blue-600" />
+            <div className="flex items-center justify-center mb-6  flex-col-reverse md:flex-row">
+              <img src="/images/utblogo.png" alt="utblogo" className="h-25" />
+              <div className="flex justify-center mb-8">
+                <div className="relative">
+                  <div className="p-6 bg-green-100 rounded-full">
+                    <FaLeaf className="h-16 w-16 text-green-600" />
+                  </div>
+                  <div className="absolute -top-2 -right-2 p-2 bg-blue-100 rounded-full">
+                    <FaBrain className="h-6 w-6 text-blue-600" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -119,17 +127,20 @@ export default function Home({ onGetStarted }) {
               species worldwide.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <button
-                onClick={onGetStarted}
-                className="bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-8 rounded-lg text-lg transition-colors flex items-center justify-center"
-              >
-                <FaCamera className="mr-2" />
-                Start Contributing
-                <FaArrowRight className="ml-2" />
-              </button>
-
-              <button className="border-2 border-green-600 text-green-600 hover:bg-green-50 font-semibold py-4 px-8 rounded-lg text-lg transition-colors flex items-center justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12 ">
+              <div className="relative inline-flex group cursor-pointer">
+                <div className="absolute z-30 transitiona-all duration-1000 opacity-70 -inset-px bg-gradient-to-r from-[#44BCFF] via-[#FF44EC] to-[#FF675E] rounded-xl blur-lg group-hover:opacity-100 group-hover:-inset-1 group-hover:duration-200 animate-tilt"></div>
+                <a
+                  className=" w-full z-40 cursor-pointer bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-8 rounded-lg text-lg transition-colors flex items-center justify-center"
+                  role="button"
+                  onClick={onGetStarted}
+                >
+                  <FaCamera className="mr-2" />
+                  Start Contributing
+                  <FaArrowRight className="ml-2" />{" "}
+                </a>
+              </div>
+              <button className=" cursor-pointer border-2 border-green-600 text-green-600 hover:bg-green-50 font-semibold py-4 px-8 rounded-lg text-lg transition-colors flex items-center justify-center">
                 <FaBookOpen className="mr-2" />
                 Learn More
               </button>
@@ -194,8 +205,7 @@ export default function Home({ onGetStarted }) {
                     >
                       <step.icon className="h-8 w-8" />
                     </div>
-
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2 mt-5 md:mt-10">
                       {step.title}
                     </h3>
                     <p className="text-sm text-gray-600">{step.description}</p>
@@ -447,7 +457,7 @@ export default function Home({ onGetStarted }) {
 
           <button
             onClick={onGetStarted}
-            className="bg-white text-green-600 hover:bg-gray-100 font-bold py-4 px-12 rounded-lg text-xl transition-colors inline-flex items-center"
+            className="cursor-pointer bg-white text-green-600 hover:bg-gray-100 font-bold py-4 px-12 rounded-lg text-xl transition-colors inline-flex items-center"
           >
             <FaCamera className="mr-3" />
             Start Contributing Now
