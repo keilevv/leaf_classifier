@@ -5,7 +5,7 @@ import { Menu, Transition } from "@headlessui/react";
 import useStore from "../../../hooks/useStore";
 import useAuth from "../../../hooks/useAuth";
 import { Fragment } from "react";
-import { FaUserCircle } from "react-icons/fa";
+import { FaUser } from "react-icons/fa";
 import { showNotification } from "../../Common/Notification";
 
 let defaultPages = [
@@ -19,11 +19,6 @@ let defaultPages = [
     key: "about",
     url: "/about",
   },
-  {
-    title: "Settings",
-    key: "settings",
-    url: "/settings",
-  }
 ];
 
 function Header({ ...props }) {
@@ -47,6 +42,7 @@ function Header({ ...props }) {
     }
   };
   const handleSettings = () => {
+    setSelectedPage("settings");
     navigate("/settings");
     setIsMenuOpen(false);
   };
@@ -151,12 +147,20 @@ function Header({ ...props }) {
               {/* User Dropdown */}
               {user && (
                 <Menu as="div" className="relative inline-block text-left">
-                  <div className="flex items-center hover:outline-2 hover:text-green-600 outline-green-600 text-gray-600 rounded-md px-4 py-2 ">
-                    <Menu.Button className="cursor-pointer inline-flex items-center justify-center w-full  text-sm font-medium hover:text-green-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75">
+                  <div
+                    className={`${
+                      uiState.selectedPage === "settings"
+                        ? "text-green-600"
+                        : "text-gray-600"
+                    } flex items-center hover:outline-2 hover:text-green-600 outline-green-600  rounded-md px-4 py-2`}
+                  >
+                    <Menu.Button
+                      className={`cursor-pointer inline-flex items-center justify-center w-full  text-sm font-medium hover:text-green-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75`}
+                    >
                       {/* Display user's name, email, or an icon */}
                       {user.displayName || user.email || "Account"}
                     </Menu.Button>
-                    <FaUserCircle className="h-8 w-8  ml-2" />
+                    <FaUser className="h-5 w-5 ml-2" />
                   </div>
                   <Transition
                     as={Fragment}
@@ -169,7 +173,7 @@ function Header({ ...props }) {
                   >
                     <Menu.Items className="z-10 absolute right-0 mt-2 w-48 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                       <div className="px-1 py-1 ">
-                        {/* <Menu.Item>
+                        <Menu.Item>
                           {({ active }) => (
                             <button
                               onClick={handleSettings}
@@ -182,7 +186,7 @@ function Header({ ...props }) {
                               Settings
                             </button>
                           )}
-                        </Menu.Item> */}
+                        </Menu.Item>
                       </div>
                       <div className="px-1 py-1">
                         <Menu.Item>
@@ -245,7 +249,7 @@ function Header({ ...props }) {
         <div>
           {/* Mobile Menu */}
           {isMenuOpen && (
-            <div className="md:hidden bg-gray-800 border-t border-gray-700 m-2 rounded-lg">
+            <div className="md:hidden bg-slate-100 m-2 rounded-lg">
               {" "}
               {/* Added margin and rounded for aesthetics */}
               <ul className="flex flex-col p-4 space-y-2 font-medium">
@@ -256,7 +260,7 @@ function Header({ ...props }) {
                     <li key={page.key}>
                       <Link
                         to={page.url}
-                        className="block py-2 px-3 text-blue-400 hover:text-white rounded hover:bg-gray-700"
+                        className="block py-2 px-3 text-gray-400 hover:text-white rounded hover:bg-gray-700"
                         onClick={() => {
                           window.scrollTo({ top: 0, behavior: "smooth" });
                           setIsMenuOpen(false); // Close menu on link click
@@ -273,7 +277,7 @@ function Header({ ...props }) {
                     <li>
                       <button
                         onClick={handleSettings}
-                        className="block w-full text-left py-2 px-3 text-blue-400 hover:text-white rounded hover:bg-gray-700"
+                        className="block w-full text-left py-2 px-3 text-gray-400 hover:text-white rounded hover:bg-gray-700"
                       >
                         Settings
                       </button>
@@ -281,25 +285,27 @@ function Header({ ...props }) {
                     <li>
                       <button
                         onClick={handleLogout}
-                        className="block w-full text-left py-2 px-3 text-blue-400 hover:text-white rounded hover:bg-gray-700"
+                        className="block w-full text-left py-2 px-3 text-gray-400 hover:text-white rounded hover:bg-gray-700"
                       >
                         Logout
                       </button>
                     </li>
                   </>
                 )}
-                <li>
-                  <button
-                    onClick={() => {
-                      navigate("/login");
-                      setIsMenuOpen(false); // Close menu on button click
-                    }}
-                    type="button"
-                    className="w-full mt-2 text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-4 py-2.5 text-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-800"
-                  >
-                    Login
-                  </button>
-                </li>
+                {!user && (
+                  <li>
+                    <button
+                      onClick={() => {
+                        navigate("/login");
+                        setIsMenuOpen(false); // Close menu on button click
+                      }}
+                      type="button"
+                      className="w-full mt-2 text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-4 py-2.5 text-center bg-emerald-600 hover:bg-blue-700 focus:ring-blue-800"
+                    >
+                      Login
+                    </button>
+                  </li>
+                )}
               </ul>
             </div>
           )}

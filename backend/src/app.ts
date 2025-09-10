@@ -5,6 +5,7 @@ import cors from "cors";
 import "../src/lib/passport";
 import authRoutes from "./routes/auth";
 import plantClassifierRoutes from "./routes/plantClassifier";
+import userRoutes from "./routes/user";
 import prisma from "./lib/prisma";
 const app = express();
 
@@ -46,5 +47,6 @@ app.use(passport.session());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/plant-classifier", plantClassifierRoutes);
+app.use("/api/user", userRoutes);
 
 export default app;

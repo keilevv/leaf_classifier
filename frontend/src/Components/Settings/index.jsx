@@ -32,6 +32,7 @@ export default function Settings() {
     department: "",
     location: "",
     bio: "",
+    password: "",
   });
 
   const onUserUpdate = (updatedUser) => {
@@ -59,11 +60,12 @@ export default function Settings() {
     const initialUserForm = {
       name: user?.fullName || "",
       email: user?.email || "",
-      phone: user?.telephone || "",
-      institution: "",
-      department: "",
-      location: "",
-      bio: "",
+      phone: user?.phone || "",
+      institution: user?.institution || "",
+      department: user?.department || "",
+      location: user?.location || "",
+      bio: user?.bio || "",
+      password: "",
     };
     setUserForm(initialUserForm);
     setOriginalUserForm(initialUserForm);
@@ -140,7 +142,7 @@ export default function Settings() {
     }
 
     try {
-      showNotification({ message: "Updating user settings...", type: "info" });
+      showNotification({ message: "Updating user settings..." });
 
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -161,6 +163,7 @@ export default function Settings() {
       setConfirmPassword("");
       showNotification({
         message: "User settings updated successfully!",
+        type: "success",
       });
     } catch (error) {
       showNotification({
@@ -423,7 +426,10 @@ export default function Settings() {
                           type={showPassword ? "text" : "password"}
                           id="password"
                           value={password}
-                          onChange={(e) => setPassword(e.target.value)}
+                          onChange={(e) => {
+                            setPassword(e.target.value);
+                            handleUserFormChange("password", e.target.value);
+                          }}
                           className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                           placeholder="Enter new password"
                         />

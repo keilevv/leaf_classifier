@@ -22,14 +22,23 @@ import {
 } from "react-icons/fa";
 import utbLogo from "../../assets/images/utblogo.png";
 import { useNavigate } from "react-router-dom";
+import useStore from "../../hooks/useStore";
 import Header from "../../Components/Layout/Header";
 
 export default function Home() {
+  const { user, setSelectedPage } = useStore();
   const [activeStep, setActiveStep] = useState(0);
   const navigate = useNavigate();
+  
   const onGetStarted = () => {
+    if (user) {
+      setSelectedPage("upload");
+    } else {
+      setSelectedPage("login");
+    }
     navigate("/upload");
   };
+
   const steps = [
     {
       icon: FaCamera,
