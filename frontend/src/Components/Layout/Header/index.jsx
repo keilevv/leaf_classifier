@@ -19,6 +19,11 @@ let defaultPages = [
     key: "about",
     url: "/about",
   },
+  {
+    title: "Settings",
+    key: "settings",
+    url: "/settings",
+  }
 ];
 
 function Header({ ...props }) {
@@ -95,9 +100,7 @@ function Header({ ...props }) {
                 Plant Classifier
               </h1>
               {user && (
-                <p className="text-sm text-gray-500">
-                  Welcome, {user?.fullName}
-                </p>
+                <p className="text-sm text-gray-500">{user?.fullName}</p>
               )}
             </div>
           </div>
@@ -164,9 +167,9 @@ function Header({ ...props }) {
                     leaveFrom="transform opacity-100 scale-100"
                     leaveTo="transform opacity-0 scale-95"
                   >
-                    <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    <Menu.Items className="z-10 absolute right-0 mt-2 w-48 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                       <div className="px-1 py-1 ">
-                        <Menu.Item>
+                        {/* <Menu.Item>
                           {({ active }) => (
                             <button
                               onClick={handleSettings}
@@ -179,7 +182,7 @@ function Header({ ...props }) {
                               Settings
                             </button>
                           )}
-                        </Menu.Item>
+                        </Menu.Item> */}
                       </div>
                       <div className="px-1 py-1">
                         <Menu.Item>
