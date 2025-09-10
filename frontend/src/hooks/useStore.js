@@ -8,13 +8,6 @@ const initialState = {
   // UI State
   uiState: {
     selectedPage: "home",
-    login: {
-      comesFrom: {
-        pathname: "/",
-        search: "",
-        key: "",
-      },
-    },
   },
 
   accessToken: null,
@@ -29,9 +22,13 @@ const useStore = create(
       resetStore: () => set({ ...initialState }),
 
       // User
-      setUser: (userState) =>
-        set({ user: userState.user, accessToken: userState.accessToken }),
-
+      setUser: (userState) => {
+        if (userState === null) {
+          set({ user: null, accessToken: null });
+        } else {
+          set({ user: userState.user, accessToken: userState.accessToken });
+        }
+      },
       // UI State
       setUiState: (newUiState) =>
         set((state) => ({
@@ -41,6 +38,8 @@ const useStore = create(
         set((state) => ({
           uiState: { ...state.uiState, selectedPage: newPage },
         })),
+
+      logout: () => set({ user: null, accessToken: null }),
     })),
 
     {

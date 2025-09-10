@@ -1,10 +1,12 @@
 import { FaLeaf, FaSignOutAlt } from "react-icons/fa";
 import { useNavigate, Link } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import useStore from "../../../hooks/useStore";
+import useAuth from "../../../hooks/useAuth";
 import { Fragment } from "react";
 import { FaUserCircle } from "react-icons/fa";
+import { showNotification } from "../../Common/Notification";
 
 let defaultPages = [
   {
@@ -19,10 +21,17 @@ let defaultPages = [
   },
 ];
 
-function Header({ user, onLogout, ...props }) {
+function Header({ ...props }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [pages, setPages] = useState(defaultPages);
-  const { setSelectedPage, uiState, resetStore } = useStore();
+  const {
+    setSelectedPage,
+    uiState,
+    user,
+    logout: logoutFromStore,
+    accessToken,
+  } = useStore();
+  const { logout } = useAuth();
 
   const navigate = useNavigate();
   const LogoButton = () => {
@@ -36,7 +45,31 @@ function Header({ user, onLogout, ...props }) {
     navigate("/settings");
     setIsMenuOpen(false);
   };
-  console.log("user in header:", user);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      await logoutFromStore();
+      showNotification({ type: "success", message: "Logged out successfully" });
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  useEffect(() => {
+    // Update pages based on user authentication status
+    if (user) {
+      // User is authenticated
+      setPages([
+        ...defaultPages,
+        { title: "Upload", key: "upload", url: "/upload" },
+      ]); // Add upload link
+    } else {
+      // User is not authenticated or not logged in
+      setPages(defaultPages); // Reset to default pages
+    }
+  }, [user]);
 
   return (
     <header
@@ -152,7 +185,7 @@ function Header({ user, onLogout, ...props }) {
                         <Menu.Item>
                           {({ active }) => (
                             <button
-                              onClick={onLogout}
+                              onClick={handleLogout}
                               className={`${
                                 active
                                   ? "bg-blue-500 text-white"
@@ -244,7 +277,7 @@ function Header({ user, onLogout, ...props }) {
                     </li>
                     <li>
                       <button
-                        onClick={onLogout}
+                        onClick={handleLogout}
                         className="block w-full text-left py-2 px-3 text-blue-400 hover:text-white rounded hover:bg-gray-700"
                       >
                         Logout

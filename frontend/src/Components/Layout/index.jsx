@@ -1,6 +1,4 @@
-import { useState, useEffect } from "react";
 import { Tab } from "@headlessui/react";
-import { FaLeaf, FaSignOutAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import Header from "./Header";
 import FileUpload from "../../Components/Upload/FileUpload";
@@ -11,7 +9,7 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function Layout({ user, onLogout, initialTab = 0 }) {
+export default function Layout({ user, initialTab = 0 }) {
   const { addUpload } = useClassifier();
   const navigate = useNavigate();
 
@@ -22,7 +20,7 @@ export default function Layout({ user, onLogout, initialTab = 0 }) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <Header user={user} onLogout={onLogout} />
+      <Header user={user} />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

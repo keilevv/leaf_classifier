@@ -20,7 +20,7 @@ import {
   FaAward,
   FaBookOpen,
 } from "react-icons/fa";
-import utbLogo from "../../../public/images/utblogo.png";
+import utbLogo from "../../assets/images/utblogo.png";
 import { useNavigate } from "react-router-dom";
 import Header from "../../Components/Layout/Header";
 
@@ -104,7 +104,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center">
             <div className="flex items-center justify-center mb-6  flex-col-reverse md:flex-row">
-              <img src="/images/utblogo.png" alt="utblogo" className="h-25" />
+              <img src={utbLogo} alt="utblogo" className="h-25" />
               <div className="flex justify-center mb-8">
                 <div className="relative">
                   <div className="p-6 bg-green-100 rounded-full">
