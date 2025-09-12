@@ -19,7 +19,7 @@ export default function LoginForm({
   checkout = null,
   onLogin,
 }) {
-  const { setUiState } = useStore();
+  const { setUiState, setSelectedPage } = useStore();
   const { localLogin, googleLogin, localRegister } = useAuth(false);
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
@@ -91,6 +91,7 @@ export default function LoginForm({
             type: "success",
           });
           navigate("/");
+          setSelectedPage("upload");
 
           setIsLoading(false);
           setUiState({
@@ -115,6 +116,7 @@ export default function LoginForm({
   };
 
   const handleGoogleLogin = async (redirectTo = "/upload") => {
+    setSelectedPage("upload");
     window.location.href = `${apiUrl}/auth/google?redirectTo=${encodeURIComponent(
       redirectTo
     )}`;
@@ -138,6 +140,7 @@ export default function LoginForm({
             .then(() => {
               if (comesFrom.pathname === "/booking") {
               } else {
+                setSelectedPage("upload");
                 navigate("/upload");
                 setIsLoading(false);
                 setUiState({

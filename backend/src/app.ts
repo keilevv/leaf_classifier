@@ -5,6 +5,7 @@ import cors from "cors";
 import "../src/lib/passport";
 import authRoutes from "./routes/auth";
 import plantClassifierRoutes from "./routes/plantClassifier";
+import userRoutes from "./routes/user";
 import prisma from "./lib/prisma";
 const app = express();
 
@@ -17,7 +18,7 @@ process.on("SIGINT", async () => {
 // CORS middleware (adjust origin as needed)
 app.use(
   cors({
-    origin: "http://localhost:5173", // frontend URL
+    origin: process.env.FRONTEND_URL || "http://localhost:5173", // frontend URL
     credentials: true, // allow cookies/session across origins
   })
 );
@@ -46,5 +47,6 @@ app.use(passport.session());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/plant-classifier", plantClassifierRoutes);
+app.use("/api/user", userRoutes);
 
 export default app;

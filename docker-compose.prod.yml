@@ -1,0 +1,99 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: lc-postgres-prod
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-leafuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sanautos2022}
+      POSTGRES_DB: ${POSTGRES_DB:-leafapp}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-leafuser}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: lc-backend-prod
+    depends_on:
+      postgres:
+        condition: service_healthy
+      classifier:
+        condition: service_started
+    env_file:
+      - ./backend/.env.prod
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOST: 0.0.0.0
+      DATABASE_URL: postgresql://${POSTGRES_USER:-leafuser}:${POSTGRES_PASSWORD:-sanautos2022}@postgres:5432/${POSTGRES_DB:-leafapp}?schema=public
+      CLASSIFIER_URL: http://classifier:5000
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+      SESSION_SECRET: ${SESSION_SECRET:-change_me_in_production}
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+    volumes:
+      - ./backend/uploads:/app/uploads
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/auth/me"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  classifier:
+    build:
+      context: ./classifier
+      dockerfile: Dockerfile.prod
+    container_name: lc-classifier-prod
+    environment:
+      FLASK_ENV: production
+      PORT: 5000
+    ports:
+      - "${CLASSIFIER_PORT:-5000}:5000"
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/upload"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
+    container_name: lc-frontend-prod
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-5173}:80"
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  pgdata_prod:
+
+networks:
+  app-network:
+    driver: bridge

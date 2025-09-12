@@ -10,24 +10,24 @@ const ProtectedRoute = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const { isAuthenticated, userState } = useAuth(true);
 
-  useEffect(() => {
-    const checkAuthentication = async () => {
-      try {
-        const authResult = await isAuthenticated();
-        if (authResult) {
-          setIsValidSession(true);
-        } else {
-          setIsValidSession(false);
-        }
-      } catch (error) {
+  const checkAuthentication = async () => {
+    try {
+      const authResult = await isAuthenticated();
+      if (authResult) {
+        setIsValidSession(true);
+      } else {
         setIsValidSession(false);
-        navigate("/login");
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (error) {
+      setIsValidSession(false);
+      navigate("/login");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    if (!isValidSession && userState) {
+  useEffect(() => {
+    if (!isValidSession) {
       checkAuthentication();
     }
   }, [isValidSession]);
