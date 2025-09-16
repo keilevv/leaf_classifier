@@ -10,7 +10,12 @@ RUN bun install --frozen-lockfile
 # Copy source code
 COPY . .
 
+# Set environment variables for build
+ARG VITE_API_URL
+ENV VITE_API_URL=${VITE_API_URL}
+
 # Build the app
+RUN echo "VITE_API_URL=${VITE_API_URL}" > .env.production
 RUN bun run build
 
 # Production stage

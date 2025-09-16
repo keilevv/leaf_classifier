@@ -54,13 +54,13 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      args:
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:3000/api}
     container_name: leaf-frontend
     depends_on:
       - backend
     ports:
       - '5173:80'
+    env_file:
+      - ./frontend/.env
     restart: unless-stopped
     networks:
       - leaf-network
