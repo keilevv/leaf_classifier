@@ -23,7 +23,7 @@ services:
       dockerfile: Dockerfile.prod
     container_name: leaf-backend
     environment:
-      - HOST=129.153.122.159
+      - HOST=0.0.0.0
       - PORT=3000
     env_file:
       - ./backend/.env.prod
