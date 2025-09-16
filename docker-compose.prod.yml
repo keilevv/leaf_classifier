@@ -24,14 +24,14 @@ services:
     container_name: leaf-backend
     environment:
       - HOST=0.0.0.0
-      - PORT=3000
+      - PORT=5500
     env_file:
       - ./backend/.env.prod
     volumes:
       - ./backend/prisma:/usr/src/app/prisma
     restart: unless-stopped
     ports:
-      - '3000:3000'
+      - '5500:5500'
     networks:
       - leaf-network
     command: >
@@ -57,10 +57,10 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.prod
       args:
-        VITE_API_URL: ${VITE_API_URL:-http://129.153.122.159:3000/api}
+        VITE_API_URL: ${VITE_API_URL:-http://129.153.122.159:5500/api}
     container_name: leaf-frontend
     environment:
-      - VITE_API_URL=${VITE_API_URL:-http://129.153.122.159:3000/api}
+      - VITE_API_URL=${VITE_API_URL:-http://129.153.122.159:5500/api}
     depends_on:
       - backend
     ports:

@@ -35,10 +35,10 @@ COPY --from=builder /usr/src/app/prisma ./prisma
 # Set environment to production
 ENV NODE_ENV=production
 ENV HOST=localhost
-ENV PORT=3000
+ENV PORT=5500
 
 # Expose the port the app runs on
-EXPOSE 3000
+EXPOSE 5500
 
 # Generate Prisma client and run migrations on container start
 CMD bunx prisma generate && \

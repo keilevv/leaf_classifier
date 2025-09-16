@@ -18,7 +18,7 @@ COPY . .
 RUN chown -R bun:bun /usr/src/app
 
 # Expose port for development
-EXPOSE 3000
+EXPOSE 5500
 
 # Start the development server with hot-reload
 USER bun
