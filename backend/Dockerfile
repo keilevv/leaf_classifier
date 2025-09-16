@@ -1,32 +1,25 @@
-# syntax=docker/dockerfile:1
+# Development Dockerfile
+FROM oven/bun:1
 
-FROM oven/bun:1.1-alpine AS base
-WORKDIR /app
+WORKDIR /usr/src/app
 
-# Install OS deps needed by Prisma and openssl
-RUN apk add --no-cache openssl
-
-# Copy only package files first for caching
+# Install dependencies first
 COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
 
-# Install dependencies
-RUN bun install
+# Copy Prisma schema and generate client
+COPY prisma ./prisma
+RUN bunx prisma generate
 
 # Copy source code
-COPY prisma ./prisma
-COPY src ./src
-COPY readme.md ./readme.md
+COPY . .
 
-# Generate Prisma client
-RUN bun prisma generate
+# Set proper permissions
+RUN chown -R bun:bun /usr/src/app
 
-# Expose port
+# Expose port for development
 EXPOSE 3000
 
-# Copy entrypoint
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
-
-ENV NODE_ENV=production
-
-ENTRYPOINT ["/docker-entrypoint.sh"]
+# Start the development server with hot-reload
+USER bun
+CMD ["bun", "run", "dev"]
