@@ -15,6 +15,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - leaf-network
 
   backend:
     build:
@@ -37,6 +39,8 @@ services:
       sh -c "bunx prisma generate &&
              bunx prisma migrate deploy &&
              bun run dev"
+    networks:
+      - leaf-network
 
   classifier:
     build:
@@ -58,6 +62,12 @@ services:
     ports:
       - '5173:80'
     restart: unless-stopped
+    networks:
+      - leaf-network
+
+networks:
+  leaf-network:
+    driver: bridge
 
 volumes:
   postgres_data:
