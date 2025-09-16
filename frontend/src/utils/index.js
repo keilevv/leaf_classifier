@@ -1,7 +1,7 @@
   // Construct image URL from imagePath
 export const getImageUrl = (imagePath) => {
   if (!imagePath) return "/vite.svg";
-  const apiUrl = import.meta.env.VITE_LOCAL_PATH || "http://localhost:5500";
+  const apiUrl = import.meta.env.VITE_LOCAL_PATH || "http://localhost:5000";
   const fullUrl = `${apiUrl}/${imagePath}`;
   return fullUrl;
 };

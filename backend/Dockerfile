@@ -17,8 +17,10 @@ COPY . .
 # Set proper permissions
 RUN chown -R bun:bun /usr/src/app
 
+ENV PORT=5000
+
 # Expose port for development
-EXPOSE 5500
+EXPOSE 5000
 
 # Start the development server with hot-reload
 USER bun

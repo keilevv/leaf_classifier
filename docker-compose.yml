@@ -28,7 +28,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     ports:
-      - '5500:5500'
+      - '5000:5000'
     env_file:
       - ./backend/.env.local
     environment:
@@ -48,7 +48,7 @@ services:
     container_name: leaf-classifier
     restart: unless-stopped
     ports:
-      - '5000:5000'
+      - '3000:3000'
 
   frontend:
     build:

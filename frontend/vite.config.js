@@ -20,7 +20,7 @@ export default defineConfig(({ command, mode }) => {
     
     // For development server
     server: {
-      port: 5500,
+      port: 5000,
       strictPort: true,
     },
     // For production build

@@ -25,7 +25,7 @@ function NotificationItem({
   type = "default",
   title,
   message,
-  duration = 5500,
+  duration = 5000,
   onClose,
   onClick,
 }) {
@@ -111,7 +111,7 @@ export function Notification() {
       if (notification.duration !== 0) {
         setTimeout(() => {
           setNotificationsState((prev) => prev.filter((n) => n.id !== id));
-        }, notification.duration || 5500);
+        }, notification.duration || 5000);
       }
     };
 
