@@ -30,7 +30,7 @@ COPY model ./model
 COPY utils ./utils
 COPY vit_leaf_classifier.pth ./vit_leaf_classifier.pth
 
-EXPOSE 3000
+EXPOSE 8000
 ENV FLASK_ENV=production
 
 CMD ["python", "app.py"]

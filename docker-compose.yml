@@ -48,7 +48,7 @@ services:
     container_name: leaf-classifier
     restart: unless-stopped
     ports:
-      - '3000:3000'
+      - '8000:8000'
 
   frontend:
     build:
