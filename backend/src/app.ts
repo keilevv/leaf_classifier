@@ -45,6 +45,10 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.route("/").get((req, res) => {
+  res.send("Hello World from leaf classifier!");
+});
+
 app.use("/api/auth", authRoutes);
 app.use("/api/plant-classifier", plantClassifierRoutes);
 app.use("/api/user", userRoutes);
