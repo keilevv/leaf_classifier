@@ -15,7 +15,7 @@ interface AuthenticatedRequest extends Request {
 }
 
 const classifierServiceUrl =
-  process.env.CLASSIFY_SERVICE_URL || "http://localhost:5000/api";
+  process.env.CLASSIFY_SERVICE_URL || "http://localhost:8000/api";
 
 function plantClassifierController() {
   // These now return middleware functions that Express can use
