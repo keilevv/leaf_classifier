@@ -6,16 +6,34 @@ Esta aplicación consiste en tres componentes principales: **backend**, **fronte
 
 - [Bun](https://bun.sh/) instalado
 - [Python 3](https://www.python.org/) instalado
+- [Postgres](https://www.postgresql.org/) instalado
+- [Docker](https://www.docker.com/) instalado
+- [Docker Compose](https://docs.docker.com/compose/) instalado
 
 ## Inicialización
 
 Se debe descargar el modelo clasificador en la carpeta `classifier` bajo el nombre "vit_leaf_classifier.pth".
+
+También se debe crear una base de datos con usuario y contraseña correspondientes a los colocados en el archivo `backend/.env`.
+
+### Inicialización de Docker (desarrollo)
+
+```bash
+docker-compose -f docker-compose.yml  up -d
+```
+
+### Inicialización de Docker (producción)
+
+```bash
+docker-compose -f docker-compose.prod.yml  up -d
+```
 
 ### 1. Backend
 
 ```bash
 cd backend
 bun install
+bun prisma migrate dev
 bun run dev
 ```
 
@@ -34,6 +52,7 @@ cd classifier
 ```
 
 #### Instalar dependencias
+
 crear un entorno virtual
 
 ```bash
@@ -49,10 +68,13 @@ source env/bin/activate
 ```bash
 pip install -r requirements.txt
 ```
+
 #### Ejecutar el classifier
+
 ```bash
 python3 app.py
 ```
+
 ## Desarrollo Rápido
 
 Para iniciar todos los servicios de una vez, puedes usar el script de desarrollo:
@@ -62,7 +84,8 @@ Para iniciar todos los servicios de una vez, puedes usar el script de desarrollo
 ```
 
 Este script iniciará automáticamente:
-- **Classifier** en http://localhost:5000
+
+- **Classifier** en http://localhost:3000
 - **Backend** en el puerto configurado en `src/server.ts`
 - **Frontend** en el puerto configurado por Vite (por defecto 5173)
 
@@ -72,4 +95,4 @@ Presiona `Ctrl+C` para detener todos los servicios.
 
 - El backend corre en el puerto configurado en `src/server.ts`.
 - El frontend corre en el puerto configurado por Vite (por defecto 5173).
-- El classifier corre en el puerto 5000.
+- El classifier corre en el puerto 3000.

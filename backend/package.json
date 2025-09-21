@@ -5,20 +5,19 @@
   "private": true,
   "scripts": {
     "dev": "bun run --watch src/server.ts",
-    "build": "bun build src/index.ts --outdir=dist --format=cjs",
-    "start": "bun run dist/index.js",
+    "build": "bun build src/server.ts --outdir=dist --format=esm --target=bun",
+    "start": "bun dist/server.js",
     "lint": "bun run eslint .",
     "test": "bun test",
-    "prisma:generate": "npx prisma generate",
-    "prisma:migrate": "npx prisma migrate dev",
-    "prisma:studio": "npx prisma studio"
+    "prisma:generate": "bunx prisma generate",
+    "prisma:migrate": "bunx prisma migrate dev",
+    "prisma:studio": "bunx prisma studio"
   },
   "devDependencies": {
     "@types/bcryptjs": "^3.0.0",
     "@types/bun": "latest",
     "@types/express": "^5.0.1",
     "@types/express-session": "^1.18.1",
-    "@types/node": "^22.14.1",
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth20": "^2.0.16",
     "@types/passport-local": "^1.0.38",
