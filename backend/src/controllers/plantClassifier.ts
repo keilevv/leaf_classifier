@@ -50,37 +50,43 @@ function plantClassifierController() {
           image.originalname
         );
         // Send image to classification service
-        const response = await axios.post(
-          `${classifierServiceUrl}/upload`,
-          formData,
-          {
+        axios
+          .post(`${classifierServiceUrl}/upload`, formData, {
             headers: {
               ...formData.getHeaders(),
             },
-          }
-        );
+          })
+          .then(async (response) => {
+            const { classification, confidence } = response.data;
 
-        const { classification, confidence } = response.data;
-
-        // Create classification entry in DB
-        const classificationEntry = await prisma.classification.create({
-          data: {
-            originalFilename: image.originalname,
-            imagePath: `uploads/${image.originalname}`, // or absolute path if needed
-            classification,
-            confidence,
-            userId,
-          },
-        });
-        res.status(200).json({
-          message: "Image uploaded and classified successfully",
-          classification: classificationEntry,
-        });
+            // Create classification entry in DB
+            const classificationEntry = await prisma.classification.create({
+              data: {
+                originalFilename: image.originalname,
+                imagePath: `uploads/${image.originalname}`, // or absolute path if needed
+                classification,
+                confidence,
+                userId,
+              },
+            });
+            return res.status(200).json({
+              message: "Image uploaded and classified successfully",
+              classification: classificationEntry,
+            });
+          })
+          .catch((error) => {
+            return res.status(500).json({
+              error: error.message,
+              message: "Error classifying image",
+            });
+          });
       } else {
-        console.error(`File not found at ${uploadPath}`);
+        return res
+          .status(404)
+          .json({ error: `File not found at ${uploadPath}` });
       }
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      return res.status(500).json({ error: error.message });
     }
   };
 
@@ -164,7 +170,6 @@ function plantClassifierController() {
 
       res.json(response);
     } catch (error) {
-      console.error("Error fetching classifications:", error);
       res.status(500).json({ error: "Failed to fetch classifications" });
     }
   }
