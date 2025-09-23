@@ -7,8 +7,8 @@ const router = Router();
 const controller = userController();
 const { getUser, updateUser } = controller;
 
-router.get("/", authenticateToken, getUser); // This now works ✅y
+router.get("/:id", authenticateToken, getUser); // This now works ✅y
 
-router.patch("/update", authenticateToken, updateUser);
+router.patch("/:id/update", authenticateToken, updateUser);
 
 export default router;

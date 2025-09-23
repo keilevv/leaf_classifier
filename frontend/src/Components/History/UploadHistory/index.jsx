@@ -104,7 +104,6 @@ export default function UploadHistory() {
           <FaSpinner className="h-6 w-6 text-gray-400 animate-spin mx-auto" />
         ) : (
           uploads.map((upload) => {
-            console.log("upload", upload);
             return (
               <div
                 key={upload.id}

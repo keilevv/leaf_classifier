@@ -51,7 +51,7 @@ function UploadModal({ isOpen, closeModal, selectedUpload }) {
                     <div className="space-y-4">
                       <div className="flex justify-center">
                         <img
-                          src={getImageUrl(selectedUpload.imagePath)}
+                          src={selectedUpload.imagePath}
                           alt={selectedUpload.originalFilename}
                           className="max-w-full max-h-96 rounded-lg object-contain"
                           onError={(e) => {

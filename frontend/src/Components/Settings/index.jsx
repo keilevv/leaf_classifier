@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Tab } from "@headlessui/react";
+import useUser from "../../hooks/useUser";
 import {
   FaUser,
   FaCog,
@@ -17,12 +18,14 @@ import {
 } from "react-icons/fa";
 import useStore from "../../hooks/useStore";
 import { showNotification } from "../../Components/Common/Notification";
+
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
 export default function Settings() {
-  const { user } = useStore();
+  const { user: userStore } = useStore();
+  const { getUser, user, loading, updateUser } = useUser();
   // User Settings State
   const [userForm, setUserForm] = useState({
     name: user?.name || "",
@@ -35,9 +38,12 @@ export default function Settings() {
     password: "",
   });
 
-  const onUserUpdate = (updatedUser) => {
-    console.log("User updated:", updatedUser);
-  };
+  useEffect(() => {
+    if (userStore.id) {
+      getUser(userStore.id);
+    }
+  }, [userStore.id]);
+
 
   const [originalUserForm, setOriginalUserForm] = useState({});
   const [showPassword, setShowPassword] = useState(false);
@@ -144,26 +150,21 @@ export default function Settings() {
     try {
       showNotification({ message: "Updating user settings..." });
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
       // Update user data
       const updatedUser = {
         ...user,
         ...userForm,
       };
-
-      if (onUserUpdate) {
-        onUserUpdate(updatedUser);
-      }
-
-      // Reset form states
-      setOriginalUserForm(userForm);
-      setPassword("");
-      setConfirmPassword("");
-      showNotification({
-        message: "User settings updated successfully!",
-        type: "success",
+      updateUser(updatedUser.id, updatedUser).then(() => {
+        // Reset form states
+        setOriginalUserForm(userForm);
+        setPassword("");
+        setConfirmPassword("");
+        showNotification({
+          message: "User settings updated successfully!",
+          type: "success",
+        });
+        getUser(updatedUser.id);
       });
     } catch (error) {
       showNotification({
@@ -215,11 +216,13 @@ export default function Settings() {
     <div className=" mx-auto">
       <div className="bg-white  shadow-lg overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Settings</h1>
-          <p className="text-green-100">
-            Manage your account and application preferences
-          </p>
+        <div className="bg-gradient-to-r from-green-600 to-emerald-600">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <h1 className="text-3xl font-bold text-white mb-2 ">Settings</h1>
+            <p className="text-green-100">
+              Manage your account and application preferences
+            </p>
+          </div>
         </div>
 
         {/* Tabs */}
@@ -259,7 +262,7 @@ export default function Settings() {
 
           <Tab.Panels>
             {/* User Settings Panel */}
-            <Tab.Panel className="p-6">
+            <Tab.Panel className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
               <form onSubmit={handleUserSubmit} className="space-y-6">
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900 mb-4">
@@ -471,7 +474,10 @@ export default function Settings() {
                   <div className="flex justify-end pt-6 border-t border-gray-200">
                     <button
                       type="submit"
-                      className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-md transition-colors flex items-center"
+                      disabled={loading}
+                      className={` ${
+                        loading ? "opacity-50 cursor-not-allowed" : ""
+                      } bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-md transition-colors flex items-center`}
                     >
                       <FaSave className="h-4 w-4 mr-2" />
                       Save Changes
@@ -671,8 +677,11 @@ export default function Settings() {
                 {hasPreferencesChanges() && (
                   <div className="flex justify-end pt-6 border-t border-gray-200">
                     <button
+                      disabled={loading}
                       type="submit"
-                      className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-md transition-colors flex items-center"
+                      className={` ${
+                        loading ? "opacity-50 cursor-not-allowed" : ""
+                      } bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-md transition-colors flex items-center`}
                     >
                       <FaSave className="h-4 w-4 mr-2" />
                       Save Preferences
