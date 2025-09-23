@@ -90,7 +90,7 @@ export default function LoginForm({
             message: "Login successful",
             type: "success",
           });
-          navigate("/");
+          navigate("/upload");
           setSelectedPage("upload");
 
           setIsLoading(false);
