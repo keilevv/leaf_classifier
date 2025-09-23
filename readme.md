@@ -85,7 +85,7 @@ Para iniciar todos los servicios de una vez, puedes usar el script de desarrollo
 
 Este script iniciará automáticamente:
 
-- **Classifier** en http://localhost:3000
+- **Classifier** en http://localhost:8000
 - **Backend** en el puerto configurado en `src/server.ts`
 - **Frontend** en el puerto configurado por Vite (por defecto 5173)
 
@@ -95,4 +95,4 @@ Presiona `Ctrl+C` para detener todos los servicios.
 
 - El backend corre en el puerto configurado en `src/server.ts`.
 - El frontend corre en el puerto configurado por Vite (por defecto 5173).
-- El classifier corre en el puerto 3000.
+- El classifier corre en el puerto 8000.

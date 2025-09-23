@@ -1,12 +1,6 @@
-import passport from "passport";
 import bcrypt from "bcryptjs";
 import prisma from "../lib/prisma";
-import { Request, Response, NextFunction } from "express";
-import {
-  generateAccessToken,
-  generateRefreshToken,
-  verifyRefreshToken,
-} from "../utils/jwt";
+import { Request, Response } from "express";
 import { sanitizeUser } from "../utils";
 
 const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
@@ -54,7 +48,9 @@ function userController() {
         return res.status(401).json({ error: "Unauthorized" });
       }
       if (authUser.id !== id) {
-        const actingUser = await prisma.user.findUnique({ where: { id: authUser.id } });
+        const actingUser = await prisma.user.findUnique({
+          where: { id: authUser.id },
+        });
         if (!actingUser || actingUser.role !== "admin") {
           return res.status(403).json({ error: "Forbidden" });
         }
@@ -68,7 +64,11 @@ function userController() {
         location,
         bio,
       };
-      if (password && typeof password === "string" && password.trim().length > 0) {
+      if (
+        password &&
+        typeof password === "string" &&
+        password.trim().length > 0
+      ) {
         const hash = await bcrypt.hash(password, 10);
         data.passwordHash = hash;
       }

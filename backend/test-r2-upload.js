@@ -27,3 +27,4 @@ fs.unlinkSync(testFilePath);
 fs.rmdirSync(tempDir);
 
 console.log('R2 upload test completed!');
+
