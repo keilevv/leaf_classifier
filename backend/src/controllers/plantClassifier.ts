@@ -4,6 +4,8 @@ import path from "path";
 import fs from "fs";
 import axios from "axios";
 import FormData from "form-data";
+import { R2Service } from "../services/r2Service";
+import { v4 as uuidv4 } from "uuid";
 
 // Extend the Request interface to include user and file properties
 interface AuthenticatedRequest extends Request {
@@ -33,7 +35,7 @@ function plantClassifierController() {
         return res.status(400).json({ error: "No image uploaded" });
       }
 
-      // Save image to uploads folder
+      // Save image to temporary uploads folder
       const uploadPath = path.join(
         process.cwd(),
         "uploads",
@@ -42,48 +44,126 @@ function plantClassifierController() {
 
       fs.renameSync(image.path, uploadPath);
 
-      if (fs.existsSync(uploadPath)) {
+      if (!fs.existsSync(uploadPath)) {
+        return res
+          .status(404)
+          .json({ error: `File not found at ${uploadPath}` });
+      }
+
+      try {
+        // Step 1: Get classification from external service first
         const formData = new FormData();
         formData.append(
           "image",
           fs.createReadStream(uploadPath),
           image.originalname
         );
-        // Send image to classification service
-        axios
-          .post(`${classifierServiceUrl}/upload`, formData, {
+
+        const classificationResponse = await axios.post(
+          `${classifierServiceUrl}/upload`,
+          formData,
+          {
             headers: {
               ...formData.getHeaders(),
             },
-          })
-          .then(async (response) => {
-            const { classification, confidence } = response.data;
+          }
+        );
 
-            // Create classification entry in DB
-            const classificationEntry = await prisma.classification.create({
-              data: {
-                originalFilename: image.originalname,
-                imagePath: `uploads/${image.originalname}`, // or absolute path if needed
-                classification,
-                confidence,
-                userId,
-              },
-            });
-            return res.status(200).json({
-              message: "Image uploaded and classified successfully",
-              classification: classificationEntry,
-            });
-          })
-          .catch((error) => {
+        const { classification, confidence } = classificationResponse.data;
+
+        // Step 2: Generate unique ID and create R2 key based on classification
+        const uniqueId = uuidv4().replace(/-/g, "").substring(0, 8);
+        const fileExtension = path.extname(image.originalname);
+        const r2Key = R2Service.generateImageKey(
+          classification,
+          uniqueId,
+          fileExtension
+        );
+
+        // Step 3: Upload to Cloudflare R2
+        const uploadResult = await R2Service.uploadFile(
+          uploadPath,
+          r2Key,
+          image.mimetype
+        );
+
+        let finalImagePath: string;
+        let imageUrl: string;
+
+        if (!uploadResult.success) {
+          // Check if it's a size-related error
+          if (
+            uploadResult.error?.includes("too small") ||
+            uploadResult.error?.includes("EntityTooSmall") ||
+            R2Service.isFileTooSmall(uploadPath)
+          ) {
+            // Fallback: Store locally for small files
+            const localPath = `uploads/${r2Key}`;
+            const localUploadPath = path.join(process.cwd(), localPath);
+
+            // Ensure uploads directory exists
+            const uploadsDir = path.join(process.cwd(), "uploads");
+            if (!fs.existsSync(uploadsDir)) {
+              fs.mkdirSync(uploadsDir, { recursive: true });
+            }
+
+            // Copy file to local storage
+            fs.copyFileSync(uploadPath, localUploadPath);
+            finalImagePath = localPath;
+            imageUrl = `/uploads/${r2Key}`;
+          } else {
+            // Clean up temporary file for other errors
+            fs.unlinkSync(uploadPath);
             return res.status(500).json({
-              error: error.message,
-              message: "Error classifying image",
+              error: uploadResult.error,
+              message: "Error uploading to R2",
             });
-          });
-      } else {
-        return res
-          .status(404)
-          .json({ error: `File not found at ${uploadPath}` });
+          }
+        } else {
+          // R2 upload successful
+          finalImagePath = r2Key;
+          imageUrl = uploadResult.url!;
+        }
+
+        // Step 4: Create classification entry in DB with final path
+        const classificationEntry = await prisma.classification.create({
+          data: {
+            originalFilename: image.originalname,
+            imagePath: imageUrl, // Store final path (R2 key or local path)
+            classification,
+            confidence,
+            userId,
+          },
+        });
+
+        // Step 5: Clean up temporary local file
+        fs.unlinkSync(uploadPath);
+
+        // Add full URL for the response
+        const classificationWithUrl = {
+          ...classificationEntry,
+          imageUrl: imageUrl,
+        };
+
+        return res.status(200).json({
+          message: "Image uploaded and classified successfully",
+          classification: classificationWithUrl,
+          storageType: uploadResult.success ? "R2" : "local",
+          imageUrl: imageUrl,
+        });
+      } catch (classificationError) {
+        // Clean up temporary file on classification error
+        if (fs.existsSync(uploadPath)) {
+          fs.unlinkSync(uploadPath);
+        }
+
+        return res.status(500).json({
+          error:
+            classificationError instanceof Error
+              ? classificationError.message
+              : "Unknown error",
+          message: "Error classifying image",
+        });
       }
     } catch (error) {
       return res.status(500).json({ error: error.message });
@@ -160,12 +240,33 @@ function plantClassifierController() {
         prisma.classification.count({ where }),
       ]);
 
+      // Add full URL for images (R2 or local)
+      const classificationsWithUrls = classifications.map((classification) => {
+        let imageUrl: string;
+
+        if (R2Service.isR2Key(classification.imagePath)) {
+          // R2 image
+          imageUrl = R2Service.getPublicUrl(classification.imagePath);
+        } else if (classification.imagePath.startsWith("uploads/")) {
+          // Local image with uploads/ prefix
+          imageUrl = `/${classification.imagePath}`;
+        } else {
+          // Fallback to original path
+          imageUrl = classification.imagePath;
+        }
+
+        return {
+          ...classification,
+          imageUrl,
+        };
+      });
+
       const totalPages = Math.ceil(count / limit);
 
       const response = {
         count,
         pages: totalPages,
-        results: classifications,
+        results: classificationsWithUrls,
       };
 
       res.json(response);
@@ -242,7 +343,29 @@ function plantClassifierController() {
         data: updateData,
       });
 
-      res.json({ message: "Classification updated", classification: updated });
+      // Add full URL for images (R2 or local)
+      let imageUrl: string;
+
+      if (R2Service.isR2Key(updated.imagePath)) {
+        // R2 image
+        imageUrl = R2Service.getPublicUrl(updated.imagePath);
+      } else if (updated.imagePath.startsWith("uploads/")) {
+        // Local image with uploads/ prefix
+        imageUrl = `/${updated.imagePath}`;
+      } else {
+        // Fallback to original path
+        imageUrl = updated.imagePath;
+      }
+
+      const updatedWithUrl = {
+        ...updated,
+        imageUrl,
+      };
+
+      res.json({
+        message: "Classification updated",
+        classification: updatedWithUrl,
+      });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
