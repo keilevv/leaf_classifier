@@ -4,14 +4,16 @@ import useStore from "../hooks/useStore";
 function useClassifier() {
   const { accessToken } = useStore();
   const [uploads, setUploads] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [pages, setPages] = useState(1);
 
   function uploadImage(imageData) {
+    setIsLoading(true);
     return plantClassifierService
       .uploadImage(imageData)
       .then((response) => {
+        setIsLoading(false);
         if (response.status === 200) {
           return response.data;
         } else {
@@ -19,12 +21,15 @@ function useClassifier() {
         }
       })
       .catch((error) => {
+        setIsLoading(false);
+        setError(error);
         console.error("Error uploading image:", error);
         throw error;
       });
   }
 
   function getUploads(page, limit, sortBy, sortOrder) {
+    setIsLoading(true);
     return plantClassifierService
       .getClassifications(page, limit, sortBy, sortOrder, accessToken)
       .then((response) => {
@@ -39,9 +44,11 @@ function useClassifier() {
       });
   }
   function updateClassification(id, data) {
+    setIsLoading(true);
     return plantClassifierService
       .updateClassification(id, data, accessToken)
       .then((response) => {
+        setIsLoading(false);
         if (response.status === 200) {
           // Update the local state
           setUploads((prevUploads) =>
@@ -55,6 +62,8 @@ function useClassifier() {
         }
       })
       .catch((error) => {
+        setIsLoading(false);
+        setError(error);
         console.error("Error updating classification:", error);
         throw error;
       });

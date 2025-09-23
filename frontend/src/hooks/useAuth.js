@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import useStore from "./useStore";
 
 function useAuth() {
-  const { user, setUser, setUiState } = useStore();
+  const { user, setUser, setUiState, logout: logoutFromStore } = useStore();
   const navigate = useNavigate();
   const location = useLocation();
   const [userState, setUserState] = useState(user || null);
@@ -71,6 +71,7 @@ function useAuth() {
       console.error("Auth check failed:", error);
       setUserState(null);
       setUser(null);
+      logoutFromStore();
       return null;
     } finally {
       setLoading(false);

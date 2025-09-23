@@ -2,8 +2,10 @@ import UploadHistory from "../../History/UploadHistory";
 import FileUpload from "../../Upload/FileUpload";
 import { Tab } from "@headlessui/react";
 import { useNavigate } from "react-router-dom";
+import useClassifier from "../../../hooks/useClassifier";
 function UploadTabs({ children, initialTab = 0, onUpload }) {
   const navigate = useNavigate();
+  const { addUpload } = useClassifier();
   function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
   }

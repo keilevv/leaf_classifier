@@ -59,7 +59,7 @@ export default function UploadHistory() {
       });
   };
 
-  if (uploads.length === 0) {
+  if (uploads.length === 0 && !isLoading) {
     return (
       <div className="bg-white rounded-lg shadow-lg">
         <div className="flex flex-col items-center justify-center py-12 px-6">
@@ -99,11 +99,14 @@ export default function UploadHistory() {
         </p>
       </div> */}
       <Pagination page={page} setPage={setPage} totalPages={pages} />
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {isLoading ? (
-          <FaSpinner className="h-6 w-6 text-gray-400 animate-spin mx-auto" />
-        ) : (
-          uploads.map((upload) => {
+
+      {isLoading ? (
+        <div className="flex items-center justify-center w-full h-full">
+          <FaSpinner className="md:h-10 md:w-10 h-6 w-6 text-green-600 animate-spin" />
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {uploads.map((upload) => {
             return (
               <div
                 key={upload.id}
@@ -168,9 +171,10 @@ export default function UploadHistory() {
                 </div>
               </div>
             );
-          })
-        )}
-      </div>
+          })}
+        </div>
+      )}
+
       {/* Modal */}
       <UploadModal
         isOpen={isOpen}

@@ -10,9 +10,8 @@ export default function FileUpload({ onUpload }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isDragOver, setIsDragOver] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
-  const { uploadImage } = useClassifier();
+  const { uploadImage, isLoading } = useClassifier();
   const [openModal, setOpenModal] = useState(false);
   const [selectedUpload, setSelectedUpload] = useState(null);
 
@@ -70,7 +69,6 @@ export default function FileUpload({ onUpload }) {
   const handleSubmit = async () => {
     if (!selectedFile) return;
 
-    setIsUploading(true);
     try {
       const formData = new FormData();
       formData.append("image", selectedFile);
@@ -99,6 +97,7 @@ export default function FileUpload({ onUpload }) {
           handleRemoveFile();
         })
         .catch((error) => {
+          console.log(error);
           showNotification({
             message: "Upload failed. Please try again.",
             type: "error",
@@ -106,8 +105,6 @@ export default function FileUpload({ onUpload }) {
         });
     } catch (error) {
       console.error("Upload failed:", error);
-    } finally {
-      setIsUploading(false);
     }
   };
 
@@ -191,10 +188,14 @@ export default function FileUpload({ onUpload }) {
               <div className="flex justify-center">
                 <button
                   onClick={handleSubmit}
-                  disabled={isUploading}
-                  className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-medium py-2 px-8 rounded-md transition-colors flex items-center"
+                  disabled={isLoading}
+                  className={`bg-green-600  text-white font-medium py-2 px-8 rounded-md transition-colors flex items-center ${
+                    isLoading
+                      ? "opacity-50 cursor-not-allowed"
+                      : "hover:bg-green-700 disabled:opacity-50"
+                  }`}
                 >
-                  {isUploading ? (
+                  {isLoading ? (
                     <>
                       <FaSpinner className="animate-spin h-4 w-4 mr-2" />
                       Classifying...

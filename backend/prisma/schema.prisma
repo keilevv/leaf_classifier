@@ -38,3 +38,11 @@ model Classification {
   isArchived    Boolean  @default(false)
   updatedAt     DateTime @default(now())
 }
+
+model UserPreferences {
+  id            String   @id @default(cuid())
+  pageSize      Int      @default(12)
+  darkMode      Boolean  @default(false)
+  emailNotifications Boolean @default(true)
+  language      String   @default("en")
+}
