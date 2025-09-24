@@ -124,7 +124,8 @@ rm nginx/nginx-acme-temp.conf
 
 # Step 6: Deploy full SSL setup
 echo -e "${YELLOW}🔒 Step 6: Deploying full SSL setup...${NC}"
-sudo docker compose -f docker-compose.ssl-domain.yml up -d
+export DOMAIN_NAME="$DOMAIN_NAME"
+sudo docker compose -f docker-compose.ssl-domain.yml up -d --build
 
 # Step 7: Wait for services to be ready
 echo -e "${YELLOW}⏳ Step 7: Waiting for services to be ready...${NC}"

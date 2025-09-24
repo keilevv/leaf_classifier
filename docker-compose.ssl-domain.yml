@@ -56,17 +56,20 @@ services:
       - certbot_conf:/etc/letsencrypt
     command: echo "Certbot container ready"
 
-  # Nginx with SSL for domain access
-  nginx:
-    image: nginx:alpine
-    container_name: leaf-nginx
+  # Frontend with SSL for domain access
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.ssl-domain.prod
+      args:
+        VITE_API_URL: https://${DOMAIN_NAME}/api
+    container_name: leaf-frontend
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./frontend/dist:/usr/share/nginx/html:ro
-      - ./nginx/nginx-ssl-domain.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/nginx-ssl-domain-final.conf:/etc/nginx/nginx.conf:ro
       - certbot_www:/var/www/certbot:ro
       - certbot_conf:/etc/letsencrypt:ro
     depends_on:

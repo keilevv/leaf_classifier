@@ -60,6 +60,7 @@ services:
       - "443:443"
     volumes:
       - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/nginx-ssl-ip-final.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - backend
       - classifier
