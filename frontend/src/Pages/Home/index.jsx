@@ -20,7 +20,8 @@ import {
   FaAward,
   FaBookOpen,
 } from "react-icons/fa";
-import utbLogo from "../../assets/images/utblogo.png";
+import utbLogo from "../../assets/images/utblogo.webp";
+import backgroundImage from "../../assets/images/hero-background.webp";
 import { useNavigate } from "react-router-dom";
 import useStore from "../../hooks/useStore";
 import Header from "../../Components/Layout/Header";
@@ -29,7 +30,7 @@ export default function Home() {
   const { user, setSelectedPage } = useStore();
   const [activeStep, setActiveStep] = useState(0);
   const navigate = useNavigate();
-  
+
   const onGetStarted = () => {
     if (user) {
       setSelectedPage("upload");
@@ -37,6 +38,11 @@ export default function Home() {
       setSelectedPage("login");
     }
     navigate("/upload");
+  };
+
+  const onLearnMore = () => {
+    setSelectedPage("about");
+    navigate("/about");
   };
 
   const steps = [
@@ -106,11 +112,18 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
-      <Header className="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50" />
+    <div className="min-h-screen ">
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <section className="relative overflow-hidden bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 min-h-[28rem] md:min-h-[36rem]">
+        <Header className="relative z-20 bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-b border-gray-200 shadow" />
+        <img
+          src={backgroundImage}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 z-0 h-full w-full object-cover opacity-20"
+        />
+        <div className="absolute inset-0 z-10 pointer-events-none" />
+        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center">
             <div className="flex items-center justify-center mb-6  flex-col-reverse md:flex-row">
               <img src={utbLogo} alt="utblogo" className="h-25" />
@@ -149,7 +162,10 @@ export default function Home() {
                   <FaArrowRight className="ml-2" />{" "}
                 </a>
               </div>
-              <button className=" cursor-pointer border-2 border-green-600 text-green-600 hover:bg-green-50 font-semibold py-4 px-8 rounded-lg text-lg transition-colors flex items-center justify-center">
+              <button
+                className=" cursor-pointer border-2 border-green-600 text-green-600 hover:bg-green-50 font-semibold py-4 px-8 rounded-lg text-lg transition-colors flex items-center justify-center"
+                onClick={onLearnMore}
+              >
                 <FaBookOpen className="mr-2" />
                 Learn More
               </button>

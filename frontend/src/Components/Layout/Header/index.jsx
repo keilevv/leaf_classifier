@@ -21,7 +21,7 @@ let defaultPages = [
   },
 ];
 
-function Header({ ...props }) {
+function Header({ className = "" }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [pages, setPages] = useState(defaultPages);
   const {
@@ -74,10 +74,10 @@ function Header({ ...props }) {
 
   return (
     <header
-      className={` w-full${
-        props.className === undefined
-          ? "bg-white  shadow-sm border-b"
-          : props.className
+      className={` w-full ${
+        className === ""
+          ? "bg-white shadow-sm border-b border-gray-200"
+          : className
       } `}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

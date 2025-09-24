@@ -11,6 +11,7 @@ import ConfirmationModal from "../../Common/ConfirmationModal";
 import { getConfidenceColor, getImageUrl, formatDate } from "../../../utils";
 import Pagination from "../Pagination";
 import useClassifier from "../../../hooks/useClassifier";
+import useStore from "../../../hooks/useStore";
 import { showNotification } from "../../Common/Notification";
 
 export default function UploadHistory() {
@@ -20,6 +21,7 @@ export default function UploadHistory() {
   const [page, setPage] = useState(1);
   const { getUploads, uploads, isLoading, pages, updateClassification } =
     useClassifier();
+  const { preferences } = useStore();
 
   // Test URL construction
   if (uploads.length > 0) {
@@ -42,7 +44,7 @@ export default function UploadHistory() {
   };
 
   useEffect(() => {
-    getUploads(page, 10, "createdAt", "desc");
+    getUploads(page, preferences.pageSize, "createdAt", "desc");
   }, [page]);
 
   const onConfirmArchive = () => {
@@ -50,7 +52,7 @@ export default function UploadHistory() {
       .then(() => {
         // Refresh uploads after archiving
         showNotification({ message: "Upload archived", type: "success" });
-        getUploads(page, 10, "createdAt", "desc");
+        getUploads(page, preferences.pageSize, "createdAt", "desc");
         setOpenConfirm(false);
         closeModal();
       })

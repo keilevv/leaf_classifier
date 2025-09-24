@@ -9,7 +9,11 @@ const initialState = {
   uiState: {
     selectedPage: "home",
   },
-
+  preferences: {
+    pageSize: 12,
+    darkMode: false,
+    language: "en",
+  },
   accessToken: null,
 };
 
@@ -37,6 +41,10 @@ const useStore = create(
       setSelectedPage: (newPage) =>
         set((state) => ({
           uiState: { ...state.uiState, selectedPage: newPage },
+        })),
+      setPreferences: (newPreferences) =>
+        set((state) => ({
+          preferences: { ...state.preferences, ...newPreferences },
         })),
 
       logout: () => set({ user: null, accessToken: null }),

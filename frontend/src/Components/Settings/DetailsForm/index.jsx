@@ -1,13 +1,119 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   FaUser,
   FaEnvelope,
   FaPhone,
   FaMapMarkerAlt,
   FaUniversity,
+  FaEye,
+  FaEyeSlash,
+  FaSave,
 } from "react-icons/fa";
-function DetailsForm({ userForm, handleUserFormChange, handleUserSubmit, showPassword, setShowPass }) {
+import { showNotification } from "../../Common/Notification";
+import useUser from "../../../hooks/useUser";
+
+function DetailsForm({ user, loading, onUpdate }) {
+  const { updateUser } = useUser();
+  const [userForm, setUserForm] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+    phone: "",
+    institution: "",
+    department: "",
+    location: "",
+    bio: "",
+    password: "",
+  });
+  const [originalUserForm, setOriginalUserForm] = useState({});
   const [showPassword, setShowPassword] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Initialize original states
+  useEffect(() => {
+    const initialUserForm = {
+      name: user?.fullName || "",
+      email: user?.email || "",
+      phone: user?.phone || "",
+      institution: user?.institution || "",
+      department: user?.department || "",
+      location: user?.location || "",
+      bio: user?.bio || "",
+      password: "",
+    };
+    setUserForm(initialUserForm);
+    setOriginalUserForm(initialUserForm);
+  }, [user]);
+
+  // Check if user form has changes
+  const hasUserChanges = () => {
+    return (
+      JSON.stringify(userForm) !== JSON.stringify(originalUserForm) ||
+      password !== "" ||
+      confirmPassword !== ""
+    );
+  };
+
+  const handleUserFormChange = (field, value) => {
+    setUserForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleUserSubmit = async (e) => {
+    e.preventDefault();
+
+    // Validate passwords if they're being changed
+    if (password || confirmPassword) {
+      if (password !== confirmPassword) {
+        showNotification({ message: "Passwords do not match", type: "error" });
+        return;
+      }
+      if (password.length < 6) {
+        showNotification({
+          message: "Password must be at least 6 characters",
+          type: "error",
+        });
+
+        return;
+      }
+    }
+
+    // Validate email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(userForm.email)) {
+      showNotification({
+        message: "Please enter a valid email address",
+        type: "error",
+      });
+      return;
+    }
+
+    try {
+      // Update user data
+      const updatedUser = {
+        ...user,
+        ...userForm,
+      };
+      updateUser(updatedUser.id, updatedUser).then(() => {
+        // Reset form states
+        setOriginalUserForm(userForm);
+        setPassword("");
+        setConfirmPassword("");
+        showNotification({
+          message: "User settings updated successfully!",
+          type: "success",
+        });
+        onUpdate(updatedUser);
+      });
+    } catch (error) {
+      showNotification({
+        message: "Failed to update user settings",
+        type: "error",
+      });
+    }
+  };
 
   return (
     <form onSubmit={handleUserSubmit} className="space-y-6">

@@ -141,7 +141,7 @@ export default function FileUpload({ onUpload }) {
               </p>
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+                className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition-colors cursor-pointer"
               >
                 Select File
               </button>
