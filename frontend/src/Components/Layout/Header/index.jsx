@@ -223,7 +223,7 @@ function Header({ className = "" }) {
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 type="button"
-                className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-600 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-600"
+                className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-600 rounded-lg hover:bg-green-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-600"
                 aria-controls="navbar-sticky"
                 aria-expanded={isMenuOpen}
               >
@@ -260,7 +260,7 @@ function Header({ className = "" }) {
                     <li key={page.key}>
                       <Link
                         to={page.url}
-                        className="block py-2 px-3 text-gray-600 hover:text-white rounded hover:bg-gray-700"
+                        className="block py-2 px-3 text-gray-600 hover:text-white rounded hover:bg-green-300"
                         onClick={() => {
                           window.scrollTo({ top: 0, behavior: "smooth" });
                           setIsMenuOpen(false); // Close menu on link click
@@ -277,7 +277,7 @@ function Header({ className = "" }) {
                     <li>
                       <button
                         onClick={handleSettings}
-                        className="block w-full text-left py-2 px-3 text-gray-600 hover:text-white rounded hover:bg-gray-700"
+                        className="block w-full text-left py-2 px-3 text-gray-600 hover:text-white rounded hover:bg-green-300"
                       >
                         Settings
                       </button>
@@ -285,7 +285,7 @@ function Header({ className = "" }) {
                     <li>
                       <button
                         onClick={handleLogout}
-                        className="block w-full text-left py-2 px-3 text-gray-600 hover:text-white rounded hover:bg-gray-700"
+                        className="block w-full text-left py-2 px-3 text-gray-600 hover:text-white rounded hover:bg-green-300"
                       >
                         Logout
                       </button>
