@@ -4,14 +4,33 @@ This guide provides instructions for deploying your Leaf Classifier application 
 
 ## 🚀 Quick Start
 
+### Universal Deployment Script
+
+Use the unified deployment script for both IP-based and domain-based SSL:
+
+```bash
+# For IP-based SSL (Self-signed)
+./scripts/deploy-with-ssl.sh ip YOUR_VPS_IP_ADDRESS
+
+# For Domain-based SSL (Let's Encrypt)
+./scripts/deploy-with-ssl.sh domain YOUR_DOMAIN.COM your-email@example.com
+```
+
 ### For IP-based Access (Self-signed SSL)
 
 If you want to deploy with SSL using just your server's IP address:
 
 ```bash
 # Replace with your actual server IP
-./scripts/deploy-ssl-ip.sh 192.168.1.100
+./scripts/deploy-with-ssl.sh ip 129.153.122.159
 ```
+
+**What this does:**
+- ✅ Generates self-signed SSL certificate for your IP
+- ✅ Builds frontend with Docker (no permission issues)
+- ✅ Deploys all services with SSL enabled
+- ✅ Access your app at `https://YOUR_IP_ADDRESS`
+- ⚠️ Browsers will show security warnings (click "Advanced" → "Proceed")
 
 ### For Domain-based Access (Let's Encrypt SSL)
 
@@ -19,8 +38,22 @@ If you have a domain name and want trusted SSL certificates:
 
 ```bash
 # Replace with your actual domain and email
-./scripts/deploy-ssl-domain.sh myapp.example.com admin@example.com
+./scripts/deploy-with-ssl.sh domain myapp.example.com admin@example.com
 ```
+
+**Prerequisites for domain SSL:**
+1. **Domain DNS Setup**: Point your domain to your VPS IP (`129.153.122.159`)
+   - Add A record: `yourdomain.com` → `129.153.122.159`
+   - Add A record: `www.yourdomain.com` → `129.153.122.159` (optional)
+2. **Wait for DNS propagation** (5 minutes to 24 hours)
+3. **Check DNS**: `nslookup yourdomain.com` should return your VPS IP
+
+**What this does:**
+- ✅ Gets trusted SSL certificate from Let's Encrypt
+- ✅ Builds frontend with Docker for your domain
+- ✅ Sets up automatic certificate renewal
+- ✅ No browser security warnings
+- ✅ Production-ready SSL configuration
 
 ## 📋 Prerequisites
 
@@ -58,7 +91,7 @@ If you have a domain name and want trusted SSL certificates:
 
 ```bash
 # For IP-based access
-./scripts/generate-ssl-certificates.sh 192.168.1.100
+./scripts/generate-ssl-certificates.sh 129.153.122.159
 
 # For domain-based access (creates Let's Encrypt setup)
 ./scripts/generate-ssl-certificates.sh "" myapp.example.com
@@ -68,10 +101,23 @@ If you have a domain name and want trusted SSL certificates:
 
 ```bash
 # For IP-based SSL
-docker-compose -f docker-compose.ssl-ip.yml up -d
+export IP_ADDRESS="129.153.122.159"
+docker-compose -f docker-compose.ssl-ip.yml up -d --build
 
 # For domain-based SSL
-docker-compose -f docker-compose.ssl-domain.yml up -d
+docker-compose -f docker-compose.ssl-domain.yml up -d --build
+```
+
+### Individual Script Usage
+
+If you prefer to use individual scripts:
+
+```bash
+# IP-based deployment
+./scripts/deploy-ssl-ip.sh 129.153.122.159
+
+# Domain-based deployment
+./scripts/deploy-ssl-domain.sh myapp.example.com admin@example.com
 ```
 
 ## 📁 File Structure
@@ -88,10 +134,16 @@ nginx/
     ├── domain/                # Domain certificate configs
     └── dhparam.pem           # DH parameters for security
 
+frontend/
+├── Dockerfile.prod            # Original production Dockerfile
+├── Dockerfile.ssl.prod        # SSL-enabled Dockerfile for IP
+└── Dockerfile.ssl-domain.prod # SSL-enabled Dockerfile for domain
+
 scripts/
 ├── generate-ssl-certificates.sh
-├── deploy-ssl-ip.sh
-├── deploy-ssl-domain.sh
+├── deploy-with-ssl.sh         # Universal deployment script
+├── deploy-ssl-ip.sh          # IP-specific deployment
+├── deploy-ssl-domain.sh      # Domain-specific deployment
 └── renew-ssl.sh              # Auto-generated for domain SSL
 
 docker-compose.ssl-ip.yml      # Docker Compose for IP SSL
@@ -149,8 +201,24 @@ This is expected for self-signed certificates. To bypass:
 docker-compose -f docker-compose.ssl-ip.yml logs
 
 # Check individual service logs
-docker logs leaf-nginx
+docker logs leaf-frontend
 docker logs leaf-backend
+docker logs leaf-classifier
+docker logs leaf-db
+```
+
+#### 5. Frontend Build Issues
+```bash
+# Clean Docker build cache
+docker system prune -f
+
+# Rebuild frontend image
+docker build --no-cache -t leaf-frontend \
+    --build-arg VITE_API_URL="https://YOUR_IP/api" \
+    -f frontend/Dockerfile.ssl.prod frontend/
+
+# Or use the deployment script with --build flag
+./scripts/deploy-with-ssl.sh ip YOUR_IP_ADDRESS
 ```
 
 ### Certificate Renewal
@@ -183,11 +251,17 @@ sudo systemctl stop nginx    # if system nginx is running
 
 ### Check Service Status
 ```bash
-# View all services
+# View all services (IP-based)
 docker-compose -f docker-compose.ssl-ip.yml ps
 
-# View logs
+# View all services (domain-based)
+docker-compose -f docker-compose.ssl-domain.yml ps
+
+# View logs (IP-based)
 docker-compose -f docker-compose.ssl-ip.yml logs -f
+
+# View logs (domain-based)
+docker-compose -f docker-compose.ssl-domain.yml logs -f
 
 # Check certificate expiry (domain SSL)
 docker-compose -f docker-compose.ssl-domain.yml exec certbot certbot certificates
@@ -200,10 +274,12 @@ Visit [SSL Labs SSL Test](https://www.ssllabs.com/ssltest/) to test your SSL con
 
 ### Updating the Application
 ```bash
-# For IP-based SSL
-./scripts/deploy-ssl-ip.sh YOUR_IP_ADDRESS
+# Universal script (recommended)
+./scripts/deploy-with-ssl.sh ip YOUR_IP_ADDRESS
+./scripts/deploy-with-ssl.sh domain YOUR_DOMAIN YOUR_EMAIL
 
-# For domain-based SSL
+# Individual scripts
+./scripts/deploy-ssl-ip.sh YOUR_IP_ADDRESS
 ./scripts/deploy-ssl-domain.sh YOUR_DOMAIN YOUR_EMAIL
 ```
 

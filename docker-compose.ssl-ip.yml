@@ -47,16 +47,18 @@ services:
     networks:
       - leaf-network
 
-  # Nginx with SSL for IP access
-  nginx:
-    image: nginx:alpine
-    container_name: leaf-nginx
+  # Frontend with SSL for IP access
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.ssl.prod
+      args:
+        VITE_API_URL: https://${IP_ADDRESS:-129.153.122.159}/api
+    container_name: leaf-frontend
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./frontend/dist:/usr/share/nginx/html:ro
-      - ./nginx/nginx-ssl-ip.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro
     depends_on:
       - backend

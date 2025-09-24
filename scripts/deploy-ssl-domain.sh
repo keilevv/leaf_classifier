@@ -45,21 +45,14 @@ cd "$PROJECT_ROOT"
 echo -e "${YELLOW}🔐 Step 1: Generating fallback SSL certificates...${NC}"
 ./scripts/generate-ssl-certificates.sh "" "$DOMAIN_NAME"
 
-# Step 2: Build frontend
-echo -e "${YELLOW}🏗️  Step 2: Building frontend...${NC}"
-cd frontend
-if [ -f "package.json" ]; then
-    echo "Installing dependencies..."
-    bun install
-    
-    echo "Building production bundle..."
-    VITE_API_URL="https://$DOMAIN_NAME/api" bun run build
-else
-    echo -e "${RED}❌ Error: Frontend package.json not found${NC}"
-    exit 1
-fi
+# Step 2: Build frontend with Docker
+echo -e "${YELLOW}🏗️  Step 2: Building frontend with Docker...${NC}"
 
-cd "$PROJECT_ROOT"
+# Build the frontend Docker image with domain URL
+docker build -t leaf-frontend-domain \
+    --build-arg VITE_API_URL="https://$DOMAIN_NAME/api" \
+    -f frontend/Dockerfile.ssl-domain.prod \
+    frontend/
 
 # Step 3: Update nginx configuration with actual domain
 echo -e "${YELLOW}⚙️  Step 3: Updating nginx configuration...${NC}"
