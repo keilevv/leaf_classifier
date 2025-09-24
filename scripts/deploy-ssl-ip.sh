@@ -36,30 +36,15 @@ cd "$PROJECT_ROOT"
 echo -e "${YELLOW}🔐 Step 1: Generating SSL certificates...${NC}"
 ./scripts/generate-ssl-certificates.sh "$IP_ADDRESS"
 
-# Step 2: Build frontend
-echo -e "${YELLOW}🏗️  Step 2: Building frontend...${NC}"
-cd frontend
-if [ -f "package.json" ]; then
-    echo "Installing dependencies..."
-    bun install
-    
-    echo "Building production bundle..."
-    VITE_API_URL="https://$IP_ADDRESS/api" bun run build
-else
-    echo -e "${RED}❌ Error: Frontend package.json not found${NC}"
-    exit 1
-fi
-
-cd "$PROJECT_ROOT"
-
-# Step 3: Update nginx configuration with actual IP
-echo -e "${YELLOW}⚙️  Step 3: Updating nginx configuration...${NC}"
+# Step 2: Update nginx configuration with actual IP
+echo -e "${YELLOW}⚙️  Step 2: Updating nginx configuration...${NC}"
 sed "s/DOMAIN_NAME/$IP_ADDRESS/g" nginx/nginx-ssl-domain.conf > nginx/nginx-ssl-ip-final.conf
 
-# Step 4: Deploy with Docker Compose
-echo -e "${YELLOW}🐳 Step 4: Deploying with Docker Compose...${NC}"
+# Step 3: Deploy with Docker Compose
+echo -e "${YELLOW}🐳 Step 3: Deploying with Docker Compose...${NC}"
+export IP_ADDRESS="$IP_ADDRESS"
 docker-compose -f docker-compose.ssl-ip.yml down
-docker-compose -f docker-compose.ssl-ip.yml up -d
+docker-compose -f docker-compose.ssl-ip.yml up -d --build
 
 # Step 5: Wait for services to be ready
 echo -e "${YELLOW}⏳ Step 5: Waiting for services to be ready...${NC}"
