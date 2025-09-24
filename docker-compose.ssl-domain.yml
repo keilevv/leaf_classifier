@@ -1,0 +1,86 @@
+services:
+  # Database
+  db:
+    image: postgres:15-alpine
+    container_name: leaf-db
+    env_file:
+      - ./backend/.env.prod
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U leafuser -d leafapp"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - leaf-network
+
+  # Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: leaf-backend
+    environment:
+      - HOST=0.0.0.0
+      - PORT=5000
+    env_file:
+      - ./backend/.env.prod
+    volumes:
+      - ./backend/prisma:/usr/src/app/prisma
+    restart: unless-stopped
+    networks:
+      - leaf-network
+    command: >
+      sh -c "bunx prisma generate &&
+             bunx prisma migrate deploy &&
+             bun run start"
+
+  # Classifier Service
+  classifier:
+    build:
+      context: ./classifier
+      dockerfile: Dockerfile
+    container_name: leaf-classifier
+    restart: unless-stopped
+    networks:
+      - leaf-network
+
+  # Certbot for Let's Encrypt certificates
+  certbot:
+    image: certbot/certbot
+    container_name: leaf-certbot
+    volumes:
+      - certbot_www:/var/www/certbot
+      - certbot_conf:/etc/letsencrypt
+    command: echo "Certbot container ready"
+
+  # Nginx with SSL for domain access
+  nginx:
+    image: nginx:alpine
+    container_name: leaf-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./frontend/dist:/usr/share/nginx/html:ro
+      - ./nginx/nginx-ssl-domain.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - certbot_www:/var/www/certbot:ro
+      - certbot_conf:/etc/letsencrypt:ro
+    depends_on:
+      - backend
+      - classifier
+    restart: unless-stopped
+    networks:
+      - leaf-network
+
+networks:
+  leaf-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  certbot_www:
+  certbot_conf:
