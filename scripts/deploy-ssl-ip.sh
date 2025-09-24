@@ -38,7 +38,8 @@ echo -e "${YELLOW}🔐 Step 1: Generating SSL certificates...${NC}"
 
 # Step 2: Update nginx configuration with actual IP
 echo -e "${YELLOW}⚙️  Step 2: Updating nginx configuration...${NC}"
-sed "s/DOMAIN_NAME/$IP_ADDRESS/g" nginx/nginx-ssl-domain.conf > nginx/nginx-ssl-ip-final.conf
+# Use the IP-specific nginx config directly
+cp nginx/nginx-ssl-ip.conf nginx/nginx-ssl-ip-final.conf
 
 # Step 3: Deploy with Docker Compose
 echo -e "${YELLOW}🐳 Step 3: Deploying with Docker Compose...${NC}"
