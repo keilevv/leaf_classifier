@@ -19,13 +19,13 @@ También se debe crear una base de datos con usuario y contraseña correspondien
 ### Inicialización de Docker (desarrollo)
 
 ```bash
-docker-compose -f docker-compose.yml  up -d
+sudo docker compose -f docker-compose.yml  up -d
 ```
 
 ### Inicialización de Docker (producción)
 
 ```bash
-docker-compose -f docker-compose.prod.yml  up -d
+sudo docker compose -f docker-compose.prod.yml  up -d
 ```
 
 ### 1. Backend

@@ -43,8 +43,8 @@ sed "s/DOMAIN_NAME/$IP_ADDRESS/g" nginx/nginx-ssl-domain.conf > nginx/nginx-ssl-
 # Step 3: Deploy with Docker Compose
 echo -e "${YELLOW}🐳 Step 3: Deploying with Docker Compose...${NC}"
 export IP_ADDRESS="$IP_ADDRESS"
-docker-compose -f docker-compose.ssl-ip.yml down
-docker-compose -f docker-compose.ssl-ip.yml up -d --build
+sudo docker compose -f docker-compose.ssl-ip.yml down
+sudo docker compose -f docker-compose.ssl-ip.yml up -d --build
 
 # Step 5: Wait for services to be ready
 echo -e "${YELLOW}⏳ Step 5: Waiting for services to be ready...${NC}"
@@ -52,7 +52,7 @@ sleep 10
 
 # Check if services are running
 echo -e "${YELLOW}🔍 Checking service status...${NC}"
-docker-compose -f docker-compose.ssl-ip.yml ps
+sudo docker compose -f docker-compose.ssl-ip.yml ps
 
 # Step 6: Test SSL connection
 echo -e "${YELLOW}🧪 Step 6: Testing SSL connection...${NC}"
@@ -78,7 +78,7 @@ echo "   • Click 'Advanced' → 'Proceed to site' to bypass the warning"
 echo "   • For production use, consider getting a trusted SSL certificate"
 echo ""
 echo -e "${BLUE}🔧 Management Commands:${NC}"
-echo "   • View logs: docker-compose -f docker-compose.ssl-ip.yml logs -f"
-echo "   • Stop services: docker-compose -f docker-compose.ssl-ip.yml down"
-echo "   • Restart services: docker-compose -f docker-compose.ssl-ip.yml restart"
+echo "   • View logs: sudo docker compose -f docker-compose.ssl-ip.yml logs -f"
+echo "   • Stop services: sudo docker compose -f docker-compose.ssl-ip.yml down"
+echo "   • Restart services: sudo docker compose -f docker-compose.ssl-ip.yml restart"
 echo "   • Update and redeploy: ./scripts/deploy-ssl-ip.sh $IP_ADDRESS"

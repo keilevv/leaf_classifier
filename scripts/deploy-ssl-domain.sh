@@ -60,10 +60,10 @@ sed "s/DOMAIN_NAME/$DOMAIN_NAME/g" nginx/nginx-ssl-domain.conf > nginx/nginx-ssl
 
 # Step 4: Deploy initial setup (HTTP only for ACME challenge)
 echo -e "${YELLOW}🐳 Step 4: Deploying initial setup...${NC}"
-docker-compose -f docker-compose.ssl-domain.yml down
+sudo docker compose -f docker-compose.ssl-domain.yml down
 
 # Start services except nginx
-docker-compose -f docker-compose.ssl-domain.yml up -d db backend classifier certbot
+sudo docker compose -f docker-compose.ssl-domain.yml up -d db backend classifier certbot
 
 # Step 5: Get Let's Encrypt certificate
 echo -e "${YELLOW}🔒 Step 5: Obtaining Let's Encrypt certificate...${NC}"
@@ -124,7 +124,7 @@ rm nginx/nginx-acme-temp.conf
 
 # Step 6: Deploy full SSL setup
 echo -e "${YELLOW}🔒 Step 6: Deploying full SSL setup...${NC}"
-docker-compose -f docker-compose.ssl-domain.yml up -d
+sudo docker compose -f docker-compose.ssl-domain.yml up -d
 
 # Step 7: Wait for services to be ready
 echo -e "${YELLOW}⏳ Step 7: Waiting for services to be ready...${NC}"
@@ -132,7 +132,7 @@ sleep 10
 
 # Check if services are running
 echo -e "${YELLOW}🔍 Checking service status...${NC}"
-docker-compose -f docker-compose.ssl-domain.yml ps
+sudo docker compose -f docker-compose.ssl-domain.yml ps
 
 # Step 8: Test SSL connection
 echo -e "${YELLOW}🧪 Step 8: Testing SSL connection...${NC}"
@@ -149,8 +149,8 @@ fi
 echo -e "${YELLOW}🔄 Step 9: Setting up automatic certificate renewal...${NC}"
 cat > scripts/renew-ssl.sh << 'EOF'
 #!/bin/bash
-docker-compose -f docker-compose.ssl-domain.yml exec certbot certbot renew --quiet
-docker-compose -f docker-compose.ssl-domain.yml exec nginx nginx -s reload
+sudo docker compose -f docker-compose.ssl-domain.yml exec certbot certbot renew --quiet
+sudo docker compose -f docker-compose.ssl-domain.yml exec nginx nginx -s reload
 EOF
 
 chmod +x scripts/renew-ssl.sh
@@ -173,9 +173,9 @@ echo "   • Strong security headers"
 echo "   • HTTP/2 support"
 echo ""
 echo -e "${BLUE}🔧 Management Commands:${NC}"
-echo "   • View logs: docker-compose -f docker-compose.ssl-domain.yml logs -f"
-echo "   • Stop services: docker-compose -f docker-compose.ssl-domain.yml down"
-echo "   • Restart services: docker-compose -f docker-compose.ssl-domain.yml restart"
+echo "   • View logs: sudo docker compose -f docker-compose.ssl-domain.yml logs -f"
+echo "   • Stop services: sudo docker compose -f docker-compose.ssl-domain.yml down"
+echo "   • Restart services: sudo docker compose -f docker-compose.ssl-domain.yml restart"
 echo "   • Renew certificates manually: ./scripts/renew-ssl.sh"
 echo "   • Update and redeploy: ./scripts/deploy-ssl-domain.sh $DOMAIN_NAME $EMAIL"
 echo ""

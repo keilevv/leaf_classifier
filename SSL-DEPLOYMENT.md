@@ -102,10 +102,10 @@ If you have a domain name and want trusted SSL certificates:
 ```bash
 # For IP-based SSL
 export IP_ADDRESS="129.153.122.159"
-docker-compose -f docker-compose.ssl-ip.yml up -d --build
+sudo docker compose -f docker-compose.ssl-ip.yml up -d --build
 
 # For domain-based SSL
-docker-compose -f docker-compose.ssl-domain.yml up -d --build
+sudo docker compose -f docker-compose.ssl-domain.yml up -d --build
 ```
 
 ### Individual Script Usage
@@ -198,7 +198,7 @@ This is expected for self-signed certificates. To bypass:
 #### 4. Services Not Starting
 ```bash
 # Check Docker Compose logs
-docker-compose -f docker-compose.ssl-ip.yml logs
+sudo docker compose -f docker-compose.ssl-ip.yml logs
 
 # Check individual service logs
 docker logs leaf-frontend
@@ -230,7 +230,7 @@ For domain-based SSL, certificates auto-renew via cron job. Manual renewal:
 ./scripts/renew-ssl.sh
 
 # Or using Docker Compose directly
-docker-compose -f docker-compose.ssl-domain.yml exec certbot certbot renew
+sudo docker compose -f docker-compose.ssl-domain.yml exec certbot certbot renew
 ```
 
 ### Port Conflicts
@@ -252,19 +252,19 @@ sudo systemctl stop nginx    # if system nginx is running
 ### Check Service Status
 ```bash
 # View all services (IP-based)
-docker-compose -f docker-compose.ssl-ip.yml ps
+sudo docker compose -f docker-compose.ssl-ip.yml ps
 
 # View all services (domain-based)
-docker-compose -f docker-compose.ssl-domain.yml ps
+sudo docker compose -f docker-compose.ssl-domain.yml ps
 
 # View logs (IP-based)
-docker-compose -f docker-compose.ssl-ip.yml logs -f
+sudo docker compose -f docker-compose.ssl-ip.yml logs -f
 
 # View logs (domain-based)
-docker-compose -f docker-compose.ssl-domain.yml logs -f
+sudo docker compose -f docker-compose.ssl-domain.yml logs -f
 
 # Check certificate expiry (domain SSL)
-docker-compose -f docker-compose.ssl-domain.yml exec certbot certbot certificates
+sudo docker compose -f docker-compose.ssl-domain.yml exec certbot certbot certificates
 ```
 
 ### SSL Test

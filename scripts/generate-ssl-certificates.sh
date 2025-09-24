@@ -95,9 +95,9 @@ EOF
     echo ""
     echo -e "${BLUE}📋 Next steps for domain certificate:${NC}"
     echo "1. Point your domain $domain_name to this server's IP"
-    echo "2. Run: docker-compose -f docker-compose.prod.yml up -d nginx-acme"
-    echo "3. Run: docker-compose -f docker-compose.prod.yml exec certbot certonly --webroot -w /var/www/certbot -d $domain_name"
-    echo "4. Run: docker-compose -f docker-compose.prod.yml up -d"
+    echo "2. Run: sudo docker compose -f docker-compose.prod.yml up -d nginx-acme"
+    echo "3. Run: sudo docker compose -f docker-compose.prod.yml exec certbot certonly --webroot -w /var/www/certbot -d $domain_name"
+    echo "4. Run: sudo docker compose -f docker-compose.prod.yml up -d"
 }
 
 # Function to create dhparam file for stronger security
