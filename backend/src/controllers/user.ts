@@ -35,6 +35,7 @@ function userController() {
         location,
         bio,
         password,
+        emailNotifications,
       } = req.body;
       const user = await prisma.user.findUnique({
         where: { id },
@@ -59,10 +60,11 @@ function userController() {
         fullName,
         email,
         phone,
-        institution,
+        institution,  
         department,
         location,
         bio,
+        emailNotifications,
       };
       if (
         password &&

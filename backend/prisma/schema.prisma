@@ -23,8 +23,9 @@ model User {
   institution   String?
   location      String?
   bio           String?
+  emailNotifications Boolean @default(true)
 }
-
+  
 
 model Classification {
   id            String   @id @default(cuid())

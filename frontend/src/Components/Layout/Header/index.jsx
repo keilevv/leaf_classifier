@@ -21,7 +21,7 @@ let defaultPages = [
   },
 ];
 
-function Header({ ...props }) {
+function Header({ className = "" }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [pages, setPages] = useState(defaultPages);
   const {
@@ -74,10 +74,10 @@ function Header({ ...props }) {
 
   return (
     <header
-      className={` w-full${
-        props.className === undefined
-          ? "bg-white  shadow-sm border-b"
-          : props.className
+      className={` w-full ${
+        className === ""
+          ? "bg-white shadow-sm border-b border-gray-200"
+          : className
       } `}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -223,7 +223,7 @@ function Header({ ...props }) {
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 type="button"
-                className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-600 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-600"
+                className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-600 rounded-lg hover:bg-green-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-600"
                 aria-controls="navbar-sticky"
                 aria-expanded={isMenuOpen}
               >
@@ -260,7 +260,7 @@ function Header({ ...props }) {
                     <li key={page.key}>
                       <Link
                         to={page.url}
-                        className="block py-2 px-3 text-gray-600 hover:text-white rounded hover:bg-gray-700"
+                        className="block py-2 px-3 text-gray-600 hover:text-white rounded hover:bg-green-300"
                         onClick={() => {
                           window.scrollTo({ top: 0, behavior: "smooth" });
                           setIsMenuOpen(false); // Close menu on link click
@@ -277,7 +277,7 @@ function Header({ ...props }) {
                     <li>
                       <button
                         onClick={handleSettings}
-                        className="block w-full text-left py-2 px-3 text-gray-600 hover:text-white rounded hover:bg-gray-700"
+                        className="block w-full text-left py-2 px-3 text-gray-600 hover:text-white rounded hover:bg-green-300"
                       >
                         Settings
                       </button>
@@ -285,7 +285,7 @@ function Header({ ...props }) {
                     <li>
                       <button
                         onClick={handleLogout}
-                        className="block w-full text-left py-2 px-3 text-gray-600 hover:text-white rounded hover:bg-gray-700"
+                        className="block w-full text-left py-2 px-3 text-gray-600 hover:text-white rounded hover:bg-green-300"
                       >
                         Logout
                       </button>
