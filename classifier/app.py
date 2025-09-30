@@ -1,33 +1,44 @@
 from flask import Flask, request, jsonify
-from model.vit_model import LeafClassifier
-from utils.image_utils import preprocess_image
+import tensorflow as tf
+import numpy as np
+from PIL import Image
+import io
+import threading
 import os
+from model.vit_model import predict
+
 
 app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  
 
-# Define your label names
-class_names = ['Elíptica', 'Imparipinnada', 'Lanceolada', 'Obovada', 'Ovada', 'Palmeada', 'Trifoliada']
-classifier = LeafClassifier("vit_leaf_classifier.pth", class_names)
 
-@app.route("/api/upload", methods=["POST"])
-def classify_leaf():    
-    if "image" not in request.files:
-        return jsonify({"error": "No image uploaded"}), 400
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+especies = tf.keras.models.load_model(os.path.join(BASE_DIR, "models/modelo_especies.h5"))
+formas = tf.keras.models.load_model(os.path.join(BASE_DIR, "models/modelo_hojas.h5"))
+plantas = tf.keras.models.load_model(os.path.join(BASE_DIR, "models/modelo_plantas.h5"))
 
-    file = request.files["image"]
-    if file.filename == "":
-        return jsonify({"error": "Empty filename"}), 400
 
-    try:
-        image_tensor = preprocess_image(file.read())
-        label, confidence = classifier.predict(image_tensor)
+PLANTS = [
+    False, True
+    ]
 
-        return jsonify({
-            "classification": label,
-            "confidence": round(confidence, 4)
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+SHAPES = [
+    'Eliptica', 'Imparipinnada', 'Lanceolada', 'Obovada', 'Ovada', 'Palmeada', 'Trifoliada'
+    ]
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000)
+SPECIES = [
+    'yam_healthy', 'yam_deseased',
+    'eggplant_healthy', 'eggplant_deseased',
+    'cucumber_healthy', 'cucumber_deseased',
+    'corn_healthy', 'corn_deseased',
+    'cassava_healthy', 'cassava_deseased'
+]
+
+predict_lock = threading.Lock()
+
+@app.route('/predict', methods=['POST'])
+def predict_route():
+    return predict(especies, formas, plantas, SPECIES, SHAPES, PLANTS, predict_lock)
+
+if __name__ == '__main__':
+    app.run(debug=True)
