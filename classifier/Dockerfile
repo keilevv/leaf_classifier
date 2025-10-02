@@ -7,7 +7,7 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-# Install only runtime system dependencies needed by Pillow/torchvision
+# Instala solo dependencias necesarias para Pillow y TensorFlow
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     libsm6 \
@@ -15,20 +15,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxrender1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements
+# Copia requirements
 COPY requirements.txt ./
 
-# Install CPU-only PyTorch wheels explicitly, then the rest
+# Instala TensorFlow y el resto de dependencias
 RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu \
-       torch torchvision \
+    && pip install --no-cache-dir tensorflow==2.19.0 \
     && pip install --no-cache-dir -r requirements.txt
 
-# Copy app source and model weights
+# Copia el código fuente y pesos del modelo
 COPY app.py ./
 COPY model ./model
 COPY utils ./utils
-COPY vit_leaf_classifier.pth ./vit_leaf_classifier.pth
+COPY models ./models
 
 EXPOSE 8000
 ENV FLASK_ENV=production

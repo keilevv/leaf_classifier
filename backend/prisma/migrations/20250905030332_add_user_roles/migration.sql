@@ -1,7 +1,0 @@
--- AlterTable
-ALTER TABLE "public"."Classification" ADD COLUMN     "isArchived" BOOLEAN NOT NULL DEFAULT false,
-ADD COLUMN     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
-
--- AlterTable
-ALTER TABLE "public"."User" ADD COLUMN     "role" TEXT NOT NULL DEFAULT 'user',
-ADD COLUMN     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;

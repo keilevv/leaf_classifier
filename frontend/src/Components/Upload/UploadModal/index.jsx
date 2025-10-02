@@ -41,7 +41,7 @@ function UploadModal({ isOpen, closeModal, selectedUpload }) {
                     </Dialog.Title>
                     <button
                       onClick={closeModal}
-                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                      className="cursor-pointer text-gray-400 hover:text-gray-600 transition-colors"
                     >
                       <FaTimes className="h-5 w-5" />
                     </button>
@@ -66,23 +66,26 @@ function UploadModal({ isOpen, closeModal, selectedUpload }) {
                       </div>
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <p className="font-medium text-gray-900">
-                            Classification:
-                          </p>
-                          <p className="text-gray-700">
-                            {selectedUpload.classification}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900">
-                            Confidence:
-                          </p>
+                          <p className="font-medium text-gray-900">Species:</p>
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getConfidenceColor(
-                              selectedUpload.confidence
+                              selectedUpload.speciesConfidence
                             )}`}
                           >
-                            {Math.round(selectedUpload.confidence * 100)}%
+                            {selectedUpload.species}{" "}
+                            {Math.round(selectedUpload.speciesConfidence * 100)}
+                            %
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">Shape:</p>
+                          <span
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getConfidenceColor(
+                              selectedUpload.shapeConfidence
+                            )}`}
+                          >
+                            {selectedUpload.shape}{" "}
+                            {Math.round(selectedUpload.shapeConfidence * 100)}%
                           </span>
                         </div>
                         <div>
@@ -93,12 +96,12 @@ function UploadModal({ isOpen, closeModal, selectedUpload }) {
                             {formatDate(selectedUpload.createdAt)}
                           </p>
                         </div>
-                        <div>
+                        {/* <div>
                           <p className="font-medium text-gray-900">
                             File Size:
                           </p>
                           <p className="text-gray-700">Image file</p>
-                        </div>
+                        </div> */}
                       </div>
                     </div>
                   )}

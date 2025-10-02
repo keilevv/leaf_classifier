@@ -97,11 +97,15 @@ export default function FileUpload({ onUpload }) {
           handleRemoveFile();
         })
         .catch((error) => {
-          console.log(error);
+          const code = error.response.data.error;
           showNotification({
-            message: "Upload failed. Please try again.",
+            message:
+              code === "no_plant"
+                ? "Image is not a plant"
+                : "Upload failed. Please try again.",
             type: "error",
           });
+          handleRemoveFile();
         });
     } catch (error) {
       console.error("Upload failed:", error);
@@ -192,7 +196,7 @@ export default function FileUpload({ onUpload }) {
                   className={`bg-green-600  text-white font-medium py-2 px-8 rounded-md transition-colors flex items-center ${
                     isLoading
                       ? "opacity-50 cursor-not-allowed"
-                      : "hover:bg-green-700 disabled:opacity-50"
+                      : "hover:bg-green-700 disabled:opacity-50 cursor-pointer"
                   }`}
                 >
                   {isLoading ? (

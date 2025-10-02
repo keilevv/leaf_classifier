@@ -17,7 +17,7 @@ interface AuthenticatedRequest extends Request {
 }
 
 const classifierServiceUrl =
-  process.env.CLASSIFY_SERVICE_URL || "http://localhost:8000/api";
+  process.env.CLASSIFY_SERVICE_URL || "http://localhost:8000/";
 
 function plantClassifierController() {
   // These now return middleware functions that Express can use
@@ -59,98 +59,113 @@ function plantClassifierController() {
           image.originalname
         );
 
-        const classificationResponse = await axios.post(
-          `${classifierServiceUrl}/upload`,
-          formData,
-          {
+        await axios
+          .post(`${classifierServiceUrl}/predict`, formData, {
             headers: {
               ...formData.getHeaders(),
             },
-          }
-        );
+          })
+          .then(async (response) => {
+            const { model1, model2, model3 } = response.data;
 
-        const { classification, confidence } = classificationResponse.data;
+            if (model3.class_name) {
+              const species = model1.class_name;
+              const species_confidence = model1.probability;
+              const shape = model2.class_name;
+              const shape_confidence = model2.probability;
 
-        // Step 2: Generate unique ID and create R2 key based on classification
-        const uniqueId = uuidv4().replace(/-/g, "").substring(0, 8);
-        const fileExtension = path.extname(image.originalname);
-        const r2Key = R2Service.generateImageKey(
-          classification,
-          uniqueId,
-          fileExtension
-        );
+              // Step 2: Generate unique ID and create R2 key based on classification
+              const uniqueId = uuidv4().replace(/-/g, "").substring(0, 8);
+              const fileExtension = path.extname(image.originalname);
+              const r2Key = R2Service.generateImageKey(
+                species,
+                uniqueId,
+                fileExtension
+              );
 
-        // Step 3: Upload to Cloudflare R2
-        const uploadResult = await R2Service.uploadFile(
-          uploadPath,
-          r2Key,
-          image.mimetype
-        );
+              // Step 3: Upload to Cloudflare R2
+              const uploadResult = await R2Service.uploadFile(
+                uploadPath,
+                r2Key,
+                image.mimetype
+              );
 
-        let finalImagePath: string;
-        let imageUrl: string;
+              let finalImagePath: string;
+              let imageUrl: string;
 
-        if (!uploadResult.success) {
-          // Check if it's a size-related error
-          if (
-            uploadResult.error?.includes("too small") ||
-            uploadResult.error?.includes("EntityTooSmall") ||
-            R2Service.isFileTooSmall(uploadPath)
-          ) {
-            // Fallback: Store locally for small files
-            const localPath = `uploads/${r2Key}`;
-            const localUploadPath = path.join(process.cwd(), localPath);
+              if (!uploadResult.success) {
+                // Check if it's a size-related error
+                if (
+                  uploadResult.error?.includes("too small") ||
+                  uploadResult.error?.includes("EntityTooSmall") ||
+                  R2Service.isFileTooSmall(uploadPath)
+                ) {
+                  // Fallback: Store locally for small files
+                  const localPath = `uploads/${r2Key}`;
+                  const localUploadPath = path.join(process.cwd(), localPath);
 
-            // Ensure uploads directory exists
-            const uploadsDir = path.join(process.cwd(), "uploads");
-            if (!fs.existsSync(uploadsDir)) {
-              fs.mkdirSync(uploadsDir, { recursive: true });
+                  // Ensure uploads directory exists
+                  const uploadsDir = path.join(process.cwd(), "uploads");
+                  if (!fs.existsSync(uploadsDir)) {
+                    fs.mkdirSync(uploadsDir, { recursive: true });
+                  }
+
+                  // Copy file to local storage
+                  fs.copyFileSync(uploadPath, localUploadPath);
+                  finalImagePath = localPath;
+                  imageUrl = `/uploads/${r2Key}`;
+                } else {
+                  // Clean up temporary file for other errors
+                  fs.unlinkSync(uploadPath);
+                  return res.status(500).json({
+                    error: uploadResult.error,
+                    message: "Error uploading to R2",
+                  });
+                }
+              } else {
+                // R2 upload successful
+                finalImagePath = r2Key;
+                imageUrl = uploadResult.url!;
+              }
+
+              // Step 4: Create classification entry in DB with final path
+              const classificationEntry = await prisma.classification.create({
+                data: {
+                  originalFilename: image.originalname,
+                  imagePath: imageUrl, // Store final path (R2 key or local path)
+                  species,
+                  shape,
+                  speciesConfidence: species_confidence,
+                  shapeConfidence: shape_confidence,
+                  userId,
+                },
+              });
+
+              // Step 5: Clean up temporary local file
+              fs.unlinkSync(uploadPath);
+
+              // Add full URL for the response
+              const classificationWithUrl = {
+                ...classificationEntry,
+                imageUrl: imageUrl,
+              };
+
+              return res.status(200).json({
+                message: "Image uploaded and classified successfully",
+                classification: classificationWithUrl,
+                storageType: uploadResult.success ? "R2" : "local",
+                imageUrl: imageUrl,
+              });
+            } else {
+              return res.status(400).json({
+                error: "no_plant",
+                message: "Image is not a plant",
+              });
             }
-
-            // Copy file to local storage
-            fs.copyFileSync(uploadPath, localUploadPath);
-            finalImagePath = localPath;
-            imageUrl = `/uploads/${r2Key}`;
-          } else {
-            // Clean up temporary file for other errors
-            fs.unlinkSync(uploadPath);
-            return res.status(500).json({
-              error: uploadResult.error,
-              message: "Error uploading to R2",
-            });
-          }
-        } else {
-          // R2 upload successful
-          finalImagePath = r2Key;
-          imageUrl = uploadResult.url!;
-        }
-
-        // Step 4: Create classification entry in DB with final path
-        const classificationEntry = await prisma.classification.create({
-          data: {
-            originalFilename: image.originalname,
-            imagePath: imageUrl, // Store final path (R2 key or local path)
-            classification,
-            confidence,
-            userId,
-          },
-        });
-
-        // Step 5: Clean up temporary local file
-        fs.unlinkSync(uploadPath);
-
-        // Add full URL for the response
-        const classificationWithUrl = {
-          ...classificationEntry,
-          imageUrl: imageUrl,
-        };
-
-        return res.status(200).json({
-          message: "Image uploaded and classified successfully",
-          classification: classificationWithUrl,
-          storageType: uploadResult.success ? "R2" : "local",
-          imageUrl: imageUrl,
-        });
+          })
+          .catch((error) => {
+            console.error("Error classifying image:", error);
+          });
       } catch (classificationError) {
         // Clean up temporary file on classification error
         if (fs.existsSync(uploadPath)) {
