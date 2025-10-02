@@ -7,6 +7,13 @@ CREATE TABLE "public"."User" (
     "passwordHash" TEXT,
     "googleId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "role" TEXT NOT NULL DEFAULT 'user',
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "department" TEXT,
+    "institution" TEXT,
+    "location" TEXT,
+    "bio" TEXT,
+    "emailNotifications" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -16,10 +23,14 @@ CREATE TABLE "public"."Classification" (
     "id" TEXT NOT NULL,
     "imagePath" TEXT NOT NULL,
     "originalFilename" TEXT NOT NULL,
-    "classification" TEXT NOT NULL,
-    "confidence" DOUBLE PRECISION NOT NULL,
+    "species" TEXT NOT NULL,
+    "shape" TEXT NOT NULL,
+    "speciesConfidence" DOUBLE PRECISION NOT NULL,
+    "shapeConfidence" DOUBLE PRECISION NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userId" TEXT NOT NULL,
+    "isArchived" BOOLEAN NOT NULL DEFAULT false,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Classification_pkey" PRIMARY KEY ("id")
 );
