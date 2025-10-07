@@ -58,6 +58,7 @@ function plantClassifierController() {
           fs.createReadStream(uploadPath),
           image.originalname
         );
+        console.log("classifierServiceUrl", `${classifierServiceUrl}/predict`);
 
         await axios
           .post(`${classifierServiceUrl}/predict`, formData, {
@@ -164,7 +165,8 @@ function plantClassifierController() {
             }
           })
           .catch((error) => {
-            console.error("Error classifying image:", error);
+            console.error("response:", error.request);
+            return res.status(500).json({ error: error.message });
           });
       } catch (classificationError) {
         // Clean up temporary file on classification error

@@ -9,7 +9,7 @@ import {
 } from "../utils/jwt";
 import { sanitizeUser } from "../utils";
 
-const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+const frontendUrl = process.env.FRONTEND_URL || "http://plantai.lab.utb.edu.co";
 
 function authController() {
   // These now return middleware functions that Express can use

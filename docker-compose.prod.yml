@@ -57,10 +57,10 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.prod
       args:
-        VITE_API_URL: ${VITE_API_URL:-http://129.153.122.159:5000/api}
+        VITE_API_URL: ${VITE_API_URL:-http://plantai.lab.utb.edu.co:5000/api}
     container_name: leaf-frontend
     environment:
-      - VITE_API_URL=${VITE_API_URL:-http://129.153.122.159:5000/api}
+      - VITE_API_URL=${VITE_API_URL:-http://plantai.lab.utb.edu.co/api}
     depends_on:
       - backend
     ports:
