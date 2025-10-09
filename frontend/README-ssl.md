@@ -67,3 +67,32 @@ Advanced
 - If your server is behind a firewall or NAT, ensure ports are forwarded.
 
 That's it — this setup will automatically provision certificates and keep them renewed while the companion is running.
+
+Using subdomains for backend and classifier (recommended)
+------------------------------------------------------
+
+To expose both backend and classifier under HTTPS with the same proxy, the recommended approach is to create separate subdomains and let the nginx-proxy + acme-companion request certificates for each.
+
+1. Create DNS records:
+   - `api.plantai.lab.utb.edu.co` -> VPS IP
+   - `classifier.plantai.lab.utb.edu.co` -> VPS IP
+
+2. Environment variables: set these before starting the compose stack (or add to your host env):
+
+   export BACKEND_VIRTUAL_HOST=api.plantai.lab.utb.edu.co
+   export CLASSIFIER_VIRTUAL_HOST=classifier.plantai.lab.utb.edu.co
+   export LETSENCRYPT_EMAIL=you@example.com
+
+3. Start proxy and services (proxy first):
+
+   docker compose -f docker-compose.prod.yml up -d nginx-proxy nginx-letsencrypt
+   docker compose -f docker-compose.prod.yml up -d backend classifier frontend db
+
+4. Verify with curl:
+
+   curl -I https://api.plantai.lab.utb.edu.co
+   curl -v -X POST https://classifier.plantai.lab.utb.edu.co/predict -F "image=@/path/to/test.jpg;type=image/jpeg"
+
+Notes:
+- Do not expose ports 5000/8000 publicly when using the proxy; the proxy will handle TLS and route traffic internally to the containers.
+- If you need the backend accessible from the frontend, set `VITE_API_URL=https://api.plantai.lab.utb.edu.co/api` when building the frontend (the compose file updates this value by default).

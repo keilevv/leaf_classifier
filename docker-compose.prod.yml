@@ -25,13 +25,15 @@ services:
     environment:
       - HOST=0.0.0.0
       - PORT=5000
+      - VIRTUAL_HOST=${BACKEND_VIRTUAL_HOST:-api.plantai.lab.utb.edu.co}
+      - LETSENCRYPT_HOST=${BACKEND_VIRTUAL_HOST:-api.plantai.lab.utb.edu.co}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-cvillalba@utb.edu.co}
     env_file:
       - ./backend/.env.prod
     volumes:
       - ./backend/prisma:/usr/src/app/prisma
     restart: unless-stopped
-    ports:
-      - '5000:5000'
+    # Let the nginx-proxy handle external ports via VIRTUAL_HOST. Do not expose 5000 directly.
     networks:
       - leaf-network
     command: >
@@ -45,9 +47,11 @@ services:
       context: ./classifier
       dockerfile: Dockerfile
     container_name: leaf-classifier
+    environment:
+      - VIRTUAL_HOST=${CLASSIFIER_VIRTUAL_HOST:-classifier.plantai.lab.utb.edu.co}
+      - LETSENCRYPT_HOST=${CLASSIFIER_VIRTUAL_HOST:-classifier.plantai.lab.utb.edu.co}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-cvillalba@utb.edu.co}
     restart: unless-stopped
-    ports:
-      - '8000:8000'
     networks:
       - leaf-network
 
@@ -57,10 +61,10 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.prod
       args:
-        VITE_API_URL: ${VITE_API_URL:-http://plantai.lab.utb.edu.co:5000/api}
+        VITE_API_URL: ${VITE_API_URL:-https://api.plantai.lab.utb.edu.co/api}
     container_name: leaf-frontend
     environment:
-      - VITE_API_URL=${VITE_API_URL:-http://plantai.lab.utb.edu.co/api}
+      - VITE_API_URL=${VITE_API_URL:-https://api.plantai.lab.utb.edu.co/api}
       - VIRTUAL_HOST=${VIRTUAL_HOST:-plantai.lab.utb.edu.co}
       - LETSENCRYPT_HOST=${LETSENCRYPT_HOST:-plantai.lab.utb.edu.co}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-cvillalba@utb.edu.co}
