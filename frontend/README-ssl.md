@@ -48,6 +48,16 @@ Notes and troubleshooting
 - Make sure `docker` has permission to read/write the sockets and volumes.
 - If you want to use your own certificate, place the key and fullchain at `certs/<domain>.key` and `certs/<domain>.crt` on the host (or inside the `certs` volume) and reload the proxy.
 
+Common ACME failure: webroot not writable or proxy config overridden
+
+- The ACME companion uses HTTP-01 by default and writes challenge files to the nginx webroot at `/usr/share/nginx/html` inside the proxy.
+- Do not override the `nginx-proxy` default config by mounting a custom `conf.d/default.conf` into the proxy container unless you also provide a writable `/usr/share/nginx/html` volume and the required location for `/.well-known/acme-challenge`.
+- The `docker-compose.prod.yml` now provides a shared `webroot` volume mounted at `/usr/share/nginx/html` into both `nginx-proxy` and `nginx-letsencrypt` so the companion can write challenge files.
+- If you still see "Invalid response" errors, verify that:
+   1. The domain resolves to the VPS public IP (use `dig plantai.lab.utb.edu.co`).
+   2. Ports 80 and 443 are open and reachable from the internet (use `nmap` or a remote `curl`).
+   3. No other host process (another nginx) is intercepting requests on port 80/443.
+
 Security
 - Keep your `LETSENCRYPT_EMAIL` valid to receive expiry notices.
 - Monitor the `nginx-letsencrypt` container and renewals.
