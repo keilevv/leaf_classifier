@@ -66,6 +66,13 @@ function Header({ className = "" }) {
         ...defaultPages,
         { title: "Upload", key: "upload", url: "/upload" },
       ]); // Add upload link
+
+      if (user.role === "ADMIN") {
+        setPages((prevPages) => [
+          ...prevPages,
+          { title: "Admin", key: "admin", url: "/admin" },
+        ]); // Add dashboard link for admin
+      }
     } else {
       // User is not authenticated or not logged in
       setPages(defaultPages); // Reset to default pages

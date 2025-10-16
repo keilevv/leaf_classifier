@@ -7,6 +7,12 @@ import authRoutes from "./routes/auth";
 import plantClassifierRoutes from "./routes/plantClassifier";
 import userRoutes from "./routes/user";
 import prisma from "./lib/prisma";
+import { createDefaultAdmin } from "./utils";
+
+// Create default admin user if none exists
+createDefaultAdmin().catch((error) => {
+  console.error("Error creating default admin user:", error);
+});
 const app = express();
 
 // Graceful shutdown

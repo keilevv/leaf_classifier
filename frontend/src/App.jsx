@@ -5,6 +5,7 @@ import History from "./Pages/History";
 import Login from "./Pages/Login";
 import About from "./Pages/About";
 import Settings from "./Pages/Settings";
+import Admin from "./Pages/Admin";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import { Notification } from "./Components/Common/Notification";
 import "./App.css";
@@ -16,6 +17,14 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/about" element={<About />} />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <Admin />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/settings"
           element={

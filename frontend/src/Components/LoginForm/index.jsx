@@ -90,10 +90,6 @@ export default function LoginForm({
             message: "Login successful",
             type: "success",
           });
-          navigate("/upload");
-          setSelectedPage("upload");
-
-          setIsLoading(false);
           setUiState({
             login: {
               comesFrom: {
@@ -103,6 +99,9 @@ export default function LoginForm({
               },
             },
           });
+          setSelectedPage("upload");
+          navigate("/upload");
+          setIsLoading(false);
         })
         .catch((error) => {
           console.error("Login failed:", error);
