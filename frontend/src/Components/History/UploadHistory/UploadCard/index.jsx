@@ -2,6 +2,7 @@ import { FaCalendarAlt, FaArchive, FaEye } from "react-icons/fa";
 import { formatDate, getConfidenceColor } from "../../../../utils";
 import ClassificationBadge from "../../../Common/Classifications/ClassificationBadge";
 function UploadCard({ upload, openModal, openConfirmModal }) {
+  const filename = upload.originalFilename.split("/").pop();
   return (
     <div
       key={upload.id}
@@ -18,9 +19,7 @@ function UploadCard({ upload, openModal, openConfirmModal }) {
       <div className="p-4">
         <div className="space-y-3">
           <div>
-            <h3 className="font-medium text-gray-900 truncate">
-              {upload.originalFilename}
-            </h3>
+            <h3 className="font-medium text-gray-900 truncate">{filename}</h3>
             <div className="flex items-center text-sm text-gray-500 mt-1">
               <FaCalendarAlt className="h-3 w-3 mr-1" />
               {formatDate(upload.createdAt)}

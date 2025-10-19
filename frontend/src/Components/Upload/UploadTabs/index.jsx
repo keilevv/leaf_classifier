@@ -3,6 +3,7 @@ import FileUpload from "../../Upload/FileUpload";
 import { Tab } from "@headlessui/react";
 import { useNavigate } from "react-router-dom";
 import useClassifier from "../../../hooks/useClassifier";
+import { FaUpload, FaHistory } from "react-icons/fa";
 function UploadTabs({ children, initialTab = 0, onUpload }) {
   const navigate = useNavigate();
   const { addUpload } = useClassifier();
@@ -29,7 +30,10 @@ function UploadTabs({ children, initialTab = 0, onUpload }) {
               )
             }
           >
-            Upload & Classify
+            <div className="flex items-center justify-center space-x-2">
+              <FaUpload className="h-4 w-4" />
+              <span className="font-bold">Upload & Classify</span>
+            </div>
           </Tab>
           <Tab
             onClick={() => navigate("/history")}
@@ -43,7 +47,10 @@ function UploadTabs({ children, initialTab = 0, onUpload }) {
               )
             }
           >
-            Upload History
+            <div className="flex items-center justify-center space-x-2">
+              <FaHistory className="h-4 w-4" />
+              <span className="font-bold">Upload History</span>
+            </div>
           </Tab>
         </Tab.List>
         <Tab.Panels>

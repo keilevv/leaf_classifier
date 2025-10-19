@@ -4,6 +4,7 @@ import {
   FaTimesCircle,
   FaShieldAlt,
   FaUserCircle,
+  FaArchive,
 } from "react-icons/fa";
 // Construct image URL from imagePath
 export const getImageUrl = (imagePath) => {
@@ -32,11 +33,12 @@ export const getConfidenceColor = (confidence) => {
 // Get status badge style
 export const getStatusBadge = (status) => {
   const badges = {
-    verified: { color: "bg-green-100 text-green-800", icon: FaCheckCircle },
-    pending: { color: "bg-yellow-100 text-yellow-800", icon: FaFilter },
-    rejected: { color: "bg-red-100 text-red-800", icon: FaTimesCircle },
+    VERIFIED: { color: "bg-green-100 text-green-800", icon: FaCheckCircle },
+    PENDING: { color: "bg-yellow-100 text-yellow-800", icon: FaFilter },
+    REJECTED: { color: "bg-red-100 text-red-800", icon: FaTimesCircle },
+    ARCHIVED: { color: "bg-gray-100 text-gray-800", icon: FaArchive },
   };
-  return badges[status] || badges.pending;
+  return badges[status] || badges.PENDING;
 };
 
 // Get role badge style

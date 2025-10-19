@@ -25,13 +25,13 @@ function adminController() {
       const where: any = {};
 
 
-      // Filter by isArchived, default to false if not provided
-      if (typeof req.query.isArchived !== "undefined") {
-        if (req.query.isArchived === "true") where.isArchived = true;
-        else if (req.query.isArchived === "false") where.isArchived = false;
-      } else {
-        where.isArchived = false;
-      }
+      // // Filter by isArchived, default to false if not provided
+      // if (typeof req.query.isArchived !== "undefined") {
+      //   if (req.query.isArchived === "true") where.isArchived = true;
+      //   else if (req.query.isArchived === "false") where.isArchived = false;
+      // } else {
+      //   where.isArchived = false;
+      // }
 
       // Filter by classification (exact match)
       if (req.query.classification) {

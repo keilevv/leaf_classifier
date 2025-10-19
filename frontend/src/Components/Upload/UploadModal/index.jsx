@@ -3,6 +3,7 @@ import { Fragment } from "react";
 import { FaTimes } from "react-icons/fa";
 import { getImageUrl, getConfidenceColor, formatDate } from "../../../utils";
 function UploadModal({ isOpen, closeModal, selectedUpload }) {
+  const filename = selectedUpload?.imageUrl.split("/").pop();
   return (
     <>
       {" "}
@@ -37,7 +38,7 @@ function UploadModal({ isOpen, closeModal, selectedUpload }) {
                       as="h3"
                       className="text-lg font-medium leading-6 text-gray-900"
                     >
-                      {selectedUpload?.originalFilename}
+                      {filename}
                     </Dialog.Title>
                     <button
                       onClick={closeModal}
@@ -90,18 +91,20 @@ function UploadModal({ isOpen, closeModal, selectedUpload }) {
                         </div>
                         <div>
                           <p className="font-medium text-gray-900">
+                            Original File Name:
+                          </p>
+                          <p className="text-gray-700">
+                            {selectedUpload?.originalFilename}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">
                             Upload Date:
                           </p>
                           <p className="text-gray-700">
                             {formatDate(selectedUpload.createdAt)}
                           </p>
                         </div>
-                        {/* <div>
-                          <p className="font-medium text-gray-900">
-                            File Size:
-                          </p>
-                          <p className="text-gray-700">Image file</p>
-                        </div> */}
                       </div>
                     </div>
                   )}

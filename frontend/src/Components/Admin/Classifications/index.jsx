@@ -11,28 +11,28 @@ import { useState, useEffect } from "react";
 import { formatDate, getStatusBadge } from "../../../utils";
 import { showNotification } from "../../Common/Notification";
 import useAdmin from "../../../hooks/useAdmin";
+import useStore from "../../../hooks/useStore";
 import ClassificationBadge from "../../Common/Classifications/ClassificationBadge";
 import UploadModal from "../../Upload/UploadModal";
 
 function ClassificationsTable({ setHeaderClassifications = () => {} }) {
+  const { preferences } = useStore();
   const {
     getClassifications,
     classifications: classificationsData,
     pages,
+    count,
   } = useAdmin();
   // Classifications state
   const [classifications, setClassifications] = useState([]);
   const [classificationSearch, setClassificationSearch] = useState("");
   const [classificationPage, setClassificationPage] = useState(1);
-  const [classificationPageSize] = useState(5);
+  const classificationPageSize = preferences?.pageSize || 6;
   const [classificationStatusFilter, setClassificationStatusFilter] =
     useState("all");
 
   const [isOpen, setIsOpen] = useState(false);
   const [selectedClassification, setSelectedClassification] = useState(null);
-
-  // Filter classifications
-  const filteredClassifications = [];
 
   const classificationTotalPages = pages;
 
@@ -156,7 +156,11 @@ function ClassificationsTable({ setHeaderClassifications = () => {} }) {
             <tbody className="bg-white divide-y divide-gray-200">
               {classifications.length > 0 ? (
                 classifications.map((classification) => {
-                  const statusBadge = getStatusBadge(classification.status);
+                  const statusBadge = getStatusBadge(
+                    classification.isArchived
+                      ? "ARCHIVED"
+                      : classification.status
+                  );
                   const StatusIcon = statusBadge.icon;
                   const filename = classification.imageUrl.split("/").pop();
                   return (
@@ -258,11 +262,8 @@ function ClassificationsTable({ setHeaderClassifications = () => {} }) {
           <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
             <div className="text-sm text-gray-700">
               Showing {(classificationPage - 1) * classificationPageSize + 1} to{" "}
-              {Math.min(
-                classificationPage * classificationPageSize,
-                filteredClassifications.length
-              )}{" "}
-              of {filteredClassifications.length} results
+              {Math.min(classificationPage * classificationPageSize)} of {count}{" "}
+              results
             </div>
             <div className="flex space-x-2">
               <button
@@ -270,7 +271,7 @@ function ClassificationsTable({ setHeaderClassifications = () => {} }) {
                   setClassificationPage((prev) => Math.max(1, prev - 1))
                 }
                 disabled={classificationPage === 1}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className=" cursor-pointer px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <FaChevronLeft className="h-4 w-4" />
               </button>
@@ -281,7 +282,7 @@ function ClassificationsTable({ setHeaderClassifications = () => {} }) {
                 <button
                   key={page}
                   onClick={() => setClassificationPage(page)}
-                  className={`px-4 py-2 border rounded-md text-sm font-medium transition-colors ${
+                  className={`cursor-pointer px-4 py-2 border rounded-md text-sm font-medium transition-colors ${
                     classificationPage === page
                       ? "bg-green-600 text-white border-green-600"
                       : "border-gray-300 text-gray-700 hover:bg-gray-50"
@@ -297,7 +298,7 @@ function ClassificationsTable({ setHeaderClassifications = () => {} }) {
                   )
                 }
                 disabled={classificationPage === classificationTotalPages}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="cursor-pointer px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <FaChevronRight className="h-4 w-4" />
               </button>

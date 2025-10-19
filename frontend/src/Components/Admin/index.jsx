@@ -12,10 +12,12 @@ function classNames(...classes) {
 export default function AdminPage() {
   const [headerClassifications, setHeaderClassifications] = useState([]);
   const [headerUsers, setHeaderUsers] = useState([]);
+  const [selectedTab, setSelectedTab] = useState("classifications");
 
   return (
     <div>
       <AdminHeader
+        selectedTab={selectedTab}
         classifications={headerClassifications}
         users={headerUsers}
       />
@@ -24,6 +26,7 @@ export default function AdminPage() {
         <Tab.Group>
           <Tab.List className="flex space-x-1 rounded-xl bg-green-900/20 p-1 mb-8">
             <Tab
+              onClick={() => setSelectedTab("classifications")}
               className={({ selected }) =>
                 classNames(
                   "flex-1 rounded-lg py-2.5 text-sm font-medium leading-5 cursor-pointer ",
@@ -40,6 +43,7 @@ export default function AdminPage() {
               </div>
             </Tab>
             <Tab
+              onClick={() => setSelectedTab("users")}
               className={({ selected }) =>
                 classNames(
                   "flex-1 rounded-lg py-2.5 text-sm font-medium leading-5 cursor-pointer",

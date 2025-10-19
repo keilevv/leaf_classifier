@@ -6,6 +6,7 @@ function useAdmin() {
   const { accessToken } = useStore();
   const [classifications, setClassifications] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [count, setCount] = useState(0);
   const [error, setError] = useState(null);
   const [pages, setPages] = useState(1);
 
@@ -15,8 +16,9 @@ function useAdmin() {
       .getAdminclassifications(page, limit, sortBy, sortOrder, accessToken)
       .then((response) => {
         setClassifications(response.data.results);
-        setIsLoading(false);
         setPages(response.data.pages);
+        setCount(response.data.count);
+        setIsLoading(false);
       })
       .catch((error) => {
         console.error("Error fetching classifications:", error);
@@ -24,6 +26,13 @@ function useAdmin() {
         setIsLoading(false);
       });
   }
-  return { classifications, isLoading, error, pages, getClassifications };
+  return {
+    classifications,
+    isLoading,
+    error,
+    pages,
+    count,
+    getClassifications,
+  };
 }
 export default useAdmin;
