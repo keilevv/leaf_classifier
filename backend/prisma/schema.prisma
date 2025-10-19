@@ -8,9 +8,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 enum UserRole {
-  USER,
-  CONTRIBUTOR,
-  MODERATOR,
+  USER
+  CONTRIBUTOR
+  MODERATOR
   ADMIN
 }
 
@@ -53,3 +53,4 @@ model Classification {
   updatedAt     DateTime @default(now())
   status        ClassificationStatus   @default(PENDING)
 }
+
