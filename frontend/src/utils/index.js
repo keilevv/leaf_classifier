@@ -44,11 +44,11 @@ export const getStatusBadge = (status) => {
 // Get role badge style
 export const getRoleBadge = (role) => {
   const badges = {
-    admin: { color: "bg-green-100 text-green-800", icon: FaShieldAlt },
-    moderator: { color: "bg-blue-100 text-blue-800", icon: FaShieldAlt },
-    contributor: { color: "bg-gray-100 text-gray-800", icon: FaUserCircle },
+    ADMIN: { color: "bg-green-100 text-green-800", icon: FaShieldAlt },
+    MODERATOR: { color: "bg-blue-100 text-blue-800", icon: FaShieldAlt },
+    CONTRIBUTOR: { color: "bg-gray-100 text-gray-800", icon: FaUserCircle },
   };
-  return badges[role] || badges.contributor;
+  return badges[role] || badges.CONTRIBUTOR;
 };
 
 // Classification actions

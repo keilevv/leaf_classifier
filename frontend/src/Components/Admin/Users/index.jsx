@@ -5,104 +5,25 @@ import {
   FaTrash,
   FaDatabase,
   FaEdit,
+  FaUsers,
 } from "react-icons/fa";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { formatDate, getRoleBadge } from "../../../utils";
 import { showNotification } from "../../Common/Notification";
-
-// Mock data for users
-const mockUsers = [
-  {
-    id: "1",
-    name: "María García",
-    email: "maria.garcia@unal.edu.co",
-    role: "admin",
-    classificationsCount: 45,
-    joinDate: "2023-12-01T10:00:00Z",
-    lastActive: "2024-01-15T10:30:00Z",
-    status: "active",
-  },
-  {
-    id: "2",
-    name: "Carlos Rodríguez",
-    email: "carlos.rodriguez@unal.edu.co",
-    role: "contributor",
-    classificationsCount: 32,
-    joinDate: "2023-12-05T14:00:00Z",
-    lastActive: "2024-01-14T14:22:00Z",
-    status: "active",
-  },
-  {
-    id: "3",
-    name: "Ana Martínez",
-    email: "ana.martinez@unal.edu.co",
-    role: "contributor",
-    classificationsCount: 28,
-    joinDate: "2023-12-10T09:00:00Z",
-    lastActive: "2024-01-13T09:15:00Z",
-    status: "active",
-  },
-  {
-    id: "4",
-    name: "Juan López",
-    email: "juan.lopez@unal.edu.co",
-    role: "contributor",
-    classificationsCount: 19,
-    joinDate: "2023-12-15T11:00:00Z",
-    lastActive: "2024-01-12T16:45:00Z",
-    status: "active",
-  },
-  {
-    id: "5",
-    name: "Laura Fernández",
-    email: "laura.fernandez@unal.edu.co",
-    role: "moderator",
-    classificationsCount: 67,
-    joinDate: "2023-11-20T08:00:00Z",
-    lastActive: "2024-01-10T18:20:00Z",
-    status: "active",
-  },
-  {
-    id: "6",
-    name: "Diego Vargas",
-    email: "diego.vargas@unal.edu.co",
-    role: "contributor",
-    classificationsCount: 15,
-    joinDate: "2023-12-20T13:00:00Z",
-    lastActive: "2024-01-08T12:30:00Z",
-    status: "inactive",
-  },
-];
+import useAdmin from "../../../hooks/useAdmin";
+import useStore from "../../../hooks/useStore";
 
 function UsersTable({ setHeaderUsers = () => {} }) {
+  const { preferences } = useStore();
   // Users state
-  const [users, setUsers] = useState(mockUsers);
+  const [users, setUsers] = useState([]);
   const [userSearch, setUserSearch] = useState("");
   const [userPage, setUserPage] = useState(1);
-  const [userPageSize] = useState(5);
+  const userPageSize = preferences?.pageSize || 6;
   const [userRoleFilter, setUserRoleFilter] = useState("all");
+  const { users: usersData, getUsers, usersCount } = useAdmin();
 
-  // Filter users
-  const filteredUsers = useMemo(() => {
-    return users.filter((user) => {
-      const matchesSearch =
-        user.name.toLowerCase().includes(userSearch.toLowerCase()) ||
-        user.email.toLowerCase().includes(userSearch.toLowerCase());
-
-      const matchesRole =
-        userRoleFilter === "all" || user.role === userRoleFilter;
-
-      return matchesSearch && matchesRole;
-    });
-  }, [users, userSearch, userRoleFilter]);
-
-  // Paginate users
-  const paginatedUsers = useMemo(() => {
-    const startIndex = (userPage - 1) * userPageSize;
-    return filteredUsers.slice(startIndex, startIndex + userPageSize);
-  }, [filteredUsers, userPage, userPageSize]);
-
-  const userTotalPages = Math.ceil(filteredUsers.length / userPageSize);
+  const userTotalPages = Math.ceil(users.length / userPageSize);
 
   // User actions
   const handleEditUser = (user) => {
@@ -142,15 +63,20 @@ function UsersTable({ setHeaderUsers = () => {} }) {
   };
 
   useEffect(() => {
-    if (users.length) {
-      setHeaderUsers(users);
+    getUsers(userPage, userPageSize, "createdAt");
+  }, [userPage, userPageSize]);
+
+  useEffect(() => {
+    if (usersData.length) {
+      setHeaderUsers(usersData);
+      setUsers(usersData);
     }
-  }, [users]);
+  }, [usersData]);
 
   return (
     <>
       {" "}
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+      <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
         {/* Search and Filters */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex flex-col md:flex-row gap-4">
@@ -200,20 +126,20 @@ function UsersTable({ setHeaderUsers = () => {} }) {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Joined
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Last Active
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
-                </th>
+                </th> */}
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {paginatedUsers.length > 0 ? (
-                paginatedUsers.map((user) => {
+              {users.length > 0 ? (
+                users.map((user) => {
                   const roleBadge = getRoleBadge(user.role);
                   const RoleIcon = roleBadge.icon;
                   return (
@@ -223,7 +149,7 @@ function UsersTable({ setHeaderUsers = () => {} }) {
                           <div className="flex-shrink-0 h-10 w-10">
                             <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
                               <span className="text-green-600 font-medium text-sm">
-                                {user.name
+                                {user.fullName
                                   .split(" ")
                                   .map((n) => n[0])
                                   .join("")}
@@ -232,7 +158,7 @@ function UsersTable({ setHeaderUsers = () => {} }) {
                           </div>
                           <div className="ml-4">
                             <div className="text-sm font-medium text-gray-900">
-                              {user.name}
+                              {user.fullName}
                             </div>
                             <div className="text-sm text-gray-500">
                               {user.email}
@@ -252,17 +178,17 @@ function UsersTable({ setHeaderUsers = () => {} }) {
                         <div className="flex items-center">
                           <FaDatabase className="h-4 w-4 text-gray-400 mr-2" />
                           <span className="text-sm font-medium text-gray-900">
-                            {user.classificationsCount}
+                            {user.classificationCount}
                           </span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(user.joinDate)}
+                        {formatDate(user.createdAt)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {formatDate(user.lastActive)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      </td> */}
+                      {/* <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             user.status === "active"
@@ -272,7 +198,7 @@ function UsersTable({ setHeaderUsers = () => {} }) {
                         >
                           {user.status}
                         </span>
-                      </td>
+                      </td> */}
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex justify-end space-x-2">
                           <button
@@ -326,8 +252,10 @@ function UsersTable({ setHeaderUsers = () => {} }) {
           <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
             <div className="text-sm text-gray-700">
               Showing {(userPage - 1) * userPageSize + 1} to{" "}
-              {Math.min(userPage * userPageSize, filteredUsers.length)} of{" "}
-              {filteredUsers.length} results
+              {Math.min(userPage * userPageSize) > usersCount
+                ? Math.min(userPage * userPageSize) - users.length
+                : Math.min(userPage * userPageSize)}{" "}
+              of {usersCount} results
             </div>
             <div className="flex space-x-2">
               <button

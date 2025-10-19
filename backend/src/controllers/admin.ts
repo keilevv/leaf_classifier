@@ -24,7 +24,6 @@ function adminController() {
       // Build Prisma where filter
       const where: any = {};
 
-
       // // Filter by isArchived, default to false if not provided
       // if (typeof req.query.isArchived !== "undefined") {
       //   if (req.query.isArchived === "true") where.isArchived = true;
@@ -88,7 +87,9 @@ function adminController() {
         return {
           ...classification,
           imageUrl,
-          user: classification.user ? sanitizeUser(classification.user) : undefined,
+          user: classification.user
+            ? sanitizeUser(classification.user)
+            : undefined,
         };
       });
 
@@ -108,16 +109,85 @@ function adminController() {
       });
     }
   }
-  const getAdminUsers = async (req: Request, res: Response) => {
+  const getAdminUsers = async (req: AuthenticatedRequest, res: Response) => {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+    const sortBy = (req.query.sortBy as string) || "createdAt";
+    const sortOrder = (req.query.sortOrder as "asc" | "desc") || "desc";
+
     try {
-      const users = await prisma.user.findMany({});
-      if (!users) {
-        return res.status(404).json({ error: "User not found" });
+      if (!req.user) {
+        res.status(401).json({ error: "Authentication required" });
+        return;
       }
-      return res.json({ users: users });
+      const where: any = {};
+
+      // // Filter by isArchived, default to false if not provided
+      // if (typeof req.query.isArchived !== "undefined") {
+      //   if (req.query.isArchived === "true") where.isArchived = true;
+      //   else if (req.query.isArchived === "false") where.isArchived = false;
+      // } else {
+      //   where.isArchived = false;
+      // }
+
+      // Filter by originalFilename (partial match)
+      if (req.query.email) {
+        where.email = {
+          contains: req.query.email as string,
+          mode: "insensitive",
+        };
+      }
+
+      if (req.query.fullName) {
+        where.fullName = {
+          contains: req.query.fullName as string,
+          mode: "insensitive",
+        };
+      }
+
+      // Date filters
+      if (req.query.createdAt_gte || req.query.createdAt_lte) {
+        where.createdAt = {};
+        if (req.query.createdAt_gte) {
+          where.createdAt.gte = new Date(req.query.createdAt_gte as string);
+        }
+        if (req.query.createdAt_lte) {
+          where.createdAt.lte = new Date(req.query.createdAt_lte as string);
+        }
+      }
+
+      // Add more filters as needed...
+
+      const [users, count] = await Promise.all([
+        prisma.user.findMany({
+          where,
+          orderBy: { [sortBy]: sortOrder },
+          skip,
+          take: limit,
+          include: { _count: { select: { classifications: true } } },
+        }),
+        prisma.user.count({ where }),
+      ]);
+      const usersWithCounts = users.map((user) => ({
+        ...sanitizeUser(user as any),
+        classificationCount: (user as any)._count?.classifications ?? 0,
+      }));
+
+      const totalPages = Math.ceil(count / limit);
+
+      const response = {
+        count,
+        pages: totalPages,
+        results: usersWithCounts,
+      };
+
+      res.json(response);
     } catch (error) {
-      console.error(error);
-      return res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({
+        error: "Failed to fetch users",
+        message: error.message,
+      });
     }
   };
 
@@ -125,4 +195,3 @@ function adminController() {
 }
 
 export default adminController;
-

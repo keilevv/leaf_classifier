@@ -6,9 +6,11 @@ function useAdmin() {
   const { accessToken } = useStore();
   const [classifications, setClassifications] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [count, setCount] = useState(0);
+  const [classificationsCount, setClassificationsCount] = useState(0);
+  const [usersCount, setUsersCount] = useState(0);
   const [error, setError] = useState(null);
   const [pages, setPages] = useState(1);
+  const [users, setUsers] = useState([]);
 
   function getClassifications(page, limit, sortBy, sortOrder) {
     setIsLoading(true);
@@ -17,7 +19,7 @@ function useAdmin() {
       .then((response) => {
         setClassifications(response.data.results);
         setPages(response.data.pages);
-        setCount(response.data.count);
+        setClassificationsCount(response.data.count);
         setIsLoading(false);
       })
       .catch((error) => {
@@ -26,13 +28,33 @@ function useAdmin() {
         setIsLoading(false);
       });
   }
+  function getUsers(page, limit, sortBy, sortOrder) {
+    setIsLoading(true);
+    return adminService
+      .getAdminUsers(page, limit, sortBy, sortOrder, accessToken)
+      .then((response) => {
+        setUsers(response.data.results);
+        setPages(response.data.pages);
+        setUsersCount(response.data.count);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching users:", error);
+        setError(error);
+        setIsLoading(false);
+      });
+  }
+
   return {
     classifications,
     isLoading,
     error,
     pages,
-    count,
+    classificationsCount,
     getClassifications,
+    users,
+    getUsers,
+    usersCount,
   };
 }
 export default useAdmin;

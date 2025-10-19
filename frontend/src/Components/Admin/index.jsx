@@ -4,15 +4,17 @@ import { FaUsers, FaDatabase } from "react-icons/fa";
 import AdminHeader from "./Header";
 import ClassificationsTable from "./Classifications";
 import UsersTable from "./Users";
+import { useNavigate } from "react-router-dom";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function AdminPage() {
+export default function AdminPage({ initialTab = 0 }) {
   const [headerClassifications, setHeaderClassifications] = useState([]);
   const [headerUsers, setHeaderUsers] = useState([]);
   const [selectedTab, setSelectedTab] = useState("classifications");
+  const navigate = useNavigate();
 
   return (
     <div>
@@ -23,10 +25,13 @@ export default function AdminPage() {
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Tabs */}
-        <Tab.Group>
+        <Tab.Group defaultIndex={initialTab}>
           <Tab.List className="flex space-x-1 rounded-xl bg-green-900/20 p-1 mb-8">
             <Tab
-              onClick={() => setSelectedTab("classifications")}
+              onClick={() => {
+                setSelectedTab("classifications");
+                navigate("/admin/classifications");
+              }}
               className={({ selected }) =>
                 classNames(
                   "flex-1 rounded-lg py-2.5 text-sm font-medium leading-5 cursor-pointer ",
@@ -43,7 +48,10 @@ export default function AdminPage() {
               </div>
             </Tab>
             <Tab
-              onClick={() => setSelectedTab("users")}
+              onClick={() => {
+                setSelectedTab("users");
+                navigate("/admin/users");
+              }}
               className={({ selected }) =>
                 classNames(
                   "flex-1 rounded-lg py-2.5 text-sm font-medium leading-5 cursor-pointer",

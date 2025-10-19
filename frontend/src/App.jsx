@@ -21,7 +21,23 @@ function App() {
           path="/admin"
           element={
             <ProtectedRoute>
-              <Admin />
+              <Admin initialTab={0} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/classifications"
+          element={
+            <ProtectedRoute>
+              <Admin initialTab={0} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute>
+              <Admin initialTab={1} />
             </ProtectedRoute>
           }
         />

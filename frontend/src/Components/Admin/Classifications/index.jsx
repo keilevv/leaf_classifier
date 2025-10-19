@@ -21,7 +21,7 @@ function ClassificationsTable({ setHeaderClassifications = () => {} }) {
     getClassifications,
     classifications: classificationsData,
     pages,
-    count,
+    classificationsCount,
   } = useAdmin();
   // Classifications state
   const [classifications, setClassifications] = useState([]);
@@ -30,10 +30,8 @@ function ClassificationsTable({ setHeaderClassifications = () => {} }) {
   const classificationPageSize = preferences?.pageSize || 6;
   const [classificationStatusFilter, setClassificationStatusFilter] =
     useState("all");
-
   const [isOpen, setIsOpen] = useState(false);
   const [selectedClassification, setSelectedClassification] = useState(null);
-
   const classificationTotalPages = pages;
 
   // Classification actions
@@ -92,7 +90,7 @@ function ClassificationsTable({ setHeaderClassifications = () => {} }) {
   return (
     <>
       {" "}
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+      <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
         {/* Search and Filters */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex flex-col md:flex-row gap-4">
@@ -262,8 +260,12 @@ function ClassificationsTable({ setHeaderClassifications = () => {} }) {
           <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
             <div className="text-sm text-gray-700">
               Showing {(classificationPage - 1) * classificationPageSize + 1} to{" "}
-              {Math.min(classificationPage * classificationPageSize)} of {count}{" "}
-              results
+              {Math.min(classificationPage * classificationPageSize) >
+              classificationsCount
+                ? Math.min(classificationPage * classificationPageSize) -
+                  classifications.length
+                : Math.min(classificationPage * classificationPageSize)}{" "}
+              of {classificationsCount} results
             </div>
             <div className="flex space-x-2">
               <button

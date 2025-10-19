@@ -10,5 +10,11 @@ const adminService = {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
   },
+  getAdminUsers(page, limit, sortBy, sortOrder, accessToken) {
+    return axios.get(`${apiUrl}/admin/users`, {
+      params: { page, limit, sortBy, sortOrder },
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+  },
 };
 export default adminService;
