@@ -5,154 +5,45 @@ import {
   FaTrash,
   FaEye,
   FaCheckCircle,
+  FaImage,
 } from "react-icons/fa";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { formatDate, getStatusBadge } from "../../../utils";
 import { showNotification } from "../../Common/Notification";
-
-// Mock data for classifications
-const mockClassifications = [
-  {
-    id: "1",
-    imageUrl: "/placeholder.svg?height=100&width=100",
-    filename: "maple_leaf.jpg",
-    userName: "María García",
-    userEmail: "maria.garcia@unal.edu.co",
-    classification: "Acer saccharum (Sugar Maple)",
-    confidence: 0.94,
-    uploadDate: "2024-01-15T10:30:00Z",
-    status: "verified",
-  },
-  {
-    id: "2",
-    imageUrl: "/placeholder.svg?height=100&width=100",
-    filename: "oak_leaf.jpg",
-    userName: "Carlos Rodríguez",
-    userEmail: "carlos.rodriguez@unal.edu.co",
-    classification: "Quercus alba (White Oak)",
-    confidence: 0.87,
-    uploadDate: "2024-01-14T14:22:00Z",
-    status: "pending",
-  },
-  {
-    id: "3",
-    imageUrl: "/placeholder.svg?height=100&width=100",
-    filename: "birch_leaf.jpg",
-    userName: "Ana Martínez",
-    userEmail: "ana.martinez@unal.edu.co",
-    classification: "Betula pendula (Silver Birch)",
-    confidence: 0.91,
-    uploadDate: "2024-01-13T09:15:00Z",
-    status: "verified",
-  },
-  {
-    id: "4",
-    imageUrl: "/placeholder.svg?height=100&width=100",
-    filename: "beech_leaf.jpg",
-    userName: "Juan López",
-    userEmail: "juan.lopez@unal.edu.co",
-    classification: "Fagus sylvatica (European Beech)",
-    confidence: 0.88,
-    uploadDate: "2024-01-12T16:45:00Z",
-    status: "rejected",
-  },
-  {
-    id: "5",
-    imageUrl: "/placeholder.svg?height=100&width=100",
-    filename: "elm_leaf.jpg",
-    userName: "María García",
-    userEmail: "maria.garcia@unal.edu.co",
-    classification: "Ulmus americana (American Elm)",
-    confidence: 0.92,
-    uploadDate: "2024-01-11T11:20:00Z",
-    status: "verified",
-  },
-  {
-    id: "6",
-    imageUrl: "/placeholder.svg?height=100&width=100",
-    filename: "pine_needle.jpg",
-    userName: "Carlos Rodríguez",
-    userEmail: "carlos.rodriguez@unal.edu.co",
-    classification: "Pinus sylvestris (Scots Pine)",
-    confidence: 0.85,
-    uploadDate: "2024-01-10T13:30:00Z",
-    status: "pending",
-  },
-  {
-    id: "7",
-    imageUrl: "/placeholder.svg?height=100&width=100",
-    filename: "willow_leaf.jpg",
-    userName: "Ana Martínez",
-    userEmail: "ana.martinez@unal.edu.co",
-    classification: "Salix babylonica (Weeping Willow)",
-    confidence: 0.89,
-    uploadDate: "2024-01-09T08:10:00Z",
-    status: "verified",
-  },
-  {
-    id: "8",
-    imageUrl: "/placeholder.svg?height=100&width=100",
-    filename: "poplar_leaf.jpg",
-    userName: "Juan López",
-    userEmail: "juan.lopez@unal.edu.co",
-    classification: "Populus tremula (Aspen)",
-    confidence: 0.86,
-    uploadDate: "2024-01-08T15:55:00Z",
-    status: "pending",
-  },
-];
+import useAdmin from "../../../hooks/useAdmin";
+import ClassificationBadge from "../../Common/Classifications/ClassificationBadge";
+import UploadModal from "../../Upload/UploadModal";
 
 function ClassificationsTable({ setHeaderClassifications = () => {} }) {
+  const {
+    getClassifications,
+    classifications: classificationsData,
+    pages,
+  } = useAdmin();
   // Classifications state
-  const [classifications, setClassifications] = useState(mockClassifications);
+  const [classifications, setClassifications] = useState([]);
   const [classificationSearch, setClassificationSearch] = useState("");
   const [classificationPage, setClassificationPage] = useState(1);
   const [classificationPageSize] = useState(5);
   const [classificationStatusFilter, setClassificationStatusFilter] =
     useState("all");
 
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedClassification, setSelectedClassification] = useState(null);
+
   // Filter classifications
-  const filteredClassifications = useMemo(() => {
-    return classifications.filter((classification) => {
-      const matchesSearch =
-        classification.userName
-          .toLowerCase()
-          .includes(classificationSearch.toLowerCase()) ||
-        classification.classification
-          .toLowerCase()
-          .includes(classificationSearch.toLowerCase()) ||
-        classification.userEmail
-          .toLowerCase()
-          .includes(classificationSearch.toLowerCase());
+  const filteredClassifications = [];
 
-      const matchesStatus =
-        classificationStatusFilter === "all" ||
-        classification.status === classificationStatusFilter;
-
-      return matchesSearch && matchesStatus;
-    });
-  }, [classifications, classificationSearch, classificationStatusFilter]);
-
-  // Paginate classifications
-  const paginatedClassifications = useMemo(() => {
-    const startIndex = (classificationPage - 1) * classificationPageSize;
-    return filteredClassifications.slice(
-      startIndex,
-      startIndex + classificationPageSize
-    );
-  }, [filteredClassifications, classificationPage, classificationPageSize]);
-
-  const classificationTotalPages = Math.ceil(
-    filteredClassifications.length / classificationPageSize
-  );
+  const classificationTotalPages = pages;
 
   // Classification actions
   const handleViewClassification = (classification) => {
-    showNotification({
-      title: "Classification Details",
-      message: `Viewing classification: ${classification.filename}`,
-      type: "info",
-    });
+    setSelectedClassification(classification);
+    setIsOpen(true);
+  };
+  const closeModal = () => {
+    setIsOpen(false);
+    setSelectedClassification(null);
   };
 
   const handleDeleteClassification = (classification) => {
@@ -188,10 +79,15 @@ function ClassificationsTable({ setHeaderClassifications = () => {} }) {
   };
 
   useEffect(() => {
-    if (classifications.length) {
-      setHeaderClassifications(classifications);
+    if (classificationsData.length) {
+      setHeaderClassifications(classificationsData);
+      setClassifications(classificationsData);
     }
-  }, [classifications]);
+  }, [classificationsData]);
+
+  useEffect(() => {
+    getClassifications(classificationPage, classificationPageSize, "createdAt");
+  }, [classificationPage, classificationPageSize]);
 
   return (
     <>
@@ -244,7 +140,7 @@ function ClassificationsTable({ setHeaderClassifications = () => {} }) {
                   Classification
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Confidence
+                  Filename
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
@@ -258,49 +154,42 @@ function ClassificationsTable({ setHeaderClassifications = () => {} }) {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {paginatedClassifications.length > 0 ? (
-                paginatedClassifications.map((classification) => {
+              {classifications.length > 0 ? (
+                classifications.map((classification) => {
                   const statusBadge = getStatusBadge(classification.status);
                   const StatusIcon = statusBadge.icon;
+                  const filename = classification.imageUrl.split("/").pop();
                   return (
                     <tr key={classification.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <img
                           src={classification.imageUrl || "/placeholder.svg"}
-                          alt={classification.filename}
+                          alt={classification.originalFilename}
                           className="h-12 w-12 rounded-lg object-cover"
                         />
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-medium text-gray-900">
-                            {classification.userName}
+                            {classification.user.fullName}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {classification.userEmail}
+                            {classification.user.email}
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900 max-w-xs">
-                          {classification.classification}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {classification.filename}
-                        </div>
+                        <ClassificationBadge
+                          classification={classification.shape}
+                          confidence={classification.shapeConfidence}
+                        />
+                        <ClassificationBadge
+                          classification={classification.species}
+                          confidence={classification.speciesConfidence}
+                        />
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {Math.round(classification.confidence * 100)}%
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                          <div
-                            className="bg-green-600 h-2 rounded-full"
-                            style={{
-                              width: `${classification.confidence * 100}%`,
-                            }}
-                          />
-                        </div>
+                        <div className="text-sm text-gray-900">{filename}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
@@ -311,7 +200,7 @@ function ClassificationsTable({ setHeaderClassifications = () => {} }) {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(classification.uploadDate)}
+                        {formatDate(classification.createdAt)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex justify-end space-x-2">
@@ -319,7 +208,7 @@ function ClassificationsTable({ setHeaderClassifications = () => {} }) {
                             onClick={() =>
                               handleViewClassification(classification)
                             }
-                            className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded transition-colors"
+                            className=" cursor-pointer text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded transition-colors"
                             title="View"
                           >
                             <FaEye className="h-4 w-4" />
@@ -416,6 +305,12 @@ function ClassificationsTable({ setHeaderClassifications = () => {} }) {
           </div>
         )}
       </div>
+      {/* Modal */}
+      <UploadModal
+        isOpen={isOpen}
+        closeModal={closeModal}
+        selectedUpload={selectedClassification}
+      />
     </>
   );
 }

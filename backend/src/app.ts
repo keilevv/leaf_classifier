@@ -6,6 +6,7 @@ import "../src/lib/passport";
 import authRoutes from "./routes/auth";
 import plantClassifierRoutes from "./routes/plantClassifier";
 import userRoutes from "./routes/user";
+import adminRoutes from "./routes/admin";
 import prisma from "./lib/prisma";
 import { createDefaultAdmin } from "./utils";
 
@@ -58,5 +59,6 @@ app.route("/").get((req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/plant-classifier", plantClassifierRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/admin", adminRoutes);
 
 export default app;

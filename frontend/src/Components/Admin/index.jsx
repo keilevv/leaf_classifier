@@ -1,5 +1,5 @@
 import { Tab } from "@headlessui/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaUsers, FaDatabase } from "react-icons/fa";
 import AdminHeader from "./Header";
 import ClassificationsTable from "./Classifications";
@@ -12,6 +12,7 @@ function classNames(...classes) {
 export default function AdminPage() {
   const [headerClassifications, setHeaderClassifications] = useState([]);
   const [headerUsers, setHeaderUsers] = useState([]);
+
   return (
     <div>
       <AdminHeader

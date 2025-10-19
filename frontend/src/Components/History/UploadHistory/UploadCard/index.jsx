@@ -1,5 +1,6 @@
 import { FaCalendarAlt, FaArchive, FaEye } from "react-icons/fa";
 import { formatDate, getConfidenceColor } from "../../../../utils";
+import ClassificationBadge from "../../../Common/Classifications/ClassificationBadge";
 function UploadCard({ upload, openModal, openConfirmModal }) {
   return (
     <div
@@ -27,24 +28,18 @@ function UploadCard({ upload, openModal, openConfirmModal }) {
           </div>
           <div>
             <p className="text-sm font-medium text-gray-900 mb-1">Species:</p>
-            <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium w-auto self-start ${getConfidenceColor(
-                upload.speciesConfidence
-              )}`}
-            >
-              {upload.species} {Math.round(upload.speciesConfidence * 100)}%
-            </span>
+            <ClassificationBadge
+              classification={upload.species}
+              confidence={upload.speciesConfidence}
+            />
           </div>
 
           <div>
             <p className="text-sm font-medium text-gray-900 mb-1">Shape:</p>
-            <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium w-auto self-start ${getConfidenceColor(
-                upload.shapeConfidence
-              )}`}
-            >
-              {upload.shape} {Math.round(upload.shapeConfidence * 100)}%
-            </span>
+            <ClassificationBadge
+              classification={upload.shape}
+              confidence={upload.shapeConfidence}
+            />
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
