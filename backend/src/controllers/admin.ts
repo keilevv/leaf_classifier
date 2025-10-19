@@ -58,7 +58,13 @@ function adminController() {
 
       // Add more filters as needed...
 
-      const [classifications, count] = await Promise.all([
+      const [
+        classifications,
+        count,
+        totalVerifiedCount,
+        totalPendingCount,
+        totalArchivedCount,
+      ] = await Promise.all([
         prisma.classification.findMany({
           where,
           orderBy: { [sortBy]: sortOrder },
@@ -67,6 +73,9 @@ function adminController() {
           include: { user: true },
         }),
         prisma.classification.count({ where }),
+        prisma.classification.count({ where: { ...where, status: "VERIFIED", isArchived: false } }),
+        prisma.classification.count({ where: { ...where, status: "PENDING", isArchived: false } }),
+        prisma.classification.count({ where: { ...where, isArchived: true } }),
       ]);
 
       // Add full URL for images (R2 or local)
@@ -98,6 +107,9 @@ function adminController() {
       const response = {
         count,
         pages: totalPages,
+        totalVerifiedCount,
+        totalPendingCount,
+        totalArchivedCount,
         results: classificationsWithUrls,
       };
 

@@ -13,7 +13,7 @@ import { showNotification } from "../../Common/Notification";
 import useAdmin from "../../../hooks/useAdmin";
 import useStore from "../../../hooks/useStore";
 
-function UsersTable({ setHeaderUsers = () => {} }) {
+function UsersTable({ setUsersCount = () => {} }) {
   const { preferences } = useStore();
   // Users state
   const [users, setUsers] = useState([]);
@@ -68,10 +68,10 @@ function UsersTable({ setHeaderUsers = () => {} }) {
 
   useEffect(() => {
     if (usersData.length) {
-      setHeaderUsers(usersData);
+      setUsersCount({ total: usersCount.total });
       setUsers(usersData);
     }
-  }, [usersData]);
+  }, [usersData, usersCount]);
 
   return (
     <>

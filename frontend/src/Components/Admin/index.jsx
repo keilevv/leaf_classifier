@@ -11,8 +11,13 @@ function classNames(...classes) {
 }
 
 export default function AdminPage({ initialTab = 0 }) {
-  const [headerClassifications, setHeaderClassifications] = useState([]);
-  const [headerUsers, setHeaderUsers] = useState([]);
+  const [classificationsCount, setClassificationsCount] = useState({
+    total: 0,
+    verified: 0,
+    pending: 0,
+    archived: 0,
+  });
+  const [usersCount, setUsersCount] = useState({ total: 0 });
   const [selectedTab, setSelectedTab] = useState("classifications");
   const navigate = useNavigate();
 
@@ -20,8 +25,8 @@ export default function AdminPage({ initialTab = 0 }) {
     <div>
       <AdminHeader
         selectedTab={selectedTab}
-        classifications={headerClassifications}
-        users={headerUsers}
+        classificationsCount={classificationsCount}
+        usersCount={usersCount}
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Tabs */}
@@ -73,13 +78,13 @@ export default function AdminPage({ initialTab = 0 }) {
             {/* Classifications Panel */}
             <Tab.Panel>
               <ClassificationsTable
-                setHeaderClassifications={setHeaderClassifications}
+                setClassificationsCount={setClassificationsCount}
               />
             </Tab.Panel>
 
             {/* Users Panel */}
             <Tab.Panel>
-              <UsersTable setHeaderUsers={setHeaderUsers} />
+              <UsersTable setUsersCount={setUsersCount} />
             </Tab.Panel>
           </Tab.Panels>
         </Tab.Group>

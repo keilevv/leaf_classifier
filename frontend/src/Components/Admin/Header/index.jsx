@@ -1,6 +1,6 @@
 function AdminHeader({
-  classifications,
-  users,
+  classificationsCount = { total: 0, verified: 0, pending: 0, archived: 0 },
+  usersCount = { total: 0 },
   selectedTab = "classifications",
 }) {
   function renderContent() {
@@ -10,19 +10,19 @@ function AdminHeader({
           {" "}
           <div className="text-center">
             <div className="text-3xl font-bold text-green-600">
-              {classifications.length}
+              {classificationsCount.total}
             </div>
             <div className="text-sm text-gray-600">Total Classifications</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-green-600">
-              {classifications.filter((c) => c.status === "VERIFIED").length}
+              {classificationsCount.verified}
             </div>
             <div className="text-sm text-gray-600">Verified</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-yellow-600">
-              {classifications.filter((c) => c.status === "PENDING").length}
+              {classificationsCount.pending}
             </div>
             <div className="text-sm text-gray-600">Pending</div>
           </div>
@@ -34,7 +34,7 @@ function AdminHeader({
         <>
           <div className="text-center">
             <div className="text-3xl font-bold text-blue-600">
-              {users.length}
+              {usersCount.total}
             </div>
             <div className="text-sm text-gray-600">Total Users</div>
           </div>

@@ -15,7 +15,7 @@ import useStore from "../../../hooks/useStore";
 import ClassificationBadge from "../../Common/Classifications/ClassificationBadge";
 import UploadModal from "../../Upload/UploadModal";
 
-function ClassificationsTable({ setHeaderClassifications = () => {} }) {
+function ClassificationsTable({ setClassificationsCount = () => {} }) {
   const { preferences } = useStore();
   const {
     getClassifications,
@@ -78,10 +78,10 @@ function ClassificationsTable({ setHeaderClassifications = () => {} }) {
 
   useEffect(() => {
     if (classificationsData.length) {
-      setHeaderClassifications(classificationsData);
       setClassifications(classificationsData);
+      setClassificationsCount(classificationsCount);
     }
-  }, [classificationsData]);
+  }, [classificationsData, classificationsCount]);
 
   useEffect(() => {
     getClassifications(classificationPage, classificationPageSize, "createdAt");
@@ -261,11 +261,11 @@ function ClassificationsTable({ setHeaderClassifications = () => {} }) {
             <div className="text-sm text-gray-700">
               Showing {(classificationPage - 1) * classificationPageSize + 1} to{" "}
               {Math.min(classificationPage * classificationPageSize) >
-              classificationsCount
+              classificationsCount.total
                 ? Math.min(classificationPage * classificationPageSize) -
                   classifications.length
                 : Math.min(classificationPage * classificationPageSize)}{" "}
-              of {classificationsCount} results
+              of {classificationsCount.total} results
             </div>
             <div className="flex space-x-2">
               <button

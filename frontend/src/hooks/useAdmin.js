@@ -6,8 +6,13 @@ function useAdmin() {
   const { accessToken } = useStore();
   const [classifications, setClassifications] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [classificationsCount, setClassificationsCount] = useState(0);
-  const [usersCount, setUsersCount] = useState(0);
+  const [classificationsCount, setClassificationsCount] = useState({
+    total: 0,
+    verified: 0,
+    pending: 0,
+    archived: 0,
+  });
+  const [usersCount, setUsersCount] = useState({ total: 0 });
   const [error, setError] = useState(null);
   const [pages, setPages] = useState(1);
   const [users, setUsers] = useState([]);
@@ -19,7 +24,12 @@ function useAdmin() {
       .then((response) => {
         setClassifications(response.data.results);
         setPages(response.data.pages);
-        setClassificationsCount(response.data.count);
+        setClassificationsCount({
+          total: response.data.count,
+          verified: response.data.totalVerifiedCount,
+          pending: response.data.totalPendingCount,
+          archived: response.data.totalArchivedCount,
+        });
         setIsLoading(false);
       })
       .catch((error) => {
@@ -35,7 +45,7 @@ function useAdmin() {
       .then((response) => {
         setUsers(response.data.results);
         setPages(response.data.pages);
-        setUsersCount(response.data.count);
+        setUsersCount({ total: response.data.count });
         setIsLoading(false);
       })
       .catch((error) => {
