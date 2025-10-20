@@ -25,15 +25,14 @@ services:
     environment:
       - HOST=0.0.0.0
       - PORT=5000
-      - VIRTUAL_HOST=${BACKEND_VIRTUAL_HOST:-api.plantai.lab.utb.edu.co}
-      - LETSENCRYPT_HOST=${BACKEND_VIRTUAL_HOST:-api.plantai.lab.utb.edu.co}
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-cvillalba@utb.edu.co}
     env_file:
       - ./backend/.env.prod
     volumes:
       - ./backend/prisma:/usr/src/app/prisma
     restart: unless-stopped
     # Let the nginx-proxy handle external ports via VIRTUAL_HOST. Do not expose 5000 directly.
+    ports:
+      - "5000:5000"
     networks:
       - leaf-network
     command: >
@@ -47,10 +46,6 @@ services:
       context: ./classifier
       dockerfile: Dockerfile
     container_name: leaf-classifier
-    environment:
-      - VIRTUAL_HOST=${CLASSIFIER_VIRTUAL_HOST:-classifier.plantai.lab.utb.edu.co}
-      - LETSENCRYPT_HOST=${CLASSIFIER_VIRTUAL_HOST:-classifier.plantai.lab.utb.edu.co}
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-cvillalba@utb.edu.co}
     restart: unless-stopped
     networks:
       - leaf-network
@@ -61,59 +56,20 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.prod
       args:
-        VITE_API_URL: ${VITE_API_URL:-https://api.plantai.lab.utb.edu.co/api}
+        VITE_API_URL: ${VITE_API_URL:-http://plantai.lab.utb.edu.co:5000/api}
     container_name: leaf-frontend
     environment:
-      - VITE_API_URL=${VITE_API_URL:-https://api.plantai.lab.utb.edu.co/api}
-      - VIRTUAL_HOST=${VIRTUAL_HOST:-plantai.lab.utb.edu.co}
-      - LETSENCRYPT_HOST=${LETSENCRYPT_HOST:-plantai.lab.utb.edu.co}
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-cvillalba@utb.edu.co}
+      - VITE_API_URL=${VITE_API_URL:-http://plantai.lab.utb.edu.co:5000/api}
     depends_on:
       - backend
     # Do not publish port 80 directly when using the nginx-proxy; the proxy will handle host routing and TLS.
     # If you want to keep direct access during debugging, uncomment the ports mapping below.
-    # ports:
-    #   - "80:80"
+    ports:
+      - "80:80"
     env_file:
       - ./frontend/.env.prod
     volumes:
       - ./frontend/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - vhost:/etc/nginx/vhost.d
-      - certs:/etc/nginx/certs:ro
-    restart: unless-stopped
-    networks:
-      - leaf-network
-
-  # Reverse proxy (automatically routes to containers by VIRTUAL_HOST)
-  nginx-proxy:
-    image: jwilder/nginx-proxy:latest
-    container_name: nginx-proxy
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-      - vhost:/etc/nginx/vhost.d
-      - certs:/etc/nginx/certs
-      - webroot:/usr/share/nginx/html
-    restart: unless-stopped
-    networks:
-      - leaf-network
-
-  # Let's Encrypt companion that requests/renew certificates for nginx-proxy
-  nginx-letsencrypt:
-    image: nginxproxy/acme-companion:latest
-    container_name: nginx-letsencrypt
-    depends_on:
-      - nginx-proxy
-    environment:
-      - NGINX_PROXY_CONTAINER=nginx-proxy
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - vhost:/etc/nginx/vhost.d
-      - certs:/etc/nginx/certs
-      - webroot:/usr/share/nginx/html
-      - acme:/etc/acme.sh
     restart: unless-stopped
     networks:
       - leaf-network
@@ -125,7 +81,3 @@ networks:
 volumes:
   postgres_data:
   frontend-dist:
-  vhost:
-  certs:
-  acme:
-  webroot:
