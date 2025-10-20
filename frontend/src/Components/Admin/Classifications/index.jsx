@@ -7,8 +7,9 @@ import {
   FaCheckCircle,
   FaImage,
 } from "react-icons/fa";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { formatDate, getStatusBadge } from "../../../utils";
+import _debounce from "lodash/debounce";
 import { showNotification } from "../../Common/Notification";
 import useAdmin from "../../../hooks/useAdmin";
 import useStore from "../../../hooks/useStore";
@@ -25,14 +26,13 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
   } = useAdmin();
   // Classifications state
   const [classifications, setClassifications] = useState([]);
-  const [classificationSearch, setClassificationSearch] = useState("");
-  const [classificationPage, setClassificationPage] = useState(1);
-  const classificationPageSize = preferences?.pageSize || 6;
-  const [classificationStatusFilter, setClassificationStatusFilter] =
-    useState("all");
+  const [searchString, setSearchString] = useState("");
+  const [page, setPage] = useState(1);
+  const pageSize = preferences?.pageSize || 6;
+  const [statusFilter, setStatusFilter] = useState("all");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedClassification, setSelectedClassification] = useState(null);
-  const classificationTotalPages = pages;
+  const totalPages = pages;
 
   // Classification actions
   const handleViewClassification = (classification) => {
@@ -84,8 +84,22 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
   }, [classificationsData, classificationsCount]);
 
   useEffect(() => {
-    getClassifications(classificationPage, classificationPageSize, "createdAt");
-  }, [classificationPage, classificationPageSize]);
+    const filters = {};
+    if (searchString.length) {
+      filters.search = searchString;
+    }
+    if (statusFilter !== "all") {
+      filters.status = statusFilter;
+    }
+    getClassifications(page, pageSize, "createdAt", "desc", filters);
+  }, [page, pageSize, searchString, statusFilter]);
+
+  function handleSearch(inputValue) {
+    setSearchString(inputValue);
+    setPage(1);
+  }
+
+  const debouncedSearch = useCallback(_debounce(handleSearch, 300), []);
 
   return (
     <>
@@ -99,19 +113,17 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
               <input
                 type="text"
                 placeholder="Search by username or classification..."
-                value={classificationSearch}
                 onChange={(e) => {
-                  setClassificationSearch(e.target.value);
-                  setClassificationPage(1);
+                  debouncedSearch(e.target.value);
                 }}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
               />
             </div>
             <select
-              value={classificationStatusFilter}
+              value={statusFilter}
               onChange={(e) => {
-                setClassificationStatusFilter(e.target.value);
-                setClassificationPage(1);
+                setStatusFilter(e.target.value);
+                setPage(1);
               }}
               className="px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
             >
@@ -256,50 +268,43 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
         </div>
 
         {/* Pagination */}
-        {classificationTotalPages > 1 && (
+        {totalPages > 1 && (
           <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
             <div className="text-sm text-gray-700">
-              Showing {(classificationPage - 1) * classificationPageSize + 1} to{" "}
-              {Math.min(classificationPage * classificationPageSize) >
-              classificationsCount.total
-                ? Math.min(classificationPage * classificationPageSize) -
-                  classifications.length
-                : Math.min(classificationPage * classificationPageSize)}{" "}
+              Showing {(page - 1) * pageSize + 1} to{" "}
+              {Math.min(page * pageSize) > classificationsCount.total
+                ? Math.min(page * pageSize) - classifications.length
+                : Math.min(page * pageSize)}{" "}
               of {classificationsCount.total} results
             </div>
             <div className="flex space-x-2">
               <button
-                onClick={() =>
-                  setClassificationPage((prev) => Math.max(1, prev - 1))
-                }
-                disabled={classificationPage === 1}
+                onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                disabled={page === 1}
                 className=" cursor-pointer px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <FaChevronLeft className="h-4 w-4" />
               </button>
-              {Array.from(
-                { length: classificationTotalPages },
-                (_, i) => i + 1
-              ).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => setClassificationPage(page)}
-                  className={`cursor-pointer px-4 py-2 border rounded-md text-sm font-medium transition-colors ${
-                    classificationPage === page
-                      ? "bg-green-600 text-white border-green-600"
-                      : "border-gray-300 text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <button
+                    key={page}
+                    onClick={() => setPage(page)}
+                    className={`cursor-pointer px-4 py-2 border rounded-md text-sm font-medium transition-colors ${
+                      page === page
+                        ? "bg-green-600 text-white border-green-600"
+                        : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                )
+              )}
               <button
                 onClick={() =>
-                  setClassificationPage((prev) =>
-                    Math.min(classificationTotalPages, prev + 1)
-                  )
+                  setPage((prev) => Math.min(totalPages, prev + 1))
                 }
-                disabled={classificationPage === classificationTotalPages}
+                disabled={page === totalPages}
                 className="cursor-pointer px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <FaChevronRight className="h-4 w-4" />
