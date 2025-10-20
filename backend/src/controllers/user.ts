@@ -60,7 +60,7 @@ function userController() {
         fullName,
         email,
         phone,
-        institution,  
+        institution,
         department,
         location,
         bio,
@@ -84,6 +84,7 @@ function userController() {
       return res.status(500).json({ error: "Internal server error" });
     }
   };
+
   return { getUser, updateUser };
 }
 

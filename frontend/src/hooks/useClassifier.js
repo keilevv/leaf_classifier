@@ -43,6 +43,7 @@ function useClassifier() {
         setIsLoading(false);
       });
   }
+  
   function updateClassification(id, data) {
     setIsLoading(true);
     return plantClassifierService

@@ -30,8 +30,9 @@ services:
     volumes:
       - ./backend/prisma:/usr/src/app/prisma
     restart: unless-stopped
+    # Let the nginx-proxy handle external ports via VIRTUAL_HOST. Do not expose 5000 directly.
     ports:
-      - '5000:5000'
+      - "5000:5000"
     networks:
       - leaf-network
     command: >
@@ -46,8 +47,6 @@ services:
       dockerfile: Dockerfile
     container_name: leaf-classifier
     restart: unless-stopped
-    ports:
-      - '8000:8000'
     networks:
       - leaf-network
 
@@ -60,9 +59,11 @@ services:
         VITE_API_URL: ${VITE_API_URL:-http://plantai.lab.utb.edu.co:5000/api}
     container_name: leaf-frontend
     environment:
-      - VITE_API_URL=${VITE_API_URL:-http://plantai.lab.utb.edu.co/api}
+      - VITE_API_URL=${VITE_API_URL:-http://plantai.lab.utb.edu.co:5000/api}
     depends_on:
       - backend
+    # Do not publish port 80 directly when using the nginx-proxy; the proxy will handle host routing and TLS.
+    # If you want to keep direct access during debugging, uncomment the ports mapping below.
     ports:
       - "80:80"
     env_file:

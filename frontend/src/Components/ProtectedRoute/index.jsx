@@ -17,6 +17,7 @@ const ProtectedRoute = ({ children }) => {
         setIsValidSession(true);
       } else {
         setIsValidSession(false);
+        navigate("/login");
       }
     } catch (error) {
       setIsValidSession(false);

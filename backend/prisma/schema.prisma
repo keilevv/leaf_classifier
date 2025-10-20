@@ -7,6 +7,12 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+enum UserRole {
+  USER
+  CONTRIBUTOR
+  MODERATOR
+  ADMIN
+}
 
 model User {
   id             String   @id @default(cuid())
@@ -17,7 +23,7 @@ model User {
   googleId       String?  @unique
   createdAt      DateTime @default(now())
   classifications Classification[] // <-- Add this line
-  role           String   @default("user")
+  role          UserRole @default(USER)
   updatedAt     DateTime @default(now())
   department    String?
   institution   String?
@@ -26,6 +32,11 @@ model User {
   emailNotifications Boolean @default(true)
 }
   
+enum ClassificationStatus {
+  PENDING
+  VERIFIED    
+  REJECTED
+}
 
 model Classification {
   id            String   @id @default(cuid())
@@ -40,4 +51,6 @@ model Classification {
   userId        String
   isArchived    Boolean  @default(false)
   updatedAt     DateTime @default(now())
+  status        ClassificationStatus   @default(PENDING)
 }
+

@@ -6,6 +6,7 @@ import axios from "axios";
 import FormData from "form-data";
 import { R2Service } from "../services/r2Service";
 import { v4 as uuidv4 } from "uuid";
+import { sanitizeUser } from "../utils";
 
 // Extend the Request interface to include user and file properties
 interface AuthenticatedRequest extends Request {
@@ -253,6 +254,7 @@ function plantClassifierController() {
           orderBy: { [sortBy]: sortOrder },
           skip,
           take: limit,
+          include: { user: true },
         }),
         prisma.classification.count({ where }),
       ]);
@@ -275,6 +277,9 @@ function plantClassifierController() {
         return {
           ...classification,
           imageUrl,
+          user: (classification as any).user
+            ? sanitizeUser((classification as any).user)
+            : undefined,
         };
       });
 
