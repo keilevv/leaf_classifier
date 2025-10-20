@@ -25,8 +25,17 @@ process.on("SIGINT", async () => {
 // CORS middleware (adjust origin as needed)
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173", // frontend URL
-    credentials: true, // allow cookies/session across origins
+    origin: [
+      process.env.FRONTEND_URL || "http://localhost:5173",
+      "http://plantai.lab.utb.edu.co", // dominio web
+      "capacitor://localhost", // app Android/iOS con Capacitor
+      "ionic://localhost", // por si usas Ionic
+      "http://localhost", // pruebas locales
+      "http://127.0.0.1", // alternativa local
+    ],
+    methods: ["GET", "POST", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   })
 );
 

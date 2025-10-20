@@ -17,10 +17,17 @@ function useAdmin() {
   const [pages, setPages] = useState(1);
   const [users, setUsers] = useState([]);
 
-  function getClassifications(page, limit, sortBy, sortOrder) {
+  function getClassifications(page, limit, sortBy, sortOrder, filters = {}) {
     setIsLoading(true);
     return adminService
-      .getAdminclassifications(page, limit, sortBy, sortOrder, accessToken)
+      .getAdminclassifications(
+        page,
+        limit,
+        sortBy,
+        sortOrder,
+        filters,
+        accessToken
+      )
       .then((response) => {
         setClassifications(response.data.results);
         setPages(response.data.pages);
