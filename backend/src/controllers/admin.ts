@@ -14,6 +14,9 @@ function adminController() {
     const skip = (page - 1) * limit;
     const sortBy = (req.query.sortBy as string) || "createdAt";
     const sortOrder = (req.query.sortOrder as "asc" | "desc") || "desc";
+    const searchQuery = (req.query.search as string) || "";
+    const status = (req.query.status as string) || "ALL";
+    const isArchived = (req.query.isArchived as string) || "false";
 
     try {
       if (!req.user) {
@@ -24,13 +27,15 @@ function adminController() {
       // Build Prisma where filter
       const where: any = {};
 
-      // // Filter by isArchived, default to false if not provided
-      // if (typeof req.query.isArchived !== "undefined") {
-      //   if (req.query.isArchived === "true") where.isArchived = true;
-      //   else if (req.query.isArchived === "false") where.isArchived = false;
-      // } else {
-      //   where.isArchived = false;
-      // }
+      if (isArchived === "true") {
+        where.isArchived = true;
+      } else if (isArchived === "false" || isArchived === "undefined") {
+        where.isArchived = false;
+      }
+
+      if (status !== "ALL") {
+        where.status = status;
+      }
 
       // Filter by classification (exact match)
       if (req.query.classification) {
@@ -56,7 +61,20 @@ function adminController() {
         }
       }
 
-      // Add more filters as needed...
+      // Search filter
+      if (searchQuery) {
+        where.OR = [
+          { shape: { contains: searchQuery, mode: "insensitive" } },
+          { species: { contains: searchQuery, mode: "insensitive" } },
+          { originalFilename: { contains: searchQuery, mode: "insensitive" } },
+          {
+            user: { fullName: { contains: searchQuery, mode: "insensitive" } },
+          },
+          {
+            user: { email: { contains: searchQuery, mode: "insensitive" } },
+          },
+        ];
+      }
 
       const [
         classifications,
@@ -73,8 +91,12 @@ function adminController() {
           include: { user: true },
         }),
         prisma.classification.count({ where }),
-        prisma.classification.count({ where: { ...where, status: "VERIFIED", isArchived: false } }),
-        prisma.classification.count({ where: { ...where, status: "PENDING", isArchived: false } }),
+        prisma.classification.count({
+          where: { ...where, status: "VERIFIED", isArchived: false },
+        }),
+        prisma.classification.count({
+          where: { ...where, status: "PENDING", isArchived: false },
+        }),
         prisma.classification.count({ where: { ...where, isArchived: true } }),
       ]);
 

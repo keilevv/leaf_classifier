@@ -29,7 +29,8 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
   const [searchString, setSearchString] = useState("");
   const [page, setPage] = useState(1);
   const pageSize = preferences?.pageSize || 6;
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [isArchived, setIsArchived] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedClassification, setSelectedClassification] = useState(null);
   const totalPages = pages;
@@ -77,7 +78,7 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
   };
 
   useEffect(() => {
-    if (classificationsData.length) {
+    if (classificationsData) {
       setClassifications(classificationsData);
       setClassificationsCount(classificationsCount);
     }
@@ -88,11 +89,13 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
     if (searchString.length) {
       filters.search = searchString;
     }
-    if (statusFilter !== "all") {
+    if (statusFilter !== "ALL") {
       filters.status = statusFilter;
     }
+    filters.isArchived = isArchived;
+    
     getClassifications(page, pageSize, "createdAt", "desc", filters);
-  }, [page, pageSize, searchString, statusFilter]);
+  }, [page, pageSize, searchString, statusFilter, isArchived]);
 
   function handleSearch(inputValue) {
     setSearchString(inputValue);
@@ -100,6 +103,7 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
   }
 
   const debouncedSearch = useCallback(_debounce(handleSearch, 300), []);
+  console.log("statusFilter", statusFilter);
 
   return (
     <>
@@ -122,15 +126,21 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
             <select
               value={statusFilter}
               onChange={(e) => {
-                setStatusFilter(e.target.value);
+                if (e.target.value === "ARCHIVED") {
+                  setIsArchived(true);
+                } else {
+                  setIsArchived(false);
+                  setStatusFilter(e.target.value);
+                }
                 setPage(1);
               }}
               className="px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
             >
-              <option value="all">All Status</option>
-              <option value="verified">Verified</option>
-              <option value="pending">Pending</option>
-              <option value="rejected">Rejected</option>
+              <option value="ALL">All Status</option>
+              <option value="VERIFIED">Verified</option>
+              <option value="PENDING">Pending</option>
+              <option value="REJECTED">Rejected</option>
+              <option value="ARCHIVED">Archived</option>
             </select>
           </div>
         </div>

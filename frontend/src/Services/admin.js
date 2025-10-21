@@ -15,6 +15,8 @@ const adminService = {
     return axios.get(
       `${apiUrl}/admin/classifications/?${
         filters.search ? `search=${filters.search}` : ""
+      } ${filters.status ? `&status=${filters.status}` : ""} ${
+        filters.isArchived ? `&isArchived=${filters.isArchived}` : ""
       }`,
       {
         params: { page, limit, sortBy, sortOrder },
