@@ -118,7 +118,7 @@ function DetailsForm({ user, loading, onUpdate }) {
   return (
     <form onSubmit={handleUserSubmit} className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <h2 className="text-xl font-semibold text-green-700 mb-4">
           Personal Information
         </h2>
         <div className="grid md:grid-cols-2 gap-6">
@@ -256,7 +256,7 @@ function DetailsForm({ user, loading, onUpdate }) {
 
       {/* Password Section */}
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
+        <h3 className="text-lg font-semibold text-green-700 mb-4">
           Change Password
         </h3>
         <div className="grid md:grid-cols-2 gap-6">

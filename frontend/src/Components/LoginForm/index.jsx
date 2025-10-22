@@ -99,8 +99,13 @@ export default function LoginForm({
               },
             },
           });
-          setSelectedPage("upload");
-          navigate("/upload");
+          if (response.role === "ADMIN") {
+            setSelectedPage("admin");
+            navigate("/admin");
+          } else {
+            setSelectedPage("upload");
+            navigate("/upload");
+          }
           setIsLoading(false);
         })
         .catch((error) => {

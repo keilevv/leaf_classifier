@@ -45,10 +45,10 @@ function useAdmin() {
         setIsLoading(false);
       });
   }
-  function getUsers(page, limit, sortBy, sortOrder) {
+  function getUsers(page, limit, sortBy, sortOrder, filters = {}) {
     setIsLoading(true);
     return adminService
-      .getAdminUsers(page, limit, sortBy, sortOrder, accessToken)
+      .getAdminUsers(page, limit, sortBy, sortOrder, filters, accessToken)
       .then((response) => {
         setUsers(response.data.results);
         setPages(response.data.pages);

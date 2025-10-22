@@ -1,6 +1,6 @@
 import { Tab } from "@headlessui/react";
-import { useState, useEffect } from "react";
-import { FaUsers, FaDatabase } from "react-icons/fa";
+import { useState } from "react";
+import { FaUsers, FaImages } from "react-icons/fa";
 import AdminHeader from "./Header";
 import ClassificationsTable from "./Classifications";
 import UsersTable from "./Users";
@@ -48,7 +48,7 @@ export default function AdminPage({ initialTab = 0 }) {
               }
             >
               <div className="flex items-center justify-center space-x-2">
-                <FaDatabase className="h-4 w-4" />
+                <FaImages className="h-4 w-4" />
                 <span className="font-bold">Classifications</span>
               </div>
             </Tab>

@@ -4,7 +4,6 @@ import { showNotification } from "../../Common/Notification";
 import useStore from "../../../hooks/useStore";
 import useUser from "../../../hooks/useUser";
 function PreferencesForm({ user, loading, onUpdate = () => {} }) {
-  console.log("user", user);
   const { updateUser } = useUser();
   const { preferences: storePreferences, setPreferences: setStorePreferences } =
     useStore();
@@ -95,7 +94,7 @@ function PreferencesForm({ user, loading, onUpdate = () => {} }) {
   return (
     <form onSubmit={handlePreferencesSubmit} className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <h2 className="text-xl font-semibold text-green-700 mb-4">
           Application Preferences
         </h2>
 
