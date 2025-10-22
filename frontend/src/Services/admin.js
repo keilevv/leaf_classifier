@@ -12,21 +12,14 @@ const adminService = {
     filters,
     accessToken
   ) {
-    return axios.get(
-      `${apiUrl}/admin/classifications/?${
-        filters.search ? `search=${filters.search}` : ""
-      } ${filters.status ? `&status=${filters.status}` : ""} ${
-        filters.isArchived ? `&isArchived=${filters.isArchived}` : ""
-      }`,
-      {
-        params: { page, limit, sortBy, sortOrder },
-        headers: { Authorization: `Bearer ${accessToken}` },
-      }
-    );
+    return axios.get(`${apiUrl}/admin/classifications`, {
+      params: { page, limit, sortBy, sortOrder, ...filters },
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
   },
-  getAdminUsers(page, limit, sortBy, sortOrder, accessToken) {
+  getAdminUsers(page, limit, sortBy, sortOrder, filters, accessToken) {
     return axios.get(`${apiUrl}/admin/users`, {
-      params: { page, limit, sortBy, sortOrder },
+      params: { page, limit, sortBy, sortOrder, ...filters },
       headers: { Authorization: `Bearer ${accessToken}` },
     });
   },

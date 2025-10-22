@@ -89,11 +89,9 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
     if (searchString.length) {
       filters.search = searchString;
     }
-    if (statusFilter !== "ALL") {
-      filters.status = statusFilter;
-    }
+    filters.status = statusFilter;
     filters.isArchived = isArchived;
-    
+
     getClassifications(page, pageSize, "createdAt", "desc", filters);
   }, [page, pageSize, searchString, statusFilter, isArchived]);
 
@@ -103,7 +101,6 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
   }
 
   const debouncedSearch = useCallback(_debounce(handleSearch, 300), []);
-  console.log("statusFilter", statusFilter);
 
   return (
     <>

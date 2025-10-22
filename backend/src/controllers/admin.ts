@@ -27,27 +27,14 @@ function adminController() {
       // Build Prisma where filter
       const where: any = {};
 
-      if (isArchived === "true") {
-        where.isArchived = true;
-      } else if (isArchived === "false" || isArchived === "undefined") {
-        where.isArchived = false;
-      }
-
       if (status !== "ALL") {
         where.status = status;
       }
 
-      // Filter by classification (exact match)
-      if (req.query.classification) {
-        where.classification = req.query.classification;
-      }
-
-      // Filter by originalFilename (partial match)
-      if (req.query.originalFilename) {
-        where.originalFilename = {
-          contains: req.query.originalFilename as string,
-          mode: "insensitive",
-        };
+      if (isArchived === "true") {
+        where.isArchived = true;
+      } else if (isArchived === "false" || isArchived === "undefined") {
+        where.isArchived = false;
       }
 
       // Date filters
@@ -68,10 +55,16 @@ function adminController() {
           { species: { contains: searchQuery, mode: "insensitive" } },
           { originalFilename: { contains: searchQuery, mode: "insensitive" } },
           {
-            user: { fullName: { contains: searchQuery, mode: "insensitive" } },
+            user: {
+              is: {
+                fullName: { contains: searchQuery, mode: "insensitive" },
+              },
+            },
           },
           {
-            user: { email: { contains: searchQuery, mode: "insensitive" } },
+            user: {
+              is: { email: { contains: searchQuery, mode: "insensitive" } },
+            },
           },
         ];
       }
@@ -149,6 +142,9 @@ function adminController() {
     const skip = (page - 1) * limit;
     const sortBy = (req.query.sortBy as string) || "createdAt";
     const sortOrder = (req.query.sortOrder as "asc" | "desc") || "desc";
+    const searchQuery = (req.query.search as string) || "";
+    const role = (req.query.role as string) || "ALL";
+    const isArchived = (req.query.isArchived as string) || "false";
 
     try {
       if (!req.user) {
@@ -157,27 +153,13 @@ function adminController() {
       }
       const where: any = {};
 
-      // // Filter by isArchived, default to false if not provided
-      // if (typeof req.query.isArchived !== "undefined") {
-      //   if (req.query.isArchived === "true") where.isArchived = true;
-      //   else if (req.query.isArchived === "false") where.isArchived = false;
-      // } else {
-      //   where.isArchived = false;
-      // }
-
-      // Filter by originalFilename (partial match)
-      if (req.query.email) {
-        where.email = {
-          contains: req.query.email as string,
-          mode: "insensitive",
-        };
+      if (role !== "ALL") {
+        where.role = role;
       }
-
-      if (req.query.fullName) {
-        where.fullName = {
-          contains: req.query.fullName as string,
-          mode: "insensitive",
-        };
+      if (isArchived === "true") {
+        where.isArchived = true;
+      } else if (isArchived === "false" || isArchived === "undefined") {
+        where.isArchived = false;
       }
 
       // Date filters
@@ -189,6 +171,14 @@ function adminController() {
         if (req.query.createdAt_lte) {
           where.createdAt.lte = new Date(req.query.createdAt_lte as string);
         }
+      }
+
+      // Search query
+      if (searchQuery) {
+        where.OR = [
+          { email: { contains: searchQuery, mode: "insensitive" } },
+          { fullName: { contains: searchQuery, mode: "insensitive" } },
+        ];
       }
 
       // Add more filters as needed...

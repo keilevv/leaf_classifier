@@ -7,8 +7,9 @@ import {
   FaEdit,
   FaUsers,
 } from "react-icons/fa";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { formatDate, getRoleBadge } from "../../../utils";
+import _debounce from "lodash/debounce";
 import { showNotification } from "../../Common/Notification";
 import useAdmin from "../../../hooks/useAdmin";
 import useStore from "../../../hooks/useStore";
@@ -17,13 +18,15 @@ function UsersTable({ setUsersCount = () => {} }) {
   const { preferences } = useStore();
   // Users state
   const [users, setUsers] = useState([]);
-  const [userSearch, setUserSearch] = useState("");
-  const [userPage, setUserPage] = useState(1);
-  const userPageSize = preferences?.pageSize || 6;
-  const [userRoleFilter, setUserRoleFilter] = useState("all");
+  const [searchString, setSearchString] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [page, setPage] = useState(1);
+  const pageSize = preferences?.pageSize || 6;
+  const [userRoleFilter, setUserRoleFilter] = useState("ALL");
+  const [isArchived, setIsArchived] = useState(false);
   const { users: usersData, getUsers, usersCount } = useAdmin();
 
-  const userTotalPages = Math.ceil(users.length / userPageSize);
+  const totalPages = Math.ceil(users.length / pageSize);
 
   // User actions
   const handleEditUser = (user) => {
@@ -63,15 +66,35 @@ function UsersTable({ setUsersCount = () => {} }) {
   };
 
   useEffect(() => {
-    getUsers(userPage, userPageSize, "createdAt");
-  }, [userPage, userPageSize]);
+    const filters = {};
+    if (searchString.length) {
+      filters.search = searchString;
+    }
+    filters.role = userRoleFilter;
+    filters.isArchived = isArchived;
+
+    getUsers(page, pageSize, "createdAt", "desc", filters);
+  }, [page, pageSize, userRoleFilter, searchString, isArchived]);
 
   useEffect(() => {
-    if (usersData.length) {
+    if (usersData) {
       setUsersCount({ total: usersCount.total });
       setUsers(usersData);
     }
   }, [usersData, usersCount]);
+
+  function handleSearch(inputValue) {
+    setSearchString(inputValue);
+    setPage(1);
+  }
+
+  const debouncedSearch = useCallback(_debounce(handleSearch, 300), []);
+
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [debouncedSearch]);
 
   return (
     <>
@@ -85,10 +108,10 @@ function UsersTable({ setUsersCount = () => {} }) {
               <input
                 type="text"
                 placeholder="Search by name or email..."
-                value={userSearch}
+                value={searchInput}
                 onChange={(e) => {
-                  setUserSearch(e.target.value);
-                  setUserPage(1);
+                  setSearchInput(e.target.value);
+                  debouncedSearch(e.target.value);
                 }}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
               />
@@ -96,15 +119,22 @@ function UsersTable({ setUsersCount = () => {} }) {
             <select
               value={userRoleFilter}
               onChange={(e) => {
-                setUserRoleFilter(e.target.value);
-                setUserPage(1);
+                if (e.target.value === "ARCHIVED") {
+                  setIsArchived(true);
+                } else {
+                  setIsArchived(false);
+                  setUserRoleFilter(e.target.value);
+                }
+                setPage(1);
               }}
               className="px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
             >
-              <option value="all">All Roles</option>
-              <option value="admin">Admin</option>
-              <option value="moderator">Moderator</option>
-              <option value="contributor">Contributor</option>
+              <option value="ALL">All Roles</option>
+              <option value="USER">User</option>
+              <option value="ADMIN">Admin</option>
+              <option value="MODERATOR">Moderator</option>
+              <option value="CONTRIBUTOR">Contributor</option>
+              <option value="ARCHIVED">Archived</option>
             </select>
           </div>
         </div>
@@ -248,30 +278,30 @@ function UsersTable({ setUsersCount = () => {} }) {
         </div>
 
         {/* Pagination */}
-        {userTotalPages > 1 && (
+        {totalPages > 1 && (
           <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
             <div className="text-sm text-gray-700">
-              Showing {(userPage - 1) * userPageSize + 1} to{" "}
-              {Math.min(userPage * userPageSize) > usersCount
-                ? Math.min(userPage * userPageSize) - users.length
-                : Math.min(userPage * userPageSize)}{" "}
+              Showing {(page - 1) * pageSize + 1} to{" "}
+              {Math.min(page * pageSize) > usersCount
+                ? Math.min(page * pageSize) - users.length
+                : Math.min(page * pageSize)}{" "}
               of {usersCount} results
             </div>
             <div className="flex space-x-2">
               <button
-                onClick={() => setUserPage((prev) => Math.max(1, prev - 1))}
-                disabled={userPage === 1}
+                onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                disabled={page === 1}
                 className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <FaChevronLeft className="h-4 w-4" />
               </button>
-              {Array.from({ length: userTotalPages }, (_, i) => i + 1).map(
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
                 (page) => (
                   <button
                     key={page}
-                    onClick={() => setUserPage(page)}
+                    onClick={() => setPage(page)}
                     className={`px-4 py-2 border rounded-md text-sm font-medium transition-colors ${
-                      userPage === page
+                      page === page
                         ? "bg-green-600 text-white border-green-600"
                         : "border-gray-300 text-gray-700 hover:bg-gray-50"
                     }`}
@@ -282,9 +312,9 @@ function UsersTable({ setUsersCount = () => {} }) {
               )}
               <button
                 onClick={() =>
-                  setUserPage((prev) => Math.min(userTotalPages, prev + 1))
+                  setPage((prev) => Math.min(totalPages, prev + 1))
                 }
-                disabled={userPage === userTotalPages}
+                disabled={page === totalPages}
                 className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <FaChevronRight className="h-4 w-4" />

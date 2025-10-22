@@ -30,6 +30,7 @@ model User {
   location      String?
   bio           String?
   emailNotifications Boolean @default(true)
+  isArchived    Boolean @default(false)
 }
   
 enum ClassificationStatus {
