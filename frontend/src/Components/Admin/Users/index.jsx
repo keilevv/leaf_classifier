@@ -13,6 +13,7 @@ import _debounce from "lodash/debounce";
 import { showNotification } from "../../Common/Notification";
 import useAdmin from "../../../hooks/useAdmin";
 import useStore from "../../../hooks/useStore";
+import RangePicker from "../../Common/RangePicker";
 
 function UsersTable({ setUsersCount = () => {} }) {
   const { preferences } = useStore();
@@ -25,6 +26,7 @@ function UsersTable({ setUsersCount = () => {} }) {
   const [userRoleFilter, setUserRoleFilter] = useState("ALL");
   const [isArchived, setIsArchived] = useState(false);
   const { users: usersData, getUsers, usersCount } = useAdmin();
+  const [rangeFilter, setRangeFilter] = useState({ start: null, end: null });
 
   const totalPages = Math.ceil(users.length / pageSize);
 
@@ -72,9 +74,12 @@ function UsersTable({ setUsersCount = () => {} }) {
     }
     filters.role = userRoleFilter;
     filters.isArchived = isArchived;
-
+    if (rangeFilter.start && rangeFilter.end) {
+      filters.createdAt_gte = rangeFilter.start;
+      filters.createdAt_lte = rangeFilter.end;
+    }
     getUsers(page, pageSize, "createdAt", "desc", filters);
-  }, [page, pageSize, userRoleFilter, searchString, isArchived]);
+  }, [page, pageSize, userRoleFilter, searchString, isArchived, rangeFilter]);
 
   useEffect(() => {
     if (usersData) {
@@ -102,6 +107,7 @@ function UsersTable({ setUsersCount = () => {} }) {
       <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
         {/* Search and Filters */}
         <div className="p-6 border-b border-gray-200">
+          <RangePicker setRangeFilter={setRangeFilter} className="mb-4" />
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />

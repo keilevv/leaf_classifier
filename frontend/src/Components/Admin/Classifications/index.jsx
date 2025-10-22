@@ -14,6 +14,7 @@ import { showNotification } from "../../Common/Notification";
 import useAdmin from "../../../hooks/useAdmin";
 import useStore from "../../../hooks/useStore";
 import ClassificationBadge from "../../Common/Classifications/ClassificationBadge";
+import RangePicker from "../../Common/RangePicker";
 import UploadModal from "../../Upload/UploadModal";
 
 function ClassificationsTable({ setClassificationsCount = () => {} }) {
@@ -34,6 +35,7 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedClassification, setSelectedClassification] = useState(null);
   const totalPages = pages;
+  const [rangeFilter, setRangeFilter] = useState({ start: null, end: null });
 
   // Classification actions
   const handleViewClassification = (classification) => {
@@ -89,11 +91,15 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
     if (searchString.length) {
       filters.search = searchString;
     }
+    if (rangeFilter.start && rangeFilter.end) {
+      filters.createdAt_gte = rangeFilter.start;
+      filters.createdAt_lte = rangeFilter.end;
+    }
     filters.status = statusFilter;
     filters.isArchived = isArchived;
 
     getClassifications(page, pageSize, "createdAt", "desc", filters);
-  }, [page, pageSize, searchString, statusFilter, isArchived]);
+  }, [page, pageSize, searchString, statusFilter, isArchived, rangeFilter]);
 
   function handleSearch(inputValue) {
     setSearchString(inputValue);
@@ -108,6 +114,11 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
       <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
         {/* Search and Filters */}
         <div className="p-6 border-b border-gray-200">
+          <RangePicker
+            rangeFilter={rangeFilter}
+            setRangeFilter={setRangeFilter}
+            className="mb-4"
+          />
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
