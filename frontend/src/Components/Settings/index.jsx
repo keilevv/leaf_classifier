@@ -30,7 +30,9 @@ export default function Settings() {
         {/* Header */}
         <div className="bg-gradient-to-r from-green-600 to-emerald-600">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <h1 className="text-3xl font-bold text-white mb-2 ">Settings</h1>
+            <h1 className="flex gap-2 text-3xl font-bold text-white mb-2 items-center">
+              <FaCog className="" /> Settings
+            </h1>
             <p className="text-green-100">
               Manage your account and application preferences
             </p>
@@ -43,7 +45,7 @@ export default function Settings() {
             <Tab
               className={({ selected }) =>
                 classNames(
-                  "flex-1 py-4 px-6 text-sm font-medium focus:outline-none",
+                  "flex-1 py-4 px-6 text-sm font-medium focus:outline-none cursor-pointer",
                   selected
                     ? "text-green-600 border-b-2 border-green-600 bg-white"
                     : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
@@ -58,7 +60,7 @@ export default function Settings() {
             <Tab
               className={({ selected }) =>
                 classNames(
-                  "flex-1 py-4 px-6 text-sm font-medium focus:outline-none",
+                  "flex-1 py-4 px-6 text-sm font-medium focus:outline-none cursor-pointer",
                   selected
                     ? "text-green-600 border-b-2 border-green-600 bg-white"
                     : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"

@@ -6,6 +6,7 @@ import {
   FaEye,
   FaCheckCircle,
   FaImage,
+  FaImages
 } from "react-icons/fa";
 import { useState, useEffect, useCallback } from "react";
 import { formatDate, getStatusBadge } from "../../../utils";
@@ -114,6 +115,10 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
       <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
         {/* Search and Filters */}
         <div className="p-6 border-b border-gray-200">
+          <h2 className=" flex gap-2 border-b border-gray-200 text-2xl font-bold mb-4 pb-2 text-green-700 items-center">
+            <FaImages />
+            Classifications
+          </h2>
           <RangePicker
             rangeFilter={rangeFilter}
             setRangeFilter={setRangeFilter}

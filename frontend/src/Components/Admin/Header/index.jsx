@@ -1,3 +1,4 @@
+import { FaUserShield } from "react-icons/fa";
 function AdminHeader({
   classificationsCount = { total: 0, verified: 0, pending: 0, archived: 0 },
   usersCount = { total: 0 },
@@ -49,8 +50,8 @@ function AdminHeader({
       <div className="bg-white shadow-lg overflow-hidden mb-8">
         <div className="bg-gradient-to-r from-green-600 to-emerald-600">
           <div className="px-6 py-8 max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold text-white mb-2">
-              Admin Dashboard
+            <h1 className=" flex gap-2 text-3xl font-bold text-white mb-2">
+              <FaUserShield className="" /> Admin Dashboard
             </h1>
             <p className="text-green-100">Manage users and classifications</p>
           </div>

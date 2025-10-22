@@ -107,6 +107,11 @@ function UsersTable({ setUsersCount = () => {} }) {
       <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
         {/* Search and Filters */}
         <div className="p-6 border-b border-gray-200">
+          <h2 className=" flex gap-2 border-b border-gray-200 text-2xl font-bold mb-4 pb-2 text-green-700 items-center">
+            <FaUsers />
+            Users
+          </h2>
+
           <RangePicker setRangeFilter={setRangeFilter} className="mb-4" />
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
