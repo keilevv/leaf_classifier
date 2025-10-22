@@ -4,7 +4,6 @@ import { showNotification } from "../../Common/Notification";
 import useStore from "../../../hooks/useStore";
 import useUser from "../../../hooks/useUser";
 function PreferencesForm({ user, loading, onUpdate = () => {} }) {
-  console.log("user", user);
   const { updateUser } = useUser();
   const { preferences: storePreferences, setPreferences: setStorePreferences } =
     useStore();
