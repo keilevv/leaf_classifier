@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { FaCloudUploadAlt, FaImage, FaTrash, FaSpinner } from "react-icons/fa";
+import {
+  FaCloudUploadAlt,
+  FaImage,
+  FaTrash,
+  FaSpinner,
+  FaUpload,
+} from "react-icons/fa";
 import useClassifier from "../../../hooks/useClassifier";
 import UploadModal from "../UploadModal";
 import { showNotification } from "../../Common/Notification";
@@ -116,8 +122,8 @@ export default function FileUpload({ onUpload }) {
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-lg">
         <div className="p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">
-            Upload Plant Leaf Image
+          <h2 className="flex items-center gap-2 text-xl font-semibold text-green-700">
+            <FaUpload /> Upload Plant Leaf Image
           </h2>
           <p className="text-gray-600 mt-1">
             Upload an image of a plant leaf to get AI-powered classification

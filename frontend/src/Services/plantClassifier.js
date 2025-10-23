@@ -11,9 +11,9 @@ const plantClassifierService = {
       },
     });
   },
-  getClassifications(page, limit, sortBy, sortOrder, accessToken) {
+  getClassifications(page, limit, sortBy, sortOrder, filters, accessToken) {
     return axios.get(`${apiUrl}/plant-classifier/classifications`, {
-      params: { page, limit, sortBy, sortOrder },
+      params: { page, limit, sortBy, sortOrder, ...filters },
       headers: { Authorization: `Bearer ${accessToken}` },
     });
   },

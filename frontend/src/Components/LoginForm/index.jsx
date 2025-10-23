@@ -86,18 +86,8 @@ export default function LoginForm({
       setIsLoading(true);
       localLogin(loginEmail, loginPassword)
         .then((response) => {
-          showNotification({
-            message: "Login successful",
-            type: "success",
-          });
           setUiState({
-            login: {
-              comesFrom: {
-                pathname: "",
-                search: "",
-                key: "",
-              },
-            },
+            showLoginAnimation: true,
           });
           if (response.role === "ADMIN") {
             setSelectedPage("admin");
@@ -330,6 +320,7 @@ export default function LoginForm({
               {/* Google Button */}
               <button
                 onClick={() => {
+                  setUiState({ showLoginAnimation: true });
                   handleGoogleLogin();
                 }}
                 type="button"

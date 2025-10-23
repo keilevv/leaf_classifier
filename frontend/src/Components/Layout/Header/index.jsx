@@ -100,7 +100,7 @@ function Header({ className = "" }) {
             </div>
             <div>
               <h1 className="text-xl font-semibold text-gray-900">
-                Plant<span className="text-green-600">AI</span> Dataset
+                SAPS<span className="text-green-600">AI</span> Dataset
               </h1>
               {user && (
                 <p className="text-sm text-gray-500">{user?.fullName}</p>

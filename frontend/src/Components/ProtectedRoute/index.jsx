@@ -2,13 +2,17 @@ import { useState, useEffect } from "react";
 import useAuth from "../../hooks/useAuth";
 import Login from "../../Pages/Login";
 import { useNavigate } from "react-router-dom";
-import { FaLeaf } from "react-icons/fa";
+import backgroundImage from "../../assets/images/splash-background.webp";
+import useStore from "../../hooks/useStore";
+import LoadingAnimation from "../Common/LoadingAnimation";
 
 const ProtectedRoute = ({ children }) => {
   const navigate = useNavigate();
   const [isValidSession, setIsValidSession] = useState(false);
   const [loading, setLoading] = useState(true);
-  const { isAuthenticated, userState } = useAuth(true);
+  const { isAuthenticated } = useAuth(true);
+  const { uiState, setUiState } = useStore();
+  const showLoginAnimation = uiState.showLoginAnimation;
 
   const checkAuthentication = async () => {
     try {
@@ -23,7 +27,14 @@ const ProtectedRoute = ({ children }) => {
       setIsValidSession(false);
       navigate("/login");
     } finally {
-      setLoading(false);
+      if (showLoginAnimation) {
+        setTimeout(() => {
+          setLoading(false);
+        }, 2000);
+      } else {
+        setLoading(false);
+      }
+      setUiState({ showLoginAnimation: false });
     }
   };
 
@@ -35,16 +46,18 @@ const ProtectedRoute = ({ children }) => {
 
   if (loading)
     return (
-      <div className="w-full flex justify-center items-center h-screen flex-col font-bold bg-gradient-to-br from-green-50 to-emerald-100">
-        <div className="flex justify-center mb-4">
-          <div className="p-3 bg-green-100 rounded-full border-2 border-green-200 shadow-md">
-            <FaLeaf className="h-8 w-8 text-green-600" />
-          </div>
-        </div>
-        <h1 className="text-2xl">Loading...</h1>
+      <div
+        className=" flex flex-col justify-center items-center h-screen bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${backgroundImage})` }}
+      >
+        <LoadingAnimation
+          animate={true}
+          className="md:w-40 md:h-40 w-30 h-30 "
+        />
       </div>
     );
   if (!isValidSession) return <Login />;
+  if (showLoginAnimation) return <LoadingAnimation animate={true} />;
 
   return <>{children}</>;
 };
