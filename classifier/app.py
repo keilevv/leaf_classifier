@@ -23,15 +23,15 @@ PLANTS = [
     ]
 
 SHAPES = [
-    'Eliptica', 'Imparipinnada', 'Lanceolada', 'Obovada', 'Ovada', 'Palmeada', 'Trifoliada'
+    'Eliptic', 'Imparipinnate', 'Lanceolate', 'Obovate', 'Ovate', 'Palmeate', 'Trifoliate'
     ]
 
 SPECIES = [
-    'yam_healthy', 'yam_deseased',
-    'eggplant_healthy', 'eggplant_deseased',
-    'cucumber_healthy', 'cucumber_deseased',
-    'corn_healthy', 'corn_deseased',
-    'cassava_healthy', 'cassava_deseased'
+    'discorea-alata-l_healthy', 'discorea-alata-l_deseased',
+    'solanum-melongena_healthy', 'solanum-melongena_deseased',
+    'cucumis-sativus_healthy', 'cucumis-sativus_deseased',
+    'zea-mays_healthy', 'zea-mays_deseased',
+    'manihot-esculenta_healthy', 'manihot-esculenta_deseased'
 ]
 
 predict_lock = threading.Lock()

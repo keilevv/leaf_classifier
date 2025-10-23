@@ -91,13 +91,7 @@ export default function LoginForm({
             type: "success",
           });
           setUiState({
-            login: {
-              comesFrom: {
-                pathname: "",
-                search: "",
-                key: "",
-              },
-            },
+            showLoginAnimation: true,
           });
           if (response.role === "ADMIN") {
             setSelectedPage("admin");

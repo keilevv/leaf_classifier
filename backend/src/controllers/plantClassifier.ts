@@ -59,7 +59,6 @@ function plantClassifierController() {
           fs.createReadStream(uploadPath),
           image.originalname
         );
-        console.log("classifierServiceUrl", `${classifierServiceUrl}/predict`);
 
         await axios
           .post(`${classifierServiceUrl}/predict`, formData, {

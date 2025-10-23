@@ -21,7 +21,7 @@ import {
   FaBookOpen,
 } from "react-icons/fa";
 import utbLogo from "../../assets/images/utblogo.webp";
-import backgroundImage from "../../assets/images/hero-background.webp";
+import backgroundImage from "../../assets/images/hero.webp";
 import { useNavigate } from "react-router-dom";
 import useStore from "../../hooks/useStore";
 import Header from "../../Components/Layout/Header";
@@ -120,7 +120,7 @@ export default function Home() {
           src={backgroundImage}
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 z-0 h-full w-full object-cover opacity-20"
+          className="absolute inset-0 z-0 h-full w-full object-cover opacity-40"
         />
         <div className="absolute inset-0 z-10 pointer-events-none" />
         <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
@@ -140,10 +140,10 @@ export default function Home() {
             </div>
 
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-              Plant<span className="text-green-600">AI</span> Dataset
+              SAPS<span className="text-green-600">AI</span> Dataset
             </h1>
 
-            <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            <p className="text-xl md:text-2xl text-gray-900 mb-8 max-w-3xl mx-auto">
               Help us build the world's largest crowdsourced plant
               identification dataset. Your photos train AI to recognize plant
               species worldwide.
@@ -163,7 +163,7 @@ export default function Home() {
                 </a>
               </div>
               <button
-                className=" cursor-pointer border-2 border-green-600 text-green-600 hover:bg-green-50 font-semibold py-4 px-8 rounded-lg text-lg transition-colors flex items-center justify-center"
+                className=" cursor-pointer  text-green-600 hover:bg-green-50 font-semibold py-4 px-8 rounded-lg text-lg transition-colors flex items-center justify-center bg-white"
                 onClick={onLearnMore}
               >
                 <FaBookOpen className="mr-2" />

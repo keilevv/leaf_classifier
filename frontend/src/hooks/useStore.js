@@ -8,6 +8,7 @@ const initialState = {
   // UI State
   uiState: {
     selectedPage: "home",
+    showLoginAnimation: false,
   },
   preferences: {
     pageSize: 12,
