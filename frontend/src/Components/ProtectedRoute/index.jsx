@@ -13,7 +13,6 @@ const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuth(true);
   const { uiState, setUiState } = useStore();
   const showLoginAnimation = uiState.showLoginAnimation;
-  console.log("showLoginAnimation", showLoginAnimation);
 
   const checkAuthentication = async () => {
     try {

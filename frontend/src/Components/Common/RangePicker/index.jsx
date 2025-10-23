@@ -19,7 +19,7 @@ function RangePicker({ className, setRangeFilter = () => {} }) {
   const [range, setRange] = useState({ start: null, end: null });
   return (
     <DateRangePicker
-      className={`inline-block ${className}`}
+      className={`block w-full max-w-full ${className} `}
       value={range}
       onChange={(range) => {
         setRangeFilter({
@@ -34,27 +34,33 @@ function RangePicker({ className, setRangeFilter = () => {} }) {
       <Label className="block text-sm font-medium text-gray-700 mb-1">
         Select range of dates
       </Label>
-      <Group className="flex items-center gap-2 border border-gray-300 rounded-md px-3 py-2 bg-white shadow-sm focus-within:ring-2 focus-within:ring-green-500 focus-within:border-green-500">
-        <DateInput slot="start" className="flex items-center text-gray-900">
+      <Group className="w-full flex items-center gap-2 flex-wrap sm:flex-nowrap border border-gray-300 rounded-md px-3 py-2 bg-white shadow-sm focus-within:ring-2 focus-within:ring-green-500 focus-within:border-green-500 min-w-0">
+        <DateInput
+          slot="start"
+          className="flex-1 min-w-0 w-full basis-0 flex items-center text-gray-900 overflow-hidden"
+        >
           {(segment) => (
             <DateSegment
               segment={segment}
-              className="px-1 rounded outline-none focus:bg-green-50 data-[placeholder]:text-gray-400"
+              className="px-1 rounded outline-none focus:bg-green-50 data-[placeholder]:text-gray-400 whitespace-nowrap"
             />
           )}
         </DateInput>
-        <span aria-hidden="true" className="text-gray-400">
+        <span aria-hidden="true" className="text-gray-400 mx-1 shrink-0">
           –
         </span>
-        <DateInput slot="end" className="flex items-center text-gray-900">
+        <DateInput
+          slot="end"
+          className="flex-1 min-w-0 w-full basis-0 flex items-center text-gray-900 overflow-hidden"
+        >
           {(segment) => (
             <DateSegment
               segment={segment}
-              className="px-1 rounded outline-none focus:bg-green-50 data-[placeholder]:text-gray-400"
+              className="px-1 rounded outline-none focus:bg-green-50 data-[placeholder]:text-gray-400 whitespace-nowrap"
             />
           )}
         </DateInput>
-        <Button className="ml-1 p-1 cursor-pointer text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-green-500">
+        <Button className="ml-auto sm:ml-1 p-1 cursor-pointer text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-green-500 shrink-0">
           <FaChevronDown size={18} />
         </Button>
       </Group>
@@ -80,7 +86,7 @@ function RangePicker({ className, setRangeFilter = () => {} }) {
               {(date) => (
                 <CalendarCell
                   date={date}
-                  className="w-9 h-9 grid place-items-center rounded text-gray-700 hover:bg-gray-200 data-[selected]:bg-green-600 data-[selected]:text-white data-[focused]:ring-2 data-[focused]:ring-green-500"
+                  className="w-8 h-8 sm:w-9 sm:h-9 grid place-items-center rounded text-gray-700 hover:bg-gray-200 data-[selected]:bg-green-600 data-[selected]:text-white data-[focused]:ring-2 data-[focused]:ring-green-500"
                 />
               )}
             </CalendarGrid>

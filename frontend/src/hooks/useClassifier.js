@@ -28,10 +28,10 @@ function useClassifier() {
       });
   }
 
-  function getUploads(page, limit, sortBy, sortOrder) {
+  function getUploads(page, limit, sortBy, sortOrder, filters) {
     setIsLoading(true);
     return plantClassifierService
-      .getClassifications(page, limit, sortBy, sortOrder, accessToken)
+      .getClassifications(page, limit, sortBy, sortOrder, filters, accessToken)
       .then((response) => {
         setUploads(response.data.results);
         setIsLoading(false);
@@ -43,7 +43,7 @@ function useClassifier() {
         setIsLoading(false);
       });
   }
-  
+
   function updateClassification(id, data) {
     setIsLoading(true);
     return plantClassifierService

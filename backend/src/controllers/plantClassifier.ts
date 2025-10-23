@@ -196,6 +196,11 @@ function plantClassifierController() {
     const skip = (page - 1) * limit;
     const sortBy = (req.query.sortBy as string) || "createdAt";
     const sortOrder = (req.query.sortOrder as "asc" | "desc") || "desc";
+    const createdAt_gte = req.query.createdAt_gte as string;
+    const createdAt_lte = req.query.createdAt_lte as string;
+    const search = req.query.search as string;
+    const status = req.query.status as string;
+    const isArchived = req.query.isArchived as string;
 
     try {
       if (!req.user) {
@@ -205,6 +210,10 @@ function plantClassifierController() {
 
       // Build Prisma where filter
       const where: any = {};
+
+      if (status !== "ALL") {
+        where.status = status;
+      }
 
       // Only allow admin to filter by userId, otherwise restrict to own
       if (req.user.role === "admin" && req.query.userId) {
@@ -235,14 +244,22 @@ function plantClassifierController() {
       }
 
       // Date filters
-      if (req.query.createdAt_gte || req.query.createdAt_lte) {
+      if (createdAt_gte || createdAt_lte) {
         where.createdAt = {};
-        if (req.query.createdAt_gte) {
-          where.createdAt.gte = new Date(req.query.createdAt_gte as string);
+        if (createdAt_gte) {
+          where.createdAt.gte = new Date(createdAt_gte);
         }
-        if (req.query.createdAt_lte) {
+        if (createdAt_lte) {
           where.createdAt.lte = new Date(req.query.createdAt_lte as string);
         }
+      }
+      // Search filter
+      if (search) {
+        where.OR = [
+          { originalFilename: { contains: search, mode: "insensitive" } },
+          { species: { contains: search, mode: "insensitive" } },
+          { shape: { contains: search, mode: "insensitive" } },
+        ];
       }
 
       // Add more filters as needed...
