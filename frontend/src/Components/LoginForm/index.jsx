@@ -86,10 +86,6 @@ export default function LoginForm({
       setIsLoading(true);
       localLogin(loginEmail, loginPassword)
         .then((response) => {
-          showNotification({
-            message: "Login successful",
-            type: "success",
-          });
           setUiState({
             showLoginAnimation: true,
           });
@@ -324,6 +320,7 @@ export default function LoginForm({
               {/* Google Button */}
               <button
                 onClick={() => {
+                  setUiState({ showLoginAnimation: true });
                   handleGoogleLogin();
                 }}
                 type="button"
