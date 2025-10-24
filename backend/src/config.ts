@@ -1,27 +1,32 @@
 export const baseSpecies = [
   {
     key: "discorea-alata-l",
-    commonName: "Yam",
+    commonNameEn: "Yam",
+    commonNameEs: "Ñame",
     scientificName: "Discorea Alata L.",
   },
   {
     key: "solanum-melongena",
-    commonName: "Eggplant",
+    commonNameEn: "Eggplant",
+    commonNameEs: "Berenjena",
     scientificName: "Solanum Melongena",
   },
   {
     key: "cucumis-sativus",
-    commonName: "Cucumber",
+    commonNameEn: "Cucumber",
+    commonNameEs: "Pepino",
     scientificName: "Cucumis Sativus",
   },
   {
     key: "zea-mays",
-    commonName: "Corn",
+    commonNameEn: "Corn",
+    commonNameEs: "Maíz",
     scientificName: "Zea Mays",
   },
   {
     key: "manihot-esculenta",
-    commonName: "Cassava",
+    commonNameEn: "Cassava",
+    commonNameEs: "Yuca",
     scientificName: "Manihot Esculenta",
   },
 ];

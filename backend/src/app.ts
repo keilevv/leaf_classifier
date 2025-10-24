@@ -7,12 +7,16 @@ import authRoutes from "./routes/auth";
 import plantClassifierRoutes from "./routes/plantClassifier";
 import userRoutes from "./routes/user";
 import adminRoutes from "./routes/admin";
+import speciesRoutes from "./routes/species";
 import prisma from "./lib/prisma";
-import { createDefaultAdmin } from "./utils";
+import { createDefaultAdmin, createDefaultSpecies } from "./utils";
 
 // Create default admin user if none exists
 createDefaultAdmin().catch((error) => {
   console.error("Error creating default admin user:", error);
+});
+createDefaultSpecies().catch((error) => {
+  console.error("Error creating default species:", error);
 });
 const app = express();
 
@@ -69,5 +73,6 @@ app.use("/api/auth", authRoutes);
 app.use("/api/plant-classifier", plantClassifierRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/species", speciesRoutes);
 
 export default app;

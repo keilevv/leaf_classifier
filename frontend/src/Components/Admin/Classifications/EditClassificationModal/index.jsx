@@ -1,7 +1,18 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { FaTimes } from "react-icons/fa";
+import useSpecies from "../../../../hooks/useSpecies";
+import { useEffect } from "react";
+
 function EditClassificationModal({ isOpen, closeModal, selectedUpload }) {
+  const { species, loading, error, getSpecies } = useSpecies();
+  
+  useEffect(() => {
+    if (isOpen) {
+      getSpecies();
+    }
+  }, [isOpen]);
+
   return (
     <>
       {" "}
