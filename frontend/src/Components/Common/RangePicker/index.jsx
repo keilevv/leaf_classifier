@@ -19,7 +19,7 @@ function RangePicker({ className, setRangeFilter = () => {} }) {
   const [range, setRange] = useState({ start: null, end: null });
   return (
     <DateRangePicker
-      className={`block w-full max-w-full ${className} `}
+      className={`block w-full max-w-sm ${className} `}
       value={range}
       onChange={(range) => {
         setRangeFilter({
