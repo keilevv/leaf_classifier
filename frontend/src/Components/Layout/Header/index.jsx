@@ -29,7 +29,7 @@ function Header({ className = "" }) {
     uiState,
     user,
     logout: logoutFromStore,
-    accessToken,
+    setUiState
   } = useStore();
   const { logout } = useAuth();
 
