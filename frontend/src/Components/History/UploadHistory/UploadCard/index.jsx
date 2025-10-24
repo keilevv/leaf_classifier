@@ -1,8 +1,13 @@
 import { FaCalendarAlt, FaArchive, FaEye } from "react-icons/fa";
-import { formatDate, getConfidenceColor } from "../../../../utils";
+import { formatDate, getStatusBadge } from "../../../../utils";
 import ClassificationBadge from "../../../Common/Classifications/ClassificationBadge";
 function UploadCard({ upload, openModal, openConfirmModal }) {
   const filename = upload.originalFilename.split("/").pop();
+  const statusBadge = getStatusBadge(
+    upload.isArchived ? "ARCHIVED" : upload.status
+  );
+  const StatusIcon = statusBadge.icon;
+
   return (
     <div
       key={upload.id}
@@ -40,7 +45,15 @@ function UploadCard({ upload, openModal, openConfirmModal }) {
               confidence={upload.shapeConfidence}
             />
           </div>
-
+          <div>
+            <p className="text-sm font-medium text-gray-900 mb-1">Status:</p>
+            <span
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusBadge.color}`}
+            >
+              <StatusIcon className="h-3 w-3 mr-1" />
+              {upload.status}
+            </span>{" "}
+          </div>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
             <div className="flex space-x-2">
               <button

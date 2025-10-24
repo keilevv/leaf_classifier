@@ -6,7 +6,9 @@ import {
   FaEye,
   FaCheckCircle,
   FaImage,
-  FaImages
+  FaImages,
+  FaArchive,
+  FaEdit,
 } from "react-icons/fa";
 import { useState, useEffect, useCallback } from "react";
 import { formatDate, getStatusBadge } from "../../../utils";
@@ -17,6 +19,7 @@ import useStore from "../../../hooks/useStore";
 import ClassificationBadge from "../../Common/Classifications/ClassificationBadge";
 import RangePicker from "../../Common/RangePicker";
 import UploadModal from "../../Upload/UploadModal";
+import EditClassificationModal from "./EditClassificationModal";
 
 function ClassificationsTable({ setClassificationsCount = () => {} }) {
   const { preferences } = useStore();
@@ -34,6 +37,7 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [isArchived, setIsArchived] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const [selectedClassification, setSelectedClassification] = useState(null);
   const totalPages = pages;
   const [rangeFilter, setRangeFilter] = useState({ start: null, end: null });
@@ -46,6 +50,15 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
   const closeModal = () => {
     setIsOpen(false);
     setSelectedClassification(null);
+  };
+  const closeEditModal = () => {
+    setIsEditOpen(false);
+    setSelectedClassification(null);
+  };
+
+  const handleEditClassification = (classification) => {
+    setSelectedClassification(classification);
+    setIsEditOpen(true);
   };
 
   const handleDeleteClassification = (classification) => {
@@ -66,6 +79,8 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
       });
     }, 1000);
   };
+
+  const handleArchiveClassification = (classification) => {};
 
   const handleVerifyClassification = (classification) => {
     setClassifications((prev) =>
@@ -250,7 +265,16 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
                           >
                             <FaEye className="h-4 w-4" />
                           </button>
-                          {classification.status === "pending" && (
+                          <button
+                            onClick={() =>
+                              handleEditClassification(classification)
+                            }
+                            className=" cursor-pointer text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded transition-colors"
+                            title="Edit"
+                          >
+                            <FaEdit className="h-4 w-4" />
+                          </button>
+                          {classification.status === "PENDING" && (
                             <button
                               onClick={() =>
                                 handleVerifyClassification(classification)
@@ -262,13 +286,23 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
                             </button>
                           )}
                           <button
-                            onClick={() =>
-                              handleDeleteClassification(classification)
-                            }
+                            onClick={() => {
+                              if (classification.isArchived) {
+                                handleDeleteClassification(classification);
+                              } else {
+                                handleArchiveClassification(classification);
+                              }
+                            }}
                             className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded transition-colors"
-                            title="Delete"
+                            title={
+                              classification.isArchived ? "Delete" : "Archive"
+                            }
                           >
-                            <FaTrash className="h-4 w-4" />
+                            {classification.isArchived ? (
+                              <FaTrash className="h-4 w-4" />
+                            ) : (
+                              <FaArchive className="h-4 w-4" />
+                            )}
                           </button>
                         </div>
                       </td>
@@ -340,6 +374,11 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
       <UploadModal
         isOpen={isOpen}
         closeModal={closeModal}
+        selectedUpload={selectedClassification}
+      />
+      <EditClassificationModal
+        isOpen={isEditOpen}
+        closeModal={closeEditModal}
         selectedUpload={selectedClassification}
       />
     </>
