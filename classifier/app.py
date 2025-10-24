@@ -27,11 +27,11 @@ SHAPES = [
     ]
 
 SPECIES = [
-    'discorea-alata-l_healthy', 'discorea-alata-l_deseased',
-    'solanum-melongena_healthy', 'solanum-melongena_deseased',
-    'cucumis-sativus_healthy', 'cucumis-sativus_deseased',
-    'zea-mays_healthy', 'zea-mays_deseased',
-    'manihot-esculenta_healthy', 'manihot-esculenta_deseased'
+    'manihot-esculenta_deseased', 'manihot-esculenta_healthy',  # cassava
+    'zea-mays_deseased', 'zea-mays_healthy',                    # corn
+    'cucumis-sativus_deseased', 'cucumis-sativus_healthy',      # cucumber
+    'solanum-melongena_deseased', 'solanum-melongena_healthy',  # eggplant
+    'discorea-alata-l_deseased', 'discorea-alata-l_healthy'     # yam
 ]
 
 predict_lock = threading.Lock()
