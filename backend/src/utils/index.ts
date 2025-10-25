@@ -74,3 +74,19 @@ export async function createDefaultSpecies() {
     return species;
   });
 }
+
+export async function updateIsHealthy() {
+  const classifications = await prisma.classification.findMany({});
+
+  classifications.map(async (classification) => {
+    const isHealthy = classification.imagePath.includes("healthy");
+    console.log("isHealthy", isHealthy);
+    const updatedClassification = await prisma.classification.update({
+      where: { id: classification.id },
+      data: { isHealthy: isHealthy },
+    });
+    console.log("Default classification updated:");
+    console.log(`  ID: ${updatedClassification.id}`);
+    console.log(`  Is Healthy: ${updatedClassification.isHealthy}`);
+  });
+}

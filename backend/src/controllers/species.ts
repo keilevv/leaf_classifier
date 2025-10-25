@@ -1,6 +1,7 @@
 import prisma from "../lib/prisma";
 import { Request, Response } from "express";
 import { AuthenticatedRequest } from "../types";
+import { baseShapes } from "../config";
 
 function SpeciesController() {
   
@@ -76,6 +77,7 @@ function SpeciesController() {
         count,
         pages: totalPages,
         results: species,
+        shapes: baseShapes,
       };
 
       res.json(response);

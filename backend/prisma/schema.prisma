@@ -55,6 +55,7 @@ model Classification {
   isArchived        Boolean              @default(false)
   updatedAt         DateTime             @default(now())
   status            ClassificationStatus @default(PENDING)
+  isHealthy         Boolean              @default(true)
 }
 
 model Species {

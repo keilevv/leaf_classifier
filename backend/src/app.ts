@@ -9,7 +9,7 @@ import userRoutes from "./routes/user";
 import adminRoutes from "./routes/admin";
 import speciesRoutes from "./routes/species";
 import prisma from "./lib/prisma";
-import { createDefaultAdmin, createDefaultSpecies } from "./utils";
+import { createDefaultAdmin, createDefaultSpecies, updateIsHealthy } from "./utils";
 
 // Create default admin user if none exists
 createDefaultAdmin().catch((error) => {
@@ -17,6 +17,9 @@ createDefaultAdmin().catch((error) => {
 });
 createDefaultSpecies().catch((error) => {
   console.error("Error creating default species:", error);
+});
+updateIsHealthy().catch((error) => {
+  console.error("Error updating isHealthy:", error);
 });
 const app = express();
 

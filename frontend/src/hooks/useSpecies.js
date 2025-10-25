@@ -4,6 +4,7 @@ import speciesService from "../Services/species";
 
 function useSpecies() {
   const [species, setSpecies] = useState([]);
+  const [shapes, setShapes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { accessToken } = useStore();
@@ -19,7 +20,8 @@ function useSpecies() {
         filters,
         accessToken
       );
-      setSpecies(response.data);
+      setSpecies(response.data.results);
+      setShapes(response.data.shapes);
     } catch (error) {
       setError(error);
     } finally {
@@ -27,6 +29,6 @@ function useSpecies() {
     }
   };
 
-  return { species, loading, error, getSpecies };
+  return { species, shapes, loading, error, getSpecies };
 }
 export default useSpecies;
