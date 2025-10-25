@@ -1,6 +1,6 @@
 import prisma from "../lib/prisma";
 import { Request, Response } from "express";
-import { AuthenticatedRequest } from "../types/intex";
+import { AuthenticatedRequest } from "../types";
 import { R2Service } from "../services/r2Service";
 import { sanitizeUser } from "../utils";
 

@@ -335,10 +335,10 @@ function plantClassifierController() {
 
       // Only allow if admin or owner
       const isOwner = existing.userId === userId;
-      const isAdmin = userRole === "admin";
-      const isExpert = userRole === "expert-user";
+      const isAdmin = userRole === "ADMIN";
+      const isModerator = userRole === "MODERATOR";
 
-      if (!isAdmin && !isOwner) {
+      if (!isAdmin && !isOwner && !isModerator) {
         res
           .status(403)
           .json({ error: "Not authorized to update this classification" });
@@ -350,7 +350,7 @@ function plantClassifierController() {
       const updateData: any = {};
 
       if (typeof isArchived !== "undefined") {
-        if (isAdmin || isOwner || isExpert) {
+        if (isAdmin || isOwner || isModerator) {
           updateData.isArchived = isArchived;
         } else {
           res
@@ -361,7 +361,7 @@ function plantClassifierController() {
       }
 
       if (typeof classification !== "undefined") {
-        if (isAdmin || isExpert) {
+        if (isAdmin || isModerator) {
           updateData.classification = classification;
         } else {
           res
