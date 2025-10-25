@@ -15,7 +15,7 @@ function UploadCard({ upload, openModal, openConfirmModal }) {
     >
       <div className="relative" style={{ height: "200px" }}>
         <img
-          src={upload.imageUrl}
+          src={upload.imagePath}
           alt={upload.originalFilename}
           className="w-full h-full object-cover"
           style={{ border: "1px solid #ccc" }}

@@ -1,9 +1,9 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { FaTimes } from "react-icons/fa";
-import { getImageUrl, getConfidenceColor, formatDate } from "../../../utils";
+import { getConfidenceColor, formatDate } from "../../../utils";
 function UploadModal({ isOpen, closeModal, selectedUpload }) {
-  const filename = selectedUpload?.imageUrl.split("/").pop();
+  const filename = selectedUpload?.imagePath.split("/").pop();
   return (
     <>
       {" "}

@@ -210,12 +210,12 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
                       : classification.status
                   );
                   const StatusIcon = statusBadge.icon;
-                  const filename = classification.imageUrl.split("/").pop();
+                  const filename = classification?.imagePath.split("/").pop();
                   return (
                     <tr key={classification.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <img
-                          src={classification.imageUrl || "/placeholder.svg"}
+                          src={classification.imagePath || "/placeholder.svg"}
                           alt={classification.originalFilename}
                           className="h-12 w-12 rounded-lg object-cover"
                         />
