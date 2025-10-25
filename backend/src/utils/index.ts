@@ -105,7 +105,47 @@ export async function updateImagePathByIsHealthy() {
       }
     }
     console.log("imagePath", imagePath);
-    console.log("isHealthy", classification.isHealthy)
+    console.log("isHealthy", classification.isHealthy);
     console.log("newImagePath", newImagePath);
+  });
+}
+
+export async function updateSpecies() {
+  const species = await prisma.species.findMany({});
+  species.map(async (species) => {
+    const foundMatch = baseSpecies.find(
+      (sp) => sp.scientificName === species.scientificName
+    );
+    if (
+      foundMatch &&
+      (foundMatch.key !== species.key ||
+        foundMatch.commonNameEs !== species.commonNameEs ||
+        foundMatch.commonNameEn !== species.commonNameEn)
+    ) {
+      await prisma.species.update({
+        where: { id: species.id },
+        data: {
+          commonNameEs: foundMatch.commonNameEs,
+          commonNameEn: foundMatch.commonNameEn,
+          scientificName: foundMatch.scientificName,
+          key: foundMatch.key,
+        },
+      });
+    }
+  });
+}
+
+export async function formatClassificationSpecies() {
+  const classifications = await prisma.classification.findMany({});
+  classifications.map(async (classification) => {
+    if (classification.species.includes("_")) {
+      const updatedClassification = await prisma.classification.update({
+        where: { id: classification.id },
+        data: {
+          species: classification.species.split("_")[0],
+        },
+      });
+      console.log("Updated classification:", updatedClassification);
+    }
   });
 }

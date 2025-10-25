@@ -12,7 +12,8 @@ import prisma from "./lib/prisma";
 import {
   createDefaultAdmin,
   createDefaultSpecies,
-  updateImagePathByIsHealthy,
+  updateSpecies,
+  formatClassificationSpecies,
 } from "./utils";
 
 // Create default admin user if none exists
@@ -22,10 +23,12 @@ createDefaultAdmin().catch((error) => {
 createDefaultSpecies().catch((error) => {
   console.error("Error creating default species:", error);
 });
-updateImagePathByIsHealthy().catch((error) => {
-  console.error("Error updating filename by is healthy:", error);
+updateSpecies().catch((error) => {
+  console.error("Error updating species:", error);
 });
-
+formatClassificationSpecies().catch((error) => {
+  console.error("Error updating classification species:", error);
+});
 const app = express();
 
 // Graceful shutdown
