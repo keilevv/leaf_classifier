@@ -65,8 +65,8 @@ function EditClassificationModal({ isOpen, closeModal, selectedUpload }) {
                   {selectedUpload && (
                     <div className="space-y-6 pt-8">
                       <img
-                        src={selectedUpload.imageUrl}
-                        alt={selectedUpload.imagePath}
+                        src={selectedUpload.imagePath}
+                        alt={selectedUpload.originalFilename}
                         className="max-w-[300px] rounded-2xl m-auto w-full"
                       />
                       <div className="flex gap-4 mt-8 flex-col border-b pb-8 border-gray-200">

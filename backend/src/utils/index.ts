@@ -90,3 +90,22 @@ export async function updateIsHealthy() {
     console.log(`  Is Healthy: ${updatedClassification.isHealthy}`);
   });
 }
+
+export async function updateImagePathByIsHealthy() {
+  const classifications = await prisma.classification.findMany({});
+
+  classifications.map(async (classification) => {
+    const imagePath = classification.imagePath.split("/").pop();
+    let newImagePath = "";
+    if (imagePath?.includes("healthy") && !classification.isHealthy) {
+      newImagePath = imagePath.replace("healthy", "deseased");
+    } else {
+      if (imagePath?.includes("deseased") && classification.isHealthy) {
+        newImagePath = imagePath.replace("deseased", "healthy");
+      }
+    }
+    console.log("imagePath", imagePath);
+    console.log("isHealthy", classification.isHealthy)
+    console.log("newImagePath", newImagePath);
+  });
+}

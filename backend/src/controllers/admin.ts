@@ -94,23 +94,9 @@ function adminController() {
       ]);
 
       // Add full URL for images (R2 or local)
-      const classificationsWithUrls = classifications.map((classification) => {
-        let imageUrl: string;
-
-        if (R2Service.isR2Key(classification.imagePath)) {
-          // R2 image
-          imageUrl = R2Service.getPublicUrl(classification.imagePath);
-        } else if (classification.imagePath.startsWith("uploads/")) {
-          // Local image with uploads/ prefix
-          imageUrl = `/${classification.imagePath}`;
-        } else {
-          // Fallback to original path
-          imageUrl = classification.imagePath;
-        }
-
+      const classificationsWithUser = classifications.map((classification) => {
         return {
           ...classification,
-          imageUrl,
           user: classification.user
             ? sanitizeUser(classification.user)
             : undefined,
@@ -125,7 +111,7 @@ function adminController() {
         totalVerifiedCount,
         totalPendingCount,
         totalArchivedCount,
-        results: classificationsWithUrls,
+        results: classificationsWithUser,
       };
 
       res.json(response);
