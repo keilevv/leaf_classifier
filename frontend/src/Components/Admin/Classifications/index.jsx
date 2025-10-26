@@ -11,6 +11,7 @@ import {
   FaEdit,
 } from "react-icons/fa";
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { formatDate, getStatusBadge } from "../../../utils";
 import _debounce from "lodash/debounce";
 import { showNotification } from "../../Common/Notification";
@@ -19,7 +20,6 @@ import useStore from "../../../hooks/useStore";
 import ClassificationBadge from "../../Common/Classifications/ClassificationBadge";
 import RangePicker from "../../Common/RangePicker";
 import UploadModal from "../../Upload/UploadModal";
-import EditClassificationModal from "./EditClassificationModal";
 
 function ClassificationsTable({ setClassificationsCount = () => {} }) {
   const { preferences } = useStore();
@@ -29,6 +29,7 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
     pages,
     classificationsCount,
   } = useAdmin();
+  const navigate = useNavigate();
   // Classifications state
   const [classifications, setClassifications] = useState([]);
   const [searchString, setSearchString] = useState("");
@@ -37,7 +38,6 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [isArchived, setIsArchived] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
   const [selectedClassification, setSelectedClassification] = useState(null);
   const totalPages = pages;
   const [rangeFilter, setRangeFilter] = useState({ start: null, end: null });
@@ -51,14 +51,10 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
     setIsOpen(false);
     setSelectedClassification(null);
   };
-  const closeEditModal = () => {
-    setIsEditOpen(false);
-    setSelectedClassification(null);
-  };
 
   const handleEditClassification = (classification) => {
     setSelectedClassification(classification);
-    setIsEditOpen(true);
+    navigate(`/admin/classification/${classification.id}`);
   };
 
   const handleDeleteClassification = (classification) => {
@@ -374,11 +370,6 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
       <UploadModal
         isOpen={isOpen}
         closeModal={closeModal}
-        selectedUpload={selectedClassification}
-      />
-      <EditClassificationModal
-        isOpen={isEditOpen}
-        closeModal={closeEditModal}
         selectedUpload={selectedClassification}
       />
     </>

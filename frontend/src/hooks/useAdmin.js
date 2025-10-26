@@ -5,6 +5,7 @@ import adminService from "../Services/admin";
 function useAdmin() {
   const { accessToken } = useStore();
   const [classifications, setClassifications] = useState([]);
+  const [classification, setClassification] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [classificationsCount, setClassificationsCount] = useState({
     total: 0,
@@ -45,6 +46,36 @@ function useAdmin() {
         setIsLoading(false);
       });
   }
+  function getClassification(id) {
+    setIsLoading(true);
+    return adminService
+      .getAdminClassification(id, accessToken)
+      .then((response) => {
+        setIsLoading(false);
+        setClassification(response.data.results);
+        return response.data.results;
+      })
+      .catch((error) => {
+        console.error("Error fetching classification:", error);
+        setError(error);
+        setIsLoading(false);
+      });
+  }
+  function updateClassification(id, data) {
+    setIsLoading(true);
+    return adminService
+      .updateAdminClassification(id, data, accessToken)
+      .then((response) => {
+        setIsLoading(false);
+        setClassification(response.data.results);
+        return response.data.results;
+      })
+      .catch((error) => {
+        console.error("Error updating classification:", error);
+        setError(error);
+        setIsLoading(false);
+      });
+  }
   function getUsers(page, limit, sortBy, sortOrder, filters = {}) {
     setIsLoading(true);
     return adminService
@@ -64,11 +95,14 @@ function useAdmin() {
 
   return {
     classifications,
+    classification,
     isLoading,
     error,
     pages,
     classificationsCount,
     getClassifications,
+    getClassification,
+    updateClassification,
     users,
     getUsers,
     usersCount,

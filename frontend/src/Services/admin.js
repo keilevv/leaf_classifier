@@ -23,5 +23,15 @@ const adminService = {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
   },
+  getAdminClassification(id, accessToken) {
+    return axios.get(`${apiUrl}/admin/classification/${id}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+  },
+  updateAdminClassification(id, data, accessToken) {
+    return axios.put(`${apiUrl}/admin/classification/${id}`, data, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+  },
 };
 export default adminService;
