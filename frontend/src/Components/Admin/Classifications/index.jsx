@@ -183,9 +183,9 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Classification
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Filename
-                </th>
+                </th> */}
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
@@ -206,14 +206,13 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
                       : classification.status
                   );
                   const StatusIcon = statusBadge.icon;
-                  const filename = classification?.imagePath.split("/").pop();
                   return (
                     <tr key={classification.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <img
                           src={classification.imagePath || "/placeholder.svg"}
                           alt={classification.originalFilename}
-                          className="h-12 w-12 rounded-lg object-cover"
+                          className="h-12 w-12 rounded-lg object-cover bg-gray-200"
                         />
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -236,9 +235,9 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
                           confidence={classification.speciesConfidence}
                         />
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      {/* <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{filename}</div>
-                      </td>
+                      </td> */}
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusBadge.color}`}

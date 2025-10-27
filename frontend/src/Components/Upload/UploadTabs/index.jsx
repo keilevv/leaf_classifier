@@ -15,9 +15,9 @@ function UploadTabs({ children, initialTab = 0, onUpload }) {
   };
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-4 py-8">
       <Tab.Group defaultIndex={initialTab}>
-        <Tab.List className="flex space-x-1 rounded-xl bg-blue-900/20 p-1 mb-8">
+        <Tab.List className="flex space-x-1 rounded-xl bg-blue-900/20  mb-8">
           <Tab
             onClick={() => navigate("/upload")}
             className={({ selected }) =>

@@ -28,7 +28,7 @@ export default function AdminPage({ initialTab = 0 }) {
         classificationsCount={classificationsCount}
         usersCount={usersCount}
       />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto p-4">
         {/* Tabs */}
         <Tab.Group defaultIndex={initialTab}>
           <Tab.List className="flex space-x-1 rounded-xl bg-green-900/20 p-1 mb-8">
