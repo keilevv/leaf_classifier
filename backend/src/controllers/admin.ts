@@ -122,6 +122,70 @@ function adminController() {
       });
     }
   }
+
+  const getAdminClassification = async (
+    req: AuthenticatedRequest,
+    res: Response
+  ) => {
+    const id = req.params.id;
+    try {
+      if (!req.user) {
+        res.status(401).json({ error: "Authentication required" });
+        return;
+      }
+      const classification = await prisma.classification.findUnique({
+        where: { id },
+        include: { user: true },
+      });
+      if (!classification) {
+        res.status(404).json({ error: "Classification not found" });
+        return;
+      }
+      const response = {
+        message: "Classification fetched successfully",
+        results: classification,
+      };
+      res.json(response);
+    } catch (error) {
+      res.status(500).json({
+        error: "Failed to fetch classification",
+        message: error.message,
+      });
+    }
+  };
+
+  const updateAdminClassification = async (
+    req: AuthenticatedRequest,
+    res: Response
+  ) => {
+    const id = req.params.id;
+    const { shape, species, status } = req.body;
+    try {
+      if (!req.user) {
+        res.status(401).json({ error: "Authentication required" });
+        return;
+      }
+      if (req.user.role !== "ADMIN") {
+        res.status(403).json({ error: "Unauthorized" });
+        return;
+      }
+      const classification = await prisma.classification.update({
+        where: { id },
+        data: { shape, species, status },
+      });
+      const response = {
+        message: "Classification updated successfully",
+        results: classification,
+      };
+      res.json(response);
+    } catch (error) {
+      res.status(500).json({
+        error: "Failed to update classification",
+        message: error.message,
+      });
+    }
+  };
+
   const getAdminUsers = async (req: AuthenticatedRequest, res: Response) => {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
@@ -201,7 +265,55 @@ function adminController() {
     }
   };
 
-  return { getAdminUsers, getAdminClassifications };
+  const getAdminUser = async (req: AuthenticatedRequest, res: Response) => {
+    const id = req.params.id;
+    try {
+      if (!req.user) {
+        res.status(401).json({ error: "Authentication required" });
+        return;
+      }
+
+      const adminUser = await prisma.user.findUnique({
+        where: { id: req.user.id },
+      });
+      if (!adminUser) {
+        res.status(404).json({ error: "Admin user not found" });
+        return;
+      }
+      if (adminUser.role !== "ADMIN") {
+        res.status(403).json({ error: "Unauthorized" });
+        return;
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { id },
+        include: { _count: { select: { classifications: true } } },
+      });
+      if (!user) {
+        res.status(404).json({ error: "User not found" });
+        return;
+      }
+      const response = {
+        message: "User fetched successfully",
+        results: sanitizeUser(user as any),
+        classificationCount: (user as any)._count?.classifications ?? 0,
+      };
+      res.json(response);
+    } catch (error) {
+      res.status(500).json({
+        error: "Failed to fetch user",
+        message: error.message,
+      });
+    }
+  };
+
+  return {
+    getAdminUsers,
+    getAdminClassifications,
+    getAdminClassification,
+    updateAdminClassification,
+    getAdminUser,
+  };
 }
 
 export default adminController;

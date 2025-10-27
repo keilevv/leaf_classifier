@@ -62,6 +62,7 @@ model Species {
   id             String   @id @default(cuid())
   commonNameEs   String
   commonNameEn   String
+  key            String?   @default(cuid())
   scientificName String
   createdAt      DateTime @default(now())
   updatedAt      DateTime @default(now())

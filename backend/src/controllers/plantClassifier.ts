@@ -70,7 +70,8 @@ function plantClassifierController() {
             const { model1, model2, model3 } = response.data;
 
             if (model3.class_name) {
-              const species = model1.class_name;
+              const species = model1.class_name.split("_")[0];
+              const isHealthy = model1.class_name.includes("healthy");
               const species_confidence = model1.probability;
               const shape = model2.class_name;
               const shape_confidence = model2.probability;
@@ -138,6 +139,7 @@ function plantClassifierController() {
                   shape,
                   speciesConfidence: species_confidence,
                   shapeConfidence: shape_confidence,
+                  isHealthy,
                   userId,
                 },
               });

@@ -6,6 +6,8 @@ import Login from "./Pages/Login";
 import About from "./Pages/About";
 import Settings from "./Pages/Settings";
 import Admin from "./Pages/Admin";
+import AdminClassificationDetails from "./Pages/Admin/Classifications/ClassificationDetails";
+import AdminUserDetails from "./Pages/Admin/Users/UserDetails";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import { Notification } from "./Components/Common/Notification";
 import "./App.css";
@@ -34,10 +36,26 @@ function App() {
           }
         />
         <Route
+          path="/admin/classification/:id"
+          element={
+            <ProtectedRoute>
+              <AdminClassificationDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/admin/users"
           element={
             <ProtectedRoute>
               <Admin initialTab={1} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/user/:id"
+          element={
+            <ProtectedRoute>
+              <AdminUserDetails />
             </ProtectedRoute>
           }
         />

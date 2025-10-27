@@ -5,6 +5,7 @@ import adminService from "../Services/admin";
 function useAdmin() {
   const { accessToken } = useStore();
   const [classifications, setClassifications] = useState([]);
+  const [classification, setClassification] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [classificationsCount, setClassificationsCount] = useState({
     total: 0,
@@ -16,6 +17,7 @@ function useAdmin() {
   const [error, setError] = useState(null);
   const [pages, setPages] = useState(1);
   const [users, setUsers] = useState([]);
+  const [user, setUser] = useState(null);
 
   function getClassifications(page, limit, sortBy, sortOrder, filters = {}) {
     setIsLoading(true);
@@ -45,6 +47,36 @@ function useAdmin() {
         setIsLoading(false);
       });
   }
+  function getClassification(id) {
+    setIsLoading(true);
+    return adminService
+      .getAdminClassification(id, accessToken)
+      .then((response) => {
+        setIsLoading(false);
+        setClassification(response.data.results);
+        return response.data.results;
+      })
+      .catch((error) => {
+        console.error("Error fetching classification:", error);
+        setError(error);
+        setIsLoading(false);
+      });
+  }
+  function updateClassification(id, data) {
+    setIsLoading(true);
+    return adminService
+      .updateAdminClassification(id, data, accessToken)
+      .then((response) => {
+        setIsLoading(false);
+        setClassification(response.data.results);
+        return response.data.results;
+      })
+      .catch((error) => {
+        console.error("Error updating classification:", error);
+        setError(error);
+        setIsLoading(false);
+      });
+  }
   function getUsers(page, limit, sortBy, sortOrder, filters = {}) {
     setIsLoading(true);
     return adminService
@@ -61,17 +93,53 @@ function useAdmin() {
         setIsLoading(false);
       });
   }
+  function getUser(id) {
+    setIsLoading(true);
+    return adminService
+      .getAdminUser(id, accessToken)
+      .then((response) => {
+        setIsLoading(false);
+        setUser(response.data.results);
+        return response.data.results;
+      })
+      .catch((error) => {
+        console.error("Error fetching user:", error);
+        setError(error);
+        setIsLoading(false);
+      });
+  }
+  function updateUser(id, data) {
+    setIsLoading(true);
+    return adminService
+      .updateAdminUser(id, data, accessToken)
+      .then((response) => {
+        setIsLoading(false);
+        setUser(response.data.results);
+        return response.data.results;
+      })
+      .catch((error) => {
+        console.error("Error updating user:", error);
+        setError(error);
+        setIsLoading(false);
+      });
+  }
 
   return {
     classifications,
+    classification,
     isLoading,
     error,
     pages,
     classificationsCount,
     getClassifications,
+    getClassification,
+    updateClassification,
     users,
     getUsers,
     usersCount,
-  };
+    getUser,
+    updateUser,
+    user,
+    };
 }
 export default useAdmin;

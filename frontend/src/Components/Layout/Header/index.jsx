@@ -1,11 +1,10 @@
-import { FaLeaf, FaSignOutAlt } from "react-icons/fa";
 import { useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import useStore from "../../../hooks/useStore";
 import useAuth from "../../../hooks/useAuth";
 import { Fragment } from "react";
-import { FaUser } from "react-icons/fa";
+import { FaUser, FaHome, FaLeaf, FaShieldAlt, FaInfoCircle } from "react-icons/fa";
 import { showNotification } from "../../Common/Notification";
 
 let defaultPages = [
@@ -13,11 +12,13 @@ let defaultPages = [
     title: "Home",
     key: "home",
     url: "/",
+    icon: <FaHome />,
   },
   {
     title: "About",
     key: "about",
     url: "/about",
+    icon: <FaInfoCircle />,
   },
 ];
 
@@ -29,7 +30,7 @@ function Header({ className = "" }) {
     uiState,
     user,
     logout: logoutFromStore,
-    setUiState
+    setUiState,
   } = useStore();
   const { logout } = useAuth();
 
@@ -64,13 +65,18 @@ function Header({ className = "" }) {
       // User is authenticated
       setPages([
         ...defaultPages,
-        { title: "Upload", key: "upload", url: "/upload" },
+        { title: "Upload", key: "upload", url: "/upload", icon: <FaLeaf /> },
       ]); // Add upload link
 
       if (user.role === "ADMIN") {
         setPages((prevPages) => [
           ...prevPages,
-          { title: "Admin", key: "admin", url: "/admin" },
+          {
+            title: "Admin",
+            key: "admin",
+            url: "/admin",
+            icon: <FaShieldAlt />,
+          },
         ]); // Add dashboard link for admin
       }
     } else {
@@ -115,7 +121,7 @@ function Header({ className = "" }) {
                   <li key={page.key}>
                     <Link
                       to={page.url}
-                      className={`text-gray-600 hover:text-green-300 font-bold ${
+                      className={`text-gray-600 hover:text-green-300 font-bold flex items-center gap-2 ${
                         uiState.selectedPage === page.key
                           ? "text-green-600"
                           : ""
@@ -125,6 +131,7 @@ function Header({ className = "" }) {
                         window.scrollTo({ top: 0, behavior: "smooth" });
                       }}
                     >
+                      {page.icon}
                       {page.title}
                     </Link>
                   </li>
@@ -167,7 +174,6 @@ function Header({ className = "" }) {
                       {/* Display user's name, email, or an icon */}
                       {user.displayName || user.email || "Account"}
                     </Menu.Button>
-                    <FaUser className="h-5 w-5 ml-2" />
                   </div>
                   <Transition
                     as={Fragment}
