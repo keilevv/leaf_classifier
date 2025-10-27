@@ -1,9 +1,9 @@
-import EditClassificationForm from "../../../Components/Admin/Classifications/EditClassificationForm";
+import EditClassificationForm from "../../../../Components/Admin/Classifications/EditClassificationForm";
 import { useParams } from "react-router-dom";
 import { useEffect } from "react";
 import { FaEdit } from "react-icons/fa";
-import Layout from "../../../Components/Layout";
-import useAdmin from "../../../hooks/useAdmin";
+import Layout from "../../../../Components/Layout";
+import useAdmin from "../../../../hooks/useAdmin";
 
 function ClassificationDetails() {
   const { id } = useParams();

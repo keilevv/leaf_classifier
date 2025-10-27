@@ -33,5 +33,15 @@ const adminService = {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
   },
+  getAdminUser(id, accessToken) {
+    return axios.get(`${apiUrl}/admin/user/${id}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+  },
+  updateAdminUser(id, data, accessToken) {
+    return axios.put(`${apiUrl}/admin/user/${id}`, data, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+  },
 };
 export default adminService;

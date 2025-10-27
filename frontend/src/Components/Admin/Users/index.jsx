@@ -14,8 +14,10 @@ import { showNotification } from "../../Common/Notification";
 import useAdmin from "../../../hooks/useAdmin";
 import useStore from "../../../hooks/useStore";
 import RangePicker from "../../Common/RangePicker";
+import { useNavigate } from "react-router-dom";
 
 function UsersTable({ setUsersCount = () => {} }) {
+  const navigate = useNavigate();
   const { preferences } = useStore();
   // Users state
   const [users, setUsers] = useState([]);
@@ -32,11 +34,7 @@ function UsersTable({ setUsersCount = () => {} }) {
 
   // User actions
   const handleEditUser = (user) => {
-    showNotification({
-      title: "User Management",
-      message: `Edit user: ${user.name}`,
-      type: "info",
-    });
+    navigate(`/admin/user/${user.id}`);
   };
 
   const handleDeleteUser = (user) => {
@@ -244,7 +242,7 @@ function UsersTable({ setUsersCount = () => {} }) {
                         <div className="flex justify-end space-x-2">
                           <button
                             onClick={() => handleEditUser(user)}
-                            className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded transition-colors"
+                            className="cursor-pointer text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded transition-colors"
                             title="Edit"
                           >
                             <FaEdit className="h-4 w-4" />
