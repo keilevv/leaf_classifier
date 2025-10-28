@@ -5,6 +5,7 @@ export interface AuthenticatedRequest extends Request {
   };
   query: string | any;
   file?: any; // Multer file object
+  body: any;
 }
 
 export interface DefaultSpecies {

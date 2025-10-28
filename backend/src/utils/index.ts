@@ -149,3 +149,22 @@ export async function formatClassificationSpecies() {
     }
   });
 }
+
+export async function updateTaggedSpeciesAndShape() {
+  const classifications = await prisma.classification.findMany({});
+  classifications.map(async (classification) => {
+    if (
+      classification.taggedSpecies == "" ||
+      classification.taggedShape == ""
+    ) {
+      const updatedClassification = await prisma.classification.update({
+        where: { id: classification.id },
+        data: {
+          taggedSpecies: classification.species,
+          taggedShape: classification.shape,
+        },
+      });
+      console.log("Updated classification:", updatedClassification);
+    }
+  });
+}

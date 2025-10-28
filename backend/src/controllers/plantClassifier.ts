@@ -71,9 +71,11 @@ function plantClassifierController() {
 
             if (model3.class_name) {
               const species = model1.class_name.split("_")[0];
+              const taggedSpecies = model1.class_name.split("_")[0];
               const isHealthy = model1.class_name.includes("healthy");
               const species_confidence = model1.probability;
               const shape = model2.class_name;
+              const taggedShape = model2.class_name;
               const shape_confidence = model2.probability;
 
               // Step 2: Generate unique ID and create R2 key based on classification
@@ -137,6 +139,8 @@ function plantClassifierController() {
                   imagePath: imageUrl, // Store final path (R2 key or local path)
                   species,
                   shape,
+                  taggedSpecies,
+                  taggedShape,
                   speciesConfidence: species_confidence,
                   shapeConfidence: shape_confidence,
                   isHealthy,

@@ -13,7 +13,7 @@ import {
   createDefaultAdmin,
   createDefaultSpecies,
   updateSpecies,
-  formatClassificationSpecies,
+  updateTaggedSpeciesAndShape,
 } from "./utils";
 
 // Create default admin user if none exists
@@ -26,8 +26,8 @@ createDefaultSpecies().catch((error) => {
 updateSpecies().catch((error) => {
   console.error("Error updating species:", error);
 });
-formatClassificationSpecies().catch((error) => {
-  console.error("Error updating classification species:", error);
+updateTaggedSpeciesAndShape().catch((error) => {
+  console.error("Error updating tagged species and shape:", error);
 });
 const app = express();
 
@@ -48,7 +48,7 @@ app.use(
       "http://localhost", // pruebas locales
       "http://127.0.0.1", // alternativa local
     ],
-    methods: ["GET", "POST", "PATCH", "DELETE"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
