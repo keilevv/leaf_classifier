@@ -159,19 +159,22 @@ function adminController() {
     res: Response
   ) => {
     const id = req.params.id;
-    const { shape, species, status } = req.body;
+    const { taggedShape, taggedSpecies, isHealthy, status } = req.body;
     try {
       if (!req.user) {
         res.status(401).json({ error: "Authentication required" });
         return;
       }
-      if (req.user.role !== "ADMIN") {
+      const user = await prisma.user.findUnique({
+        where: { id: req.user.id },
+      });
+      if (user?.role !== "ADMIN") {
         res.status(403).json({ error: "Unauthorized" });
         return;
       }
       const classification = await prisma.classification.update({
         where: { id },
-        data: { shape, species, status },
+        data: { taggedShape, taggedSpecies, isHealthy, status },
       });
       const response = {
         message: "Classification updated successfully",

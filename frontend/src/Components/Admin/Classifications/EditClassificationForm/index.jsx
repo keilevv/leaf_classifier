@@ -1,7 +1,18 @@
-import { Combobox } from "@headlessui/react";
+import {
+  Combobox,
+  ComboboxButton,
+  ComboboxInput,
+  ComboboxOption,
+  ComboboxOptions,
+} from "@headlessui/react";
 import { FaChevronDown } from "react-icons/fa";
 import ClassificationBadge from "../../../Common/Classifications/ClassificationBadge";
+import { getStatusBadge } from "../../../../utils";
 import useSpecies from "../../../../hooks/useSpecies";
+import useAdmin from "../../../../hooks/useAdmin";
+import useStore from "../../../../hooks/useStore";
+import { showNotification } from "../../../Common/Notification";
+import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Switch } from "react-aria-components";
 import { cn } from "../../../../utils";
@@ -18,40 +29,56 @@ const shapeUrlByKey = Object.fromEntries(
   })
 );
 
-function EditClassificationForm({ selectedUpload }) {
-  const { species, loading, getSpecies, shapes } = useSpecies();
+function EditClassificationForm() {
+  const { species, loading: loadingSpecies, getSpecies, shapes } = useSpecies();
   const [selectedSpecies, setSelectedSpecies] = useState("");
   const [selectedShape, setSelectedShape] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
   const [isHealthy, setIsHealthy] = useState(false);
   const [enableButton, setEnableButton] = useState(false);
   const [speciesQuery, setSpeciesQuery] = useState("");
   const [shapeQuery, setShapeQuery] = useState("");
   const [shapeSrc, setShapeSrc] = useState(shapeUrlByKey["lanceolate"] || "");
+  const { updateClassification, getClassification, classification, loading } =
+    useAdmin();
+  const { id } = useParams();
+  const { user } = useStore();
+
+  console.log("user", user);
 
   useEffect(() => {
-    if (selectedUpload) {
+    if (id) {
+      getClassification(id);
       getSpecies();
     }
-  }, [selectedUpload]);
+  }, [id]);
 
   useEffect(() => {
-    if (selectedUpload) {
-      setIsHealthy(selectedUpload.isHealthy);
-      setSelectedSpecies(selectedUpload.species);
-      setSelectedShape(selectedUpload.shape);
+    if (classification) {
+      setIsHealthy(classification.isHealthy);
+      setSelectedSpecies(classification.taggedSpecies);
+      setSelectedShape(classification.taggedShape);
+      setSelectedStatus(classification.status);
       setSpeciesQuery("");
       setShapeQuery("");
     }
-  }, [selectedUpload, shapes]);
+  }, [classification, shapes]);
 
   useEffect(() => {
-    if (!selectedUpload) return;
+    if (!classification) return;
     const changed =
-      selectedSpecies !== selectedUpload.species ||
-      selectedShape !== selectedUpload.shape ||
-      isHealthy !== selectedUpload.isHealthy;
+      selectedSpecies !== classification.taggedSpecies ||
+      selectedShape !== classification.taggedShape ||
+      isHealthy !== classification.isHealthy ||
+      selectedStatus !== classification.status;
     setEnableButton(changed);
-  }, [selectedSpecies, selectedShape, isHealthy, selectedUpload]);
+  }, [
+    selectedSpecies,
+    selectedShape,
+    isHealthy,
+    classification,
+    selectedStatus,
+  ]);
 
   useEffect(() => {
     if (selectedShape) {
@@ -64,14 +91,123 @@ function EditClassificationForm({ selectedUpload }) {
 
   const handleUpdateClassification = async (e) => {
     e.preventDefault();
+    await updateClassification(id, {
+      taggedSpecies: selectedSpecies,
+      taggedShape: selectedShape,
+      isHealthy,
+      status: selectedStatus,
+    })
+      .then(() => {
+        showNotification({
+          title: "Classification tags updated successfully",
+          type: "success",
+        });
+      })
+      .catch((error) => {
+        showNotification({
+          title: "Error updating classification tags",
+          type: "error",
+        });
+      });
   };
+
+  const statusOptions = [
+    { value: "PENDING", label: "Pending" },
+    { value: "VERIFIED", label: "Verified" },
+    { value: "REJECTED", label: "Rejected" },
+  ];
+
+  const statusBadge = getStatusBadge(
+    classification?.isArchived ? "ARCHIVED" : classification?.status
+  );
+  const StatusIcon = statusBadge.icon;
+  const datasetFilename = classification?.imagePath.split("/").pop();
 
   return (
     <>
-      {selectedUpload && (
-        <div className="space-y-6  flex flex-col-reverse md:flex-row gap-4 w-full">
+      {classification && (
+        <div className="space-y-6  flex flex-col md:flex-row  gap-4 md:gap-8 w-full">
+          <div className="flex flex-col w-full md:w-1/2  ">
+            <h1 className="text-lg font-medium text-green-700 pb-2">
+              Image Details{" "}
+            </h1>
+            <div className=" rounded-2xl overflow-hidden mb-2  w-full max-w-[250px]  md:max-w-[300px] lg:max-w-[350px] xl:max-w-[400px]">
+              <img
+                src={classification.imagePath}
+                alt={classification.originalFilename}
+                className="w-full h-full object-cover m-auto "
+              />
+            </div>
+            <div className="flex flex-col gap-2 border-b border-gray-200 py-4">
+              <div>
+                <p className="text-sm font-medium text-gray-700">
+                  Original filename
+                </p>
+                <p className="">{classification.originalFilename}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-700">
+                  Dataset filename
+                </p>
+                <p className="">{datasetFilename}</p>
+              </div>
+            </div>
+            <div className="flex flex-col border-b border-gray-200 pt-4 md: border-none">
+              <h1 className="text-lg font-medium text-green-700">
+                Verification Status
+              </h1>
+              <div className="flex flex-col gap-2 border-gray-200 pt-2">
+                <div
+                  className={`flex items-center px-2.5 py-1 rounded-full text-xs font-medium self-start  ${statusBadge.color} `}
+                >
+                  <StatusIcon className="h-3 w-3 mr-2" />
+                  {classification.status}
+                </div>
+              </div>
+              {user?.role == "ADMIN" && (
+                <div className="flex flex-col gap-2 pt-4">
+                  <label className="text-sm font-medium text-gray-700">
+                    Change Status
+                  </label>
+                  <Combobox
+                    onChange={(value) => setSelectedStatus(value)}
+                    value={selectedStatus}
+                  >
+                    <div className="relative">
+                      <ComboboxInput
+                        id="species"
+                        name="species"
+                        className="block w-full rounded-md border-gray-400 border-2 focus:ring-green-500 focus:ring-2 p-1"
+                        placeholder="Select a species"
+                      />
+                      <ComboboxButton className="absolute inset-y-0 right-0 flex items-center px-2">
+                        <FaChevronDown className="h-4 w-4 text-gray-500" />
+                      </ComboboxButton>
+                      <ComboboxOptions className="absolute z-10 left-0 right-0 top-full mt-1 md:top-auto md:mt-0 md:bottom-full md:mb-1 max-h-60 w-full overflow-y-scroll rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                        {statusOptions.map((status) => (
+                          <ComboboxOption
+                            key={status.value}
+                            value={status.value}
+                            className={({ active }) =>
+                              `relative cursor-pointer select-none py-2 pl-3 pr-4 ${
+                                active
+                                  ? "bg-green-100 text-green-900"
+                                  : "text-gray-900"
+                              }`
+                            }
+                          >
+                            {status.label}
+                          </ComboboxOption>
+                        ))}
+                      </ComboboxOptions>
+                    </div>
+                  </Combobox>
+                </div>
+              )}
+            </div>
+          </div>
           <div className="flex flex-col w-full md:w-1/2">
-            <div className="flex gap-4 flex-col border-b border-gray-200 pb-4 mb-4">
+            <div className="flex gap-4 flex-col pb-4 border-b border-gray-200 mb-4">
               <h1 className="text-lg font-medium text-green-700">
                 Model Output
               </h1>
@@ -80,8 +216,8 @@ function EditClassificationForm({ selectedUpload }) {
                   Species
                 </label>
                 <ClassificationBadge
-                  classification={selectedUpload.species}
-                  confidence={selectedUpload.speciesConfidence}
+                  classification={classification?.species}
+                  confidence={classification?.speciesConfidence}
                 />
               </div>
               <div className="flex flex-col gap-2">
@@ -89,13 +225,14 @@ function EditClassificationForm({ selectedUpload }) {
                   Shape
                 </label>
                 <ClassificationBadge
-                  classification={selectedUpload.shape}
-                  confidence={selectedUpload.shapeConfidence}
+                  classification={classification?.shape}
+                  confidence={classification?.shapeConfidence}
                 />
               </div>
             </div>
+
             <h1 className="text-lg font-medium text-green-700 pb-2">
-              Change Tags
+              Update Model Tags
             </h1>
             <form
               onSubmit={handleUpdateClassification}
@@ -110,7 +247,7 @@ function EditClassificationForm({ selectedUpload }) {
                 </label>
                 <Combobox value={selectedSpecies} onChange={setSelectedSpecies}>
                   <div className="relative mt-2">
-                    <Combobox.Input
+                    <ComboboxInput
                       id="species"
                       name="species"
                       className="block w-full rounded-md border-gray-400 border-2 focus:ring-green-500 focus:ring-2 p-1"
@@ -124,10 +261,10 @@ function EditClassificationForm({ selectedUpload }) {
                       onChange={(e) => setSpeciesQuery(e.target.value)}
                       placeholder="Select a species"
                     />
-                    <Combobox.Button className="absolute inset-y-0 right-0 flex items-center px-2">
+                    <ComboboxButton className="absolute inset-y-0 right-0 flex items-center px-2">
                       <FaChevronDown className="h-4 w-4 text-gray-500" />
-                    </Combobox.Button>
-                    <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                    </ComboboxButton>
+                    <ComboboxOptions className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
                       {species
                         .filter((sp) => {
                           if (!speciesQuery) return true;
@@ -136,7 +273,7 @@ function EditClassificationForm({ selectedUpload }) {
                           return label.includes(speciesQuery.toLowerCase());
                         })
                         .map((sp) => (
-                          <Combobox.Option
+                          <ComboboxOption
                             key={sp.id}
                             value={sp.key}
                             className={({ active }) =>
@@ -148,14 +285,14 @@ function EditClassificationForm({ selectedUpload }) {
                             }
                           >
                             {`${sp.scientificName} - ${sp.commonNameEn}`}
-                          </Combobox.Option>
+                          </ComboboxOption>
                         ))}
                       {species.length === 0 && (
                         <div className="py-2 px-3 text-gray-500">
                           No species found
                         </div>
                       )}
-                    </Combobox.Options>
+                    </ComboboxOptions>
                   </div>
                 </Combobox>
               </div>
@@ -168,7 +305,7 @@ function EditClassificationForm({ selectedUpload }) {
                 </label>
                 <Combobox value={selectedShape} onChange={setSelectedShape}>
                   <div className="relative mt-2">
-                    <Combobox.Input
+                    <ComboboxInput
                       id="shape"
                       name="shape"
                       className="block w-full rounded-md border-gray-400 border-2 focus:ring-green-500 focus:ring-2 p-1"
@@ -182,10 +319,10 @@ function EditClassificationForm({ selectedUpload }) {
                       onChange={(e) => setShapeQuery(e.target.value)}
                       placeholder="Select a shape"
                     />
-                    <Combobox.Button className="absolute inset-y-0 right-0 flex items-center px-2">
+                    <ComboboxButton className="absolute inset-y-0 right-0 flex items-center px-2">
                       <FaChevronDown className="h-4 w-4 text-gray-500" />
-                    </Combobox.Button>
-                    <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                    </ComboboxButton>
+                    <ComboboxOptions className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
                       {shapes
                         .filter((s) => {
                           if (!shapeQuery) return true;
@@ -194,7 +331,7 @@ function EditClassificationForm({ selectedUpload }) {
                             .includes(shapeQuery.toLowerCase());
                         })
                         .map((s, index) => (
-                          <Combobox.Option
+                          <ComboboxOption
                             key={s.id ?? index}
                             value={s.nameEn}
                             className={({ active }) =>
@@ -211,14 +348,14 @@ function EditClassificationForm({ selectedUpload }) {
                               alt={s.nameEn}
                               className="h-10"
                             />
-                          </Combobox.Option>
+                          </ComboboxOption>
                         ))}
                       {shapes.length === 0 && (
                         <div className="py-2 px-3 text-gray-500">
                           No shapes found
                         </div>
                       )}
-                    </Combobox.Options>
+                    </ComboboxOptions>
                   </div>
                 </Combobox>
               </div>
@@ -236,7 +373,7 @@ function EditClassificationForm({ selectedUpload }) {
                 className={() => `
                           flex items-center gap-3 select-none mt-2
                           ${
-                            loading
+                            loadingSpecies
                               ? "opacity-50 cursor-not-allowed"
                               : "cursor-pointer"
                           }
@@ -285,18 +422,6 @@ function EditClassificationForm({ selectedUpload }) {
                 Save
               </button>
             </form>
-          </div>
-          <div className="flex flex-col m-auto ">
-            <div className=" rounded-2xl overflow-hidden mb-2  w-full max-w-[200px] md:max-w-[350px]">
-              <img
-                src={selectedUpload.imagePath}
-                alt={selectedUpload.originalFilename}
-                className="w-full h-full object-cover m-auto "
-              />
-            </div>
-            <h1 className="text-lg font-medium text-green-700 text-center">
-              {selectedUpload.originalFilename}
-            </h1>
           </div>
         </div>
       )}
