@@ -6,7 +6,17 @@ import { useEffect, useState } from "react";
 import { Switch } from "react-aria-components";
 import { cn } from "../../../../utils";
 
-const shapesPath = "/src/assets/images/shapes/";
+const shapeModules = import.meta.glob("/src/assets/images/shapes/*.webp", {
+  eager: true,
+  as: "url",
+});
+const shapeUrlByKey = Object.fromEntries(
+  Object.entries(shapeModules).map(([path, url]) => {
+    const filename = path.split("/").pop() || "";
+    const key = filename.replace(".webp", "");
+    return [key, url];
+  })
+);
 
 function EditClassificationForm({ selectedUpload }) {
   const { species, loading, getSpecies, shapes } = useSpecies();
@@ -16,7 +26,7 @@ function EditClassificationForm({ selectedUpload }) {
   const [enableButton, setEnableButton] = useState(false);
   const [speciesQuery, setSpeciesQuery] = useState("");
   const [shapeQuery, setShapeQuery] = useState("");
-  const [shapeSrc, setShapeSrc] = useState(`${shapesPath}lanceolate.webp`);
+  const [shapeSrc, setShapeSrc] = useState(shapeUrlByKey["lanceolate"] || "");
 
   useEffect(() => {
     if (selectedUpload) {
@@ -47,7 +57,7 @@ function EditClassificationForm({ selectedUpload }) {
     if (selectedShape) {
       const shape = shapes.find((s) => s.nameEn === selectedShape);
       if (shape) {
-        setShapeSrc(`${shapesPath}${shape.key}.webp`);
+        setShapeSrc(shapeUrlByKey[shape.key] || "");
       }
     }
   }, [selectedShape, shapes]);
@@ -197,7 +207,7 @@ function EditClassificationForm({ selectedUpload }) {
                           >
                             {s.nameEn}{" "}
                             <img
-                              src={`${shapesPath}${s.key}.webp`}
+                              src={shapeUrlByKey[s.key]}
                               alt={s.nameEn}
                               className="h-10"
                             />
