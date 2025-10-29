@@ -218,10 +218,10 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-medium text-gray-900">
-                            {classification.user.fullName}
+                            {classification?.user?.fullName}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {classification.user.email}
+                            {classification?.user?.email}
                           </div>
                         </div>
                       </td>
@@ -231,7 +231,11 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
                           confidence={classification.shapeConfidence}
                         />
                         <ClassificationBadge
-                          classification={classification.species}
+                          classification={
+                            classification.scientificName +
+                            " | " +
+                            classification.commonName
+                          }
                           confidence={classification.speciesConfidence}
                         />
                       </td>

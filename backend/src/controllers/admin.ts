@@ -24,6 +24,15 @@ function adminController() {
         return;
       }
 
+      const user = await prisma.user.findUnique({
+        where: { id: req.user.id },
+      });
+
+      if (user?.role !== "ADMIN" && user?.role !== "MODERATOR") {
+        res.status(403).json({ error: "Unauthorized" });
+        return;
+      }
+
       // Build Prisma where filter
       const where: any = {};
 
@@ -94,14 +103,27 @@ function adminController() {
       ]);
 
       // Add full URL for images (R2 or local)
-      const classificationsWithUser = classifications.map((classification) => {
-        return {
-          ...classification,
-          user: classification.user
-            ? sanitizeUser(classification.user)
-            : undefined,
-        };
-      });
+      const classificationsWithUser = await Promise.all(
+        classifications.map(async (classification) => {
+          const species = await prisma.species.findUnique({
+            where: { key: classification.species },
+          });
+
+          const commonName =
+            user?.language === "EN"
+              ? species?.commonNameEn
+              : species?.commonNameEs;
+          const scientificName = species?.scientificName;
+          return {
+            ...classification,
+            user: classification.user
+              ? sanitizeUser(classification.user)
+              : undefined,
+            commonName,
+            scientificName,
+          };
+        })
+      );
 
       const totalPages = Math.ceil(count / limit);
 

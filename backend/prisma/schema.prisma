@@ -33,6 +33,7 @@ model User {
   bio                String?
   emailNotifications Boolean          @default(true)
   isArchived         Boolean          @default(false)
+  language           String           @default("EN")
 }
 
 enum ClassificationStatus {
