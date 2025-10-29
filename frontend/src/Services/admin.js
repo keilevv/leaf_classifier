@@ -38,7 +38,7 @@ const adminService = {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
   },
-  updateAdminUser(id, data, accessToken) {
+  updateUserAdmin(id, data, accessToken) {
     return axios.put(`${apiUrl}/admin/user/${id}`, data, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });

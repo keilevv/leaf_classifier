@@ -111,7 +111,7 @@ function useAdmin() {
   function updateUser(id, data) {
     setIsLoading(true);
     return adminService
-      .updateAdminUser(id, data, accessToken)
+      .updateUserAdmin(id, data, accessToken)
       .then((response) => {
         setIsLoading(false);
         setUser(response.data.results);
@@ -140,6 +140,6 @@ function useAdmin() {
     getUser,
     updateUser,
     user,
-    };
+  };
 }
 export default useAdmin;

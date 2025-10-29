@@ -5,7 +5,7 @@ import { R2Service } from "../services/r2Service";
 import { sanitizeUser } from "../utils";
 
 function adminController() {
-  async function getAdminClassifications(
+  async function getClassificationsAdmin(
     req: AuthenticatedRequest,
     res: Response
   ): Promise<void> {
@@ -24,11 +24,11 @@ function adminController() {
         return;
       }
 
-      const user = await prisma.user.findUnique({
+      const actingUser = await prisma.user.findUnique({
         where: { id: req.user.id },
       });
 
-      if (user?.role !== "ADMIN" && user?.role !== "MODERATOR") {
+      if (actingUser?.role !== "ADMIN" && actingUser?.role !== "MODERATOR") {
         res.status(403).json({ error: "Unauthorized" });
         return;
       }
@@ -110,7 +110,7 @@ function adminController() {
           });
 
           const commonName =
-            user?.language === "EN"
+            actingUser?.language === "EN"
               ? species?.commonNameEn
               : species?.commonNameEs;
           const scientificName = species?.scientificName;
@@ -145,7 +145,7 @@ function adminController() {
     }
   }
 
-  const getAdminClassification = async (
+  const getClassificationAdmin = async (
     req: AuthenticatedRequest,
     res: Response
   ) => {
@@ -176,7 +176,7 @@ function adminController() {
     }
   };
 
-  const updateAdminClassification = async (
+  const updateClassificationAdmin = async (
     req: AuthenticatedRequest,
     res: Response
   ) => {
@@ -211,7 +211,7 @@ function adminController() {
     }
   };
 
-  const getAdminUsers = async (req: AuthenticatedRequest, res: Response) => {
+  const getUsersAdmin = async (req: AuthenticatedRequest, res: Response) => {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
@@ -290,7 +290,7 @@ function adminController() {
     }
   };
 
-  const getAdminUser = async (req: AuthenticatedRequest, res: Response) => {
+  const getUserAdmin = async (req: AuthenticatedRequest, res: Response) => {
     const id = req.params.id;
     try {
       if (!req.user) {
@@ -332,12 +332,75 @@ function adminController() {
     }
   };
 
+  const updateUserAdmin = async (req: Request, res: Response) => {
+    try {
+      const id = req.params.id;
+      const {
+        fullName,
+        email,
+        phone,
+        institution,
+        department,
+        location,
+        bio,
+        password,
+        emailNotifications,
+      } = req.body;
+      const user = await prisma.user.findUnique({
+        where: { id },
+      });
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      // Authorization: only same user or admin
+      const authUser = (req as any).user as { id?: string } | undefined;
+      if (!authUser?.id) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      if (authUser.id !== id) {
+        const actingUser = await prisma.user.findUnique({
+          where: { id: authUser.id },
+        });
+        if (!actingUser || actingUser.role !== "ADMIN") {
+          return res.status(403).json({ error: "Forbidden" });
+        }
+      }
+      const data: any = {
+        fullName,
+        email,
+        phone,
+        institution,
+        department,
+        location,
+        bio,
+        emailNotifications,
+      };
+      if (
+        password &&
+        typeof password === "string" &&
+        password.trim().length > 0
+      ) {
+        const hash = await bcrypt.hash(password, 10);
+        data.passwordHash = hash;
+      }
+      const updatedUser = await prisma.user.update({
+        where: { id },
+        data,
+      });
+      return res.json({ user: sanitizeUser(updatedUser) });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  };
+
   return {
-    getAdminUsers,
-    getAdminClassifications,
-    getAdminClassification,
-    updateAdminClassification,
-    getAdminUser,
+    getUsersAdmin,
+    getClassificationsAdmin,
+    getClassificationAdmin,
+    updateClassificationAdmin,
+    getUserAdmin,
+    updateUserAdmin,
   };
 }
 

@@ -11,6 +11,17 @@ function EditUserForm() {
     getUser(id);
   }, [id]);
 
-  return <DetailsForm user={user} loading={isLoading} />;
+  const handleOnUpdateUser = (user) => {
+    getUser(id);
+  };
+
+  return (
+    <DetailsForm
+      admin={true}
+      user={user}
+      loading={isLoading}
+      onUpdate={handleOnUpdateUser}
+    />
+  );
 }
 export default EditUserForm;

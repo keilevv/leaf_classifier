@@ -5,16 +5,18 @@ import { authenticateToken } from "../middleware/auth";
 const router = Router();
 const controller = admincontroller();
 const {
-  getAdminClassifications,
-  getAdminUsers,
-  getAdminClassification,
-  updateAdminClassification,
-  getAdminUser,
+  getClassificationsAdmin,
+  getUsersAdmin,
+  getClassificationAdmin,
+  updateClassificationAdmin,
+  getUserAdmin,
+  updateUserAdmin,
 } = controller;
-router.get("/classifications", authenticateToken, getAdminClassifications);
-router.get("/users", authenticateToken, getAdminUsers);
-router.get("/classification/:id", authenticateToken, getAdminClassification);
-router.put("/classification/:id", authenticateToken, updateAdminClassification);
-router.get("/user/:id", authenticateToken, getAdminUser);
+router.get("/classifications", authenticateToken, getClassificationsAdmin);
+router.get("/classification/:id", authenticateToken, getClassificationAdmin);
+router.put("/classification/:id", authenticateToken, updateClassificationAdmin);
+router.get("/users", authenticateToken, getUsersAdmin);
+router.get("/user/:id", authenticateToken, getUserAdmin);
+router.put("/user/:id", authenticateToken, updateUserAdmin);
 
 export default router;
