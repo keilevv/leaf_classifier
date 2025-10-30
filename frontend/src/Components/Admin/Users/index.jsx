@@ -6,6 +6,7 @@ import {
   FaDatabase,
   FaEdit,
   FaUsers,
+  FaFilter,
 } from "react-icons/fa";
 import { useState, useEffect, useCallback } from "react";
 import { formatDate, getRoleBadge } from "../../../utils";
@@ -29,6 +30,8 @@ function UsersTable({ setUsersCount = () => {} }) {
   const [isArchived, setIsArchived] = useState(false);
   const { users: usersData, getUsers, usersCount } = useAdmin();
   const [rangeFilter, setRangeFilter] = useState({ start: null, end: null });
+  const [showFilters, setShowFilters] = useState(false);
+  const [maxButtons, setMaxButtons] = useState(5);
 
   const totalPages = Math.ceil(users.length / pageSize);
 
@@ -99,6 +102,36 @@ function UsersTable({ setUsersCount = () => {} }) {
     };
   }, [debouncedSearch]);
 
+  useEffect(() => {
+    function updateMaxButtons() {
+      const w = window.innerWidth;
+      if (w < 640) {
+        setMaxButtons(5);
+      } else if (w < 1024) {
+        setMaxButtons(7);
+      } else {
+        setMaxButtons(9);
+      }
+    }
+    updateMaxButtons();
+    window.addEventListener("resize", updateMaxButtons);
+    return () => window.removeEventListener("resize", updateMaxButtons);
+  }, []);
+
+  function getPageItems(current, total, max) {
+    if (total <= max) return Array.from({ length: total }, (_, i) => i + 1);
+    const items = [];
+    const side = Math.floor((max - 3) / 2);
+    const start = Math.max(2, current - side);
+    const end = Math.min(total - 1, current + side);
+    items.push(1);
+    if (start > 2) items.push("...");
+    for (let i = start; i <= end; i++) items.push(i);
+    if (end < total - 1) items.push("...");
+    items.push(total);
+    return items;
+  }
+
   return (
     <>
       {" "}
@@ -109,42 +142,52 @@ function UsersTable({ setUsersCount = () => {} }) {
             <FaUsers />
             Users
           </h2>
-
-          <RangePicker setRangeFilter={setRangeFilter} className="mb-4" />
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <input
-                type="text"
-                placeholder="Search by name or email..."
-                value={searchInput}
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex gap-2 items-center text-green-700 mt-1 border cursor-pointer border-green-700 px-2 py-1 w-fit hover:bg-green-100 rounded"
+          >
+            <FaFilter /> Filters
+          </button>
+          <div
+            className="transition-all duration-300 max-h-0 overflow-hidden mt-4"
+            style={{ maxHeight: showFilters ? "500px" : "0px" }}
+          >
+            <RangePicker setRangeFilter={setRangeFilter} className="mb-4" />
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1 relative">
+                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <input
+                  type="text"
+                  placeholder="Search by name or email..."
+                  value={searchInput}
+                  onChange={(e) => {
+                    setSearchInput(e.target.value);
+                    debouncedSearch(e.target.value);
+                  }}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                />
+              </div>
+              <select
+                value={userRoleFilter}
                 onChange={(e) => {
-                  setSearchInput(e.target.value);
-                  debouncedSearch(e.target.value);
+                  if (e.target.value === "ARCHIVED") {
+                    setIsArchived(true);
+                  } else {
+                    setIsArchived(false);
+                    setUserRoleFilter(e.target.value);
+                  }
+                  setPage(1);
                 }}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-              />
+                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              >
+                <option value="ALL">All Roles</option>
+                <option value="USER">User</option>
+                <option value="ADMIN">Admin</option>
+                <option value="MODERATOR">Moderator</option>
+                <option value="CONTRIBUTOR">Contributor</option>
+                <option value="ARCHIVED">Archived</option>
+              </select>
             </div>
-            <select
-              value={userRoleFilter}
-              onChange={(e) => {
-                if (e.target.value === "ARCHIVED") {
-                  setIsArchived(true);
-                } else {
-                  setIsArchived(false);
-                  setUserRoleFilter(e.target.value);
-                }
-                setPage(1);
-              }}
-              className="px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            >
-              <option value="ALL">All Roles</option>
-              <option value="USER">User</option>
-              <option value="ADMIN">Admin</option>
-              <option value="MODERATOR">Moderator</option>
-              <option value="CONTRIBUTOR">Contributor</option>
-              <option value="ARCHIVED">Archived</option>
-            </select>
           </div>
         </div>
 
@@ -304,21 +347,31 @@ function UsersTable({ setUsersCount = () => {} }) {
               >
                 <FaChevronLeft className="h-4 w-4" />
               </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (page) => (
+              {getPageItems(page, totalPages, maxButtons).map((item, idx) => {
+                if (item === "...") {
+                  return (
+                    <span
+                      key={`ellipsis-${idx}`}
+                      className="px-2 text-gray-500 select-none"
+                    >
+                      ...
+                    </span>
+                  );
+                }
+                return (
                   <button
-                    key={page}
-                    onClick={() => setPage(page)}
-                    className={`px-4 py-2 border rounded-md text-sm font-medium transition-colors ${
-                      page === page
+                    key={item}
+                    onClick={() => setPage(item)}
+                    className={`px-3 md:px-4 py-2 border rounded-md text-sm font-medium transition-colors ${
+                      page === item
                         ? "bg-green-600 text-white border-green-600"
                         : "border-gray-300 text-gray-700 hover:bg-gray-50"
                     }`}
                   >
-                    {page}
+                    {item}
                   </button>
-                )
-              )}
+                );
+              })}
               <button
                 onClick={() =>
                   setPage((prev) => Math.min(totalPages, prev + 1))

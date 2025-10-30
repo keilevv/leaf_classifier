@@ -18,6 +18,7 @@ function useAdmin() {
   const [pages, setPages] = useState(1);
   const [users, setUsers] = useState([]);
   const [user, setUser] = useState(null);
+  const [shapes, setShapes] = useState([]);
 
   function getClassifications(page, limit, sortBy, sortOrder, filters = {}) {
     setIsLoading(true);
@@ -39,6 +40,7 @@ function useAdmin() {
           pending: response.data.totalPendingCount,
           archived: response.data.totalArchivedCount,
         });
+        setShapes(response.data.shapes);
         setIsLoading(false);
       })
       .catch((error) => {
@@ -127,6 +129,7 @@ function useAdmin() {
   return {
     classifications,
     classification,
+    shapes,
     isLoading,
     error,
     pages,

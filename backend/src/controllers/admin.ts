@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import { AuthenticatedRequest } from "../types";
 import { R2Service } from "../services/r2Service";
 import { sanitizeUser } from "../utils";
+import { baseShapes } from "../config";
 
 function adminController() {
   async function getClassificationsAdmin(
@@ -134,6 +135,7 @@ function adminController() {
         totalPendingCount,
         totalArchivedCount,
         results: classificationsWithUser,
+        shapes: baseShapes,
       };
 
       res.json(response);

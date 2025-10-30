@@ -9,6 +9,7 @@ import {
   FaImages,
   FaArchive,
   FaEdit,
+  FaFilter,
 } from "react-icons/fa";
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
@@ -26,6 +27,7 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
   const {
     getClassifications,
     classifications: classificationsData,
+    shapes,
     pages,
     classificationsCount,
   } = useAdmin();
@@ -39,8 +41,9 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
   const [isArchived, setIsArchived] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedClassification, setSelectedClassification] = useState(null);
-  const totalPages = pages;
+  const totalPages = 20;
   const [rangeFilter, setRangeFilter] = useState({ start: null, end: null });
+  const [showFilters, setShowFilters] = useState(false);
 
   // Classification actions
   const handleViewClassification = (classification) => {
@@ -63,7 +66,6 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
       message: `Delete confirmation for: ${classification.filename}`,
       type: "warning",
     });
-    // Simulate deletion
     setTimeout(() => {
       setClassifications((prev) =>
         prev.filter((c) => c.id !== classification.id)
@@ -120,6 +122,40 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
 
   const debouncedSearch = useCallback(_debounce(handleSearch, 300), []);
 
+  const [maxButtons, setMaxButtons] = useState(5);
+
+  useEffect(() => {
+    function updateMaxButtons() {
+      const w = window.innerWidth;
+      if (w < 640) {
+        setMaxButtons(5);
+      } else if (w < 1024) {
+        setMaxButtons(7);
+      } else {
+        setMaxButtons(9);
+      }
+    }
+    updateMaxButtons();
+    window.addEventListener("resize", updateMaxButtons);
+    return () => window.removeEventListener("resize", updateMaxButtons);
+  }, []);
+
+  function getPageItems(current, total, max) {
+    if (total <= max) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+    const items = [];
+    const side = Math.floor((max - 3) / 2);
+    const start = Math.max(2, current - side);
+    const end = Math.min(total - 1, current + side);
+    items.push(1);
+    if (start > 2) items.push("...");
+    for (let i = start; i <= end; i++) items.push(i);
+    if (end < total - 1) items.push("...");
+    items.push(total);
+    return items;
+  }
+
   return (
     <>
       {" "}
@@ -130,42 +166,53 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
             <FaImages />
             Classifications
           </h2>
-          <RangePicker
-            rangeFilter={rangeFilter}
-            setRangeFilter={setRangeFilter}
-            className="mb-4"
-          />
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <input
-                type="text"
-                placeholder="Search by username or classification..."
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex gap-2 items-center text-green-700 mt-1 border cursor-pointer border-green-700 px-2 py-1 w-fit hover:bg-green-100 rounded"
+          >
+            <FaFilter /> Filters
+          </button>
+          <div
+            className="transition-all duration-300 max-h-0 overflow-hidden mt-4"
+            style={{ maxHeight: showFilters ? "500px" : "0px" }}
+          >
+            <RangePicker
+              rangeFilter={rangeFilter}
+              setRangeFilter={setRangeFilter}
+              className="mb-4"
+            />
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1 relative">
+                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <input
+                  type="text"
+                  placeholder="Search by username or classification..."
+                  onChange={(e) => {
+                    debouncedSearch(e.target.value);
+                  }}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                />
+              </div>
+              <select
+                value={statusFilter}
                 onChange={(e) => {
-                  debouncedSearch(e.target.value);
+                  if (e.target.value === "ARCHIVED") {
+                    setIsArchived(true);
+                  } else {
+                    setIsArchived(false);
+                    setStatusFilter(e.target.value);
+                  }
+                  setPage(1);
                 }}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-              />
+                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              >
+                <option value="ALL">All Status</option>
+                <option value="VERIFIED">Verified</option>
+                <option value="PENDING">Pending</option>
+                <option value="REJECTED">Rejected</option>
+                <option value="ARCHIVED">Archived</option>
+              </select>
             </div>
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                if (e.target.value === "ARCHIVED") {
-                  setIsArchived(true);
-                } else {
-                  setIsArchived(false);
-                  setStatusFilter(e.target.value);
-                }
-                setPage(1);
-              }}
-              className="px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            >
-              <option value="ALL">All Status</option>
-              <option value="VERIFIED">Verified</option>
-              <option value="PENDING">Pending</option>
-              <option value="REJECTED">Rejected</option>
-              <option value="ARCHIVED">Archived</option>
-            </select>
           </div>
         </div>
 
@@ -183,9 +230,9 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Classification
                 </th>
-                {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Filename
-                </th> */}
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Tags
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
@@ -225,11 +272,7 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <ClassificationBadge
-                          classification={classification.shape}
-                          confidence={classification.shapeConfidence}
-                        />
+                      <td className="px-6 py-4 flex flex-col gap-2">
                         <ClassificationBadge
                           classification={
                             classification.scientificName +
@@ -238,10 +281,31 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
                           }
                           confidence={classification.speciesConfidence}
                         />
+                        <ClassificationBadge
+                          classification={classification.shape}
+                          confidence={classification.shapeConfidence}
+                        />
                       </td>
-                      {/* <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{filename}</div>
-                      </td> */}
+                      <td className="px-6 py-4 gap-2">
+                        <div className="flex flex-col gap-2">
+                          <span
+                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium w-auto self-start bg-gray-100 text-gray-800`}
+                          >
+                            {classification.scientificName} |{" "}
+                            {classification.commonName}
+                          </span>
+                          <span
+                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium w-auto self-start bg-gray-100 text-gray-800`}
+                          >
+                            {
+                              shapes.find(
+                                (shape) =>
+                                  shape.nameEn === classification.taggedShape
+                              )?.nameEn
+                            }
+                          </span>
+                        </div>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusBadge.color}`}
@@ -341,21 +405,31 @@ function ClassificationsTable({ setClassificationsCount = () => {} }) {
               >
                 <FaChevronLeft className="h-4 w-4" />
               </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (page) => (
+              {getPageItems(page, totalPages, maxButtons).map((item, idx) => {
+                if (item === "...") {
+                  return (
+                    <span
+                      key={`ellipsis-${idx}`}
+                      className="px-2 text-gray-500 select-none"
+                    >
+                      ...
+                    </span>
+                  );
+                }
+                return (
                   <button
-                    key={page}
-                    onClick={() => setPage(page)}
-                    className={`cursor-pointer px-4 py-2 border rounded-md text-sm font-medium transition-colors ${
-                      page === page
+                    key={item}
+                    onClick={() => setPage(item)}
+                    className={`cursor-pointer px-3 md:px-4 py-2 border rounded-md text-sm font-medium transition-colors ${
+                      page === item
                         ? "bg-green-600 text-white border-green-600"
                         : "border-gray-300 text-gray-700 hover:bg-gray-50"
                     }`}
                   >
-                    {page}
+                    {item}
                   </button>
-                )
-              )}
+                );
+              })}
               <button
                 onClick={() =>
                   setPage((prev) => Math.min(totalPages, prev + 1))
