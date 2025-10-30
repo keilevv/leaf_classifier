@@ -140,6 +140,20 @@ function useAdmin() {
         setIsLoading(false);
       });
   }
+  function deleteUser(id) {
+    setIsLoading(true);
+    return adminService
+      .deleteAdminUser(id, accessToken)
+      .then((response) => {
+        setIsLoading(false);
+        return response.data.results;
+      })
+      .catch((error) => {
+        console.error("Error deleting user:", error);
+        setError(error);
+        setIsLoading(false);
+      });
+  }
 
   return {
     classifications,
@@ -158,6 +172,7 @@ function useAdmin() {
     usersCount,
     getUser,
     updateUser,
+    deleteUser,
     user,
   };
 }

@@ -48,5 +48,10 @@ const adminService = {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
   },
+  deleteAdminUser(id, accessToken) {
+    return axios.delete(`${apiUrl}/admin/user/${id}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+  },
 };
 export default adminService;

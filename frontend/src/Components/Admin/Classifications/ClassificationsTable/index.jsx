@@ -7,7 +7,10 @@ import {
   FaImage,
   FaArchive,
   FaEdit,
+  FaExclamationTriangle,
+  FaTimesCircle,
 } from "react-icons/fa";
+import { FaUndo } from "react-icons/fa";
 import { FaCircleXmark } from "react-icons/fa6";
 import { useState, useEffect } from "react";
 import { showNotification } from "../../../Common/Notification";
@@ -44,62 +47,80 @@ function ClassificationsTable({
   useEffect(() => {
     if (selectedClassification) {
       setFileName(selectedClassification?.imagePath?.split("/").pop());
-      confirmModalContent();
     }
   }, [selectedClassification, actionType]);
 
-  function confirmModalContent() {
-    const filename = selectedClassification?.imagePath?.split("/").pop();
-    setOpenConfirmation(true);
-    switch (actionType) {
+  const openConfirmationModal = (action, classification) => {
+    const filename = classification?.imagePath?.split("/").pop();
+    setSelectedClassification(classification);
+    setActionType(action);
+    let modal = {};
+    switch (action) {
       case "verify":
-        setConfirmationContent({
+        modal = {
           title: "Verify Classification",
           message: `Verify confirmation for: ${filename}`,
           type: "warning",
-          onConfirm: () => handleVerifyClassificationSubmit(),
-        });
-        return;
+          icon: FaCheckCircle,
+          iconColor: "text-green-500",
+          onConfirm: () => handleVerifyClassificationSubmit("VERIFIED"),
+        };
+        break;
       case "archive":
-        setConfirmationContent({
+        modal = {
           title: "Archive Classification",
           message: `Archive confirmation for: ${filename}`,
           type: "warning",
-          onConfirm: () => handleArchiveClassificationSubmit(),
-        });
-        return;
+          icon: FaArchive,
+          iconColor: "text-yellow-500",
+          onConfirm: () => handleArchiveClassificationSubmit(classification),
+        };
+        break;
       case "delete":
-        setConfirmationContent({
+        modal = {
           title: "Delete Classification",
           message: `Delete confirmation for: ${filename}`,
           type: "warning",
-          onConfirm: () => handleDeleteClassificationSubmit(),
-        });
-        return;
+          icon: FaTrash,
+          iconColor: "text-red-600",
+          onConfirm: () => handleDeleteClassificationSubmit(classification),
+        };
+        break;
+      case "unarchive":
+        modal = {
+          title: "Unarchive Classification",
+          message: `Unarchive confirmation for: ${filename}`,
+          type: "warning",
+          icon: FaUndo,
+          iconColor: "text-green-600",
+          onConfirm: () => handleUnarchiveClassificationSubmit(classification),
+        };
+        break;
       case "reject":
-        setConfirmationContent({
+        modal = {
           title: "Reject Classification",
           message: `Reject confirmation for: ${filename}`,
           type: "warning",
+          icon: FaTimesCircle,
+          iconColor: "text-red-400",
           onConfirm: () => handleVerifyClassificationSubmit("REJECTED"),
-        });
-        return;
+        };
+        break;
       default:
-        setConfirmationContent({
+        modal = {
           title: "Confirmation",
           message: `Are you sure you want to perform this action for: ${filename}`,
           type: "warning",
+          icon: FaExclamationTriangle,
+          iconColor: "text-orange-400",
           onConfirm: () => {},
-        });
-        return;
+        };
     }
-  }
-
-  const closeViewModal = () => {
-    setIsOpen(false);
-    setSelectedClassification(null);
+    setConfirmationContent(modal);
+    setOpenConfirmation(true);
   };
 
+  // View does not trigger confirmation modal, only UploadModal
   const handleViewClassification = (classification) => {
     setSelectedClassification(classification);
     setIsOpen(true);
@@ -110,27 +131,27 @@ function ClassificationsTable({
     navigate(`/admin/classification/${classification.id}`);
   };
 
+  // for Delete/Archive/Verify/Reject actions, call openConfirmationModal instead
   const handleDeleteClassification = (classification) => {
     setSelectedClassification(classification);
-    setActionType("delete");
+    openConfirmationModal("delete", classification);
   };
 
   const handleArchiveClassification = (classification) => {
     setSelectedClassification(classification);
-    setActionType("archive");
+    openConfirmationModal("archive", classification);
   };
 
   const handleVerifyClassification = (classification, status = "REJECTED") => {
-    setSelectedClassification(classification);
     if (status === "REJECTED") {
-      setActionType("reject");
+      openConfirmationModal("reject", classification);
     } else {
-      setActionType("verify");
+      openConfirmationModal("verify", classification);
     }
   };
 
   const handleVerifyClassificationSubmit = (status = "REJECTED") => {
-    updateClassification(selectedClassification.id, { status })
+    updateClassification(selectedClassification?.id, { status })
       .then(() => {
         showNotification({
           title: "Classification verified",
@@ -151,15 +172,15 @@ function ClassificationsTable({
       });
   };
 
-  const handleArchiveClassificationSubmit = () => {
-    updateClassification(selectedClassification.id, { isArchived: true })
+  const handleArchiveClassificationSubmit = (classification) => {
+    updateClassification(classification?.id, { isArchived: true })
       .then(() => {
         showNotification({
           title: "Classification archived",
           message: fileName,
           type: "success",
         });
-        onUpdateClassification(selectedClassification);
+        onUpdateClassification(classification);
         setOpenConfirmation(false);
       })
       .catch((error) => {
@@ -174,7 +195,7 @@ function ClassificationsTable({
   };
 
   const handleDeleteClassificationSubmit = () => {
-    deleteClassification(selectedClassification.id)
+    deleteClassification(selectedClassification?.id)
       .then(() => {
         showNotification({
           title: "Classification deleted",
@@ -188,6 +209,28 @@ function ClassificationsTable({
         console.error("Error deleting classification:", error);
         showNotification({
           title: "Classification deletion failed",
+          message: fileName,
+          type: "error",
+        });
+        setOpenConfirmation(false);
+      });
+  };
+
+  const handleUnarchiveClassificationSubmit = (classification) => {
+    updateClassification(classification.id, { isArchived: false })
+      .then(() => {
+        showNotification({
+          title: "Classification unarchived",
+          message: fileName,
+          type: "success",
+        });
+        onUpdateClassification(classification);
+        setOpenConfirmation(false);
+      })
+      .catch((error) => {
+        console.error("Error unarchiving classification:", error);
+        showNotification({
+          title: "Classification unarchive failed",
           message: fileName,
           type: "error",
         });
@@ -376,30 +419,49 @@ function ClassificationsTable({
                             </button>
                           </div>
                         )}
-                        <button
-                          disabled={user?.role !== "ADMIN"}
-                          onClick={() => {
-                            if (classification.isArchived) {
-                              handleDeleteClassification(classification);
-                            } else {
-                              handleArchiveClassification(classification);
-                            }
-                          }}
-                          className={`${
-                            user?.role !== "ADMIN"
-                              ? "opacity-50 cursor-not-allowed"
-                              : "text-gray-600 hover:text-gray-900 cursor-pointer p-2 hover:bg-gray-50 rounded transition-colors"
-                          }`}
-                          title={
-                            classification.isArchived ? "Delete" : "Archive"
-                          }
-                        >
-                          {classification.isArchived ? (
-                            <FaTrash className="h-4 w-4" />
-                          ) : (
+                        {user?.role !== "ADMIN" ? (
+                          <button
+                            disabled
+                            className="opacity-50 cursor-not-allowed p-2 rounded"
+                            title="Restricted"
+                          >
                             <FaArchive className="h-4 w-4" />
-                          )}
-                        </button>
+                          </button>
+                        ) : classification.isArchived ? (
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() =>
+                                openConfirmationModal(
+                                  "unarchive",
+                                  classification
+                                )
+                              }
+                              className="text-green-600 hover:text-green-900 hover:bg-green-50 cursor-pointer p-2 rounded transition-colors"
+                              title="Unarchive"
+                            >
+                              <FaUndo className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() =>
+                                openConfirmationModal("delete", classification)
+                              }
+                              className="text-red-600 hover:text-red-900 hover:bg-red-50 cursor-pointer p-2 rounded transition-colors"
+                              title="Delete"
+                            >
+                              <FaTrash className="h-4 w-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() =>
+                              openConfirmationModal("archive", classification)
+                            }
+                            className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 cursor-pointer p-2 rounded transition-colors"
+                            title="Archive"
+                          >
+                            <FaArchive className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -477,7 +539,10 @@ function ClassificationsTable({
       {/* Modal */}
       <UploadModal
         isOpen={isOpen}
-        closeModal={closeViewModal}
+        closeModal={() => {
+          setIsOpen(false);
+          setSelectedClassification(null);
+        }}
         selectedUpload={selectedClassification}
       />
       <ConfirmationModal
@@ -489,6 +554,8 @@ function ClassificationsTable({
         }}
         title={confirmationContent.title}
         message={confirmationContent.message}
+        icon={confirmationContent.icon}
+        iconColor={confirmationContent.iconColor}
         onConfirm={() => confirmationContent.onConfirm()}
       />
     </div>

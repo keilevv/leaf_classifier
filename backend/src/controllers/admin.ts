@@ -203,10 +203,10 @@ function adminController() {
         res.status(401).json({ error: "Authentication required" });
         return;
       }
-      const user = await prisma.user.findUnique({
+      const actingUser = await prisma.user.findUnique({
         where: { id: req.user.id },
       });
-      if (user?.role !== "ADMIN") {
+      if (actingUser?.role !== "ADMIN") {
         res.status(403).json({ error: "Unauthorized" });
         return;
       }
@@ -214,9 +214,19 @@ function adminController() {
         where: { id },
         data: { taggedShape, taggedSpecies, isHealthy, status, isArchived },
       });
+
+      const species = await prisma.species.findFirst({
+        where: { key: classification.species },
+      });
+      const commonName =
+        actingUser?.language === "EN"
+          ? species?.commonNameEn
+          : species?.commonNameEs;
+      const scientificName = species?.scientificName;
+
       const response = {
         message: "Classification updated successfully",
-        results: classification,
+        results: { ...classification, commonName, scientificName },
       };
       res.json(response);
     } catch (error) {
