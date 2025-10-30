@@ -1,6 +1,5 @@
 import Header from "./Header";
 
-import useClassifier from "../../hooks/useClassifier";
 import UploadTabs from "../Upload/UploadTabs";
 
 export default function Layout({
@@ -9,8 +8,6 @@ export default function Layout({
   children,
   headerClassnames,
 }) {
-  const { addUpload } = useClassifier();
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}

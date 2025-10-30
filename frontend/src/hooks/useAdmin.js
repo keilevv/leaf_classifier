@@ -18,6 +18,7 @@ function useAdmin() {
   const [pages, setPages] = useState(1);
   const [users, setUsers] = useState([]);
   const [user, setUser] = useState(null);
+  const [shapes, setShapes] = useState([]);
 
   function getClassifications(page, limit, sortBy, sortOrder, filters = {}) {
     setIsLoading(true);
@@ -39,6 +40,7 @@ function useAdmin() {
           pending: response.data.totalPendingCount,
           archived: response.data.totalArchivedCount,
         });
+        setShapes(response.data.shapes);
         setIsLoading(false);
       })
       .catch((error) => {
@@ -77,6 +79,21 @@ function useAdmin() {
         setIsLoading(false);
       });
   }
+  function deleteClassification(id) {
+    setIsLoading(true);
+    return adminService
+      .deleteAdminClassification(id, accessToken)
+      .then((response) => {
+        setIsLoading(false);
+        setClassification(response.data.results);
+        return response.data.results;
+      })
+      .catch((error) => {
+        console.error("Error deleting classification:", error);
+        setError(error);
+        setIsLoading(false);
+      });
+  }
   function getUsers(page, limit, sortBy, sortOrder, filters = {}) {
     setIsLoading(true);
     return adminService
@@ -111,7 +128,7 @@ function useAdmin() {
   function updateUser(id, data) {
     setIsLoading(true);
     return adminService
-      .updateAdminUser(id, data, accessToken)
+      .updateUserAdmin(id, data, accessToken)
       .then((response) => {
         setIsLoading(false);
         setUser(response.data.results);
@@ -127,6 +144,7 @@ function useAdmin() {
   return {
     classifications,
     classification,
+    shapes,
     isLoading,
     error,
     pages,
@@ -134,12 +152,13 @@ function useAdmin() {
     getClassifications,
     getClassification,
     updateClassification,
+    deleteClassification,
     users,
     getUsers,
     usersCount,
     getUser,
     updateUser,
     user,
-    };
+  };
 }
 export default useAdmin;

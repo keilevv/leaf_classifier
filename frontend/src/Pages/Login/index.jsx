@@ -6,7 +6,7 @@ function Login() {
   return (
     <>
       <Header className="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50" />
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100 p-4 ">
+      <div className="min-h-screen flex flex-col items-center  bg-gradient-to-br from-green-50 to-emerald-100 p-4 ">
         <div className="p-6 text-center">
           <div className="flex justify-center mb-4">
             <div className="p-3 bg-green-100 rounded-full border-2 border-green-200 shadow-md">

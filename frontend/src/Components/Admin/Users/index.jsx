@@ -6,11 +6,14 @@ import {
   FaDatabase,
   FaEdit,
   FaUsers,
+  FaFilter,
+  FaArchive,
 } from "react-icons/fa";
 import { useState, useEffect, useCallback } from "react";
 import { formatDate, getRoleBadge } from "../../../utils";
 import _debounce from "lodash/debounce";
 import { showNotification } from "../../Common/Notification";
+import ConfirmationModal from "../../Common/ConfirmationModal";
 import useAdmin from "../../../hooks/useAdmin";
 import useStore from "../../../hooks/useStore";
 import RangePicker from "../../Common/RangePicker";
@@ -27,10 +30,66 @@ function UsersTable({ setUsersCount = () => {} }) {
   const pageSize = preferences?.pageSize || 6;
   const [userRoleFilter, setUserRoleFilter] = useState("ALL");
   const [isArchived, setIsArchived] = useState(false);
-  const { users: usersData, getUsers, usersCount } = useAdmin();
+  const { users: usersData, getUsers, usersCount, updateUser } = useAdmin();
   const [rangeFilter, setRangeFilter] = useState({ start: null, end: null });
+  const [showFilters, setShowFilters] = useState(false);
+  const [maxButtons, setMaxButtons] = useState(5);
+  const [newRole, setNewRole] = useState("");
+  const [openConfirm, setOpenConfirm] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [confirmationContent, setConfirmationContent] = useState({
+    title: "",
+    message: "",
+    type: "",
+    onConfirm: () => {},
+  });
+  const [actionType, setActionType] = useState(null);
 
   const totalPages = Math.ceil(users.length / pageSize);
+
+  function confirmModalContent(actionType) {
+    setOpenConfirm(true);
+    switch (actionType) {
+      case "archive":
+        setConfirmationContent({
+          title: "Archive User",
+          message: `Archive confirmation for user: ${selectedUser?.fullName}`,
+          type: "warning",
+          onConfirm: () => handleArchiveUser(selectedUser),
+        });
+        return;
+      case "delete":
+        setConfirmationContent({
+          title: "Delete User",
+          message: `Delete confirmation for user: ${selectedUser?.fullName}`,
+          type: "warning",
+          onConfirm: () => handleDeleteUser(selectedUser),
+        });
+        return;
+      case "changeRole":
+        setConfirmationContent({
+          title: "Change Role",
+          message: `Change role confirmation for user: ${selectedUser?.fullName} to ${newRole}`,
+          type: "warning",
+          onConfirm: () => handleChangeRole(selectedUser, newRole),
+        });
+        return;
+      default:
+        setConfirmationContent({
+          title: "Confirmation",
+          message: `Are you sure you want to perform this action for user: ${userselectedUser?.fullName}`,
+          type: "warning",
+          onConfirm: () => {},
+        });
+        return;
+    }
+  }
+
+  useEffect(() => {
+    if (selectedUser) {
+      confirmModalContent(actionType);
+    }
+  }, [selectedUser, actionType]);
 
   // User actions
   const handleEditUser = (user) => {
@@ -40,7 +99,7 @@ function UsersTable({ setUsersCount = () => {} }) {
   const handleDeleteUser = (user) => {
     showNotification({
       title: "Delete User",
-      message: `Delete confirmation for user: ${user.name}`,
+      message: `Delete confirmation for user: ${userselectedUser?.fullName}`,
       type: "warning",
     });
     // Simulate deletion
@@ -54,15 +113,72 @@ function UsersTable({ setUsersCount = () => {} }) {
     }, 1000);
   };
 
+  const handleArchiveUser = (user) => {
+    updateUser(user.id, { isArchived: true })
+      .then(() => {
+        showNotification({
+          title: "User archived",
+          message: user.fullName,
+          type: "success",
+        });
+        setOpenConfirm(false);
+      })
+      .catch((error) => {
+        console.error("Error archiving user:", error);
+        showNotification({
+          title: "User archiving failed",
+          message: user.fullName,
+          type: "error",
+        });
+        setOpenConfirm(false);
+      });
+  };
+
   const handleChangeRole = (user, newRole) => {
-    setUsers((prev) =>
-      prev.map((u) => (u.id === user.id ? { ...u, role: newRole } : u))
-    );
-    showNotification({
-      title: "User role changed",
-      message: `User role changed to ${newRole}`,
-      type: "success",
+    updateUser(user.id, { role: newRole })
+      .then(() => {
+        // Refresh users list with current filters
+        const filters = {
+          ...(searchString.length && { search: searchString }),
+          role: userRoleFilter,
+          isArchived,
+          ...(rangeFilter.start &&
+            rangeFilter.end && {
+              createdAt_gte: rangeFilter.start,
+              createdAt_lte: rangeFilter.end,
+            }),
+        };
+
+        return getUsers(page, pageSize, "createdAt", "desc", filters);
+      })
+      .then(() => {
+        setOpenConfirm(false);
+        showNotification({
+          title: "User role changed",
+          message: newRole,
+          type: "success",
+        });
+      })
+      .catch((error) => {
+        console.error("Error updating user role:", error);
+        showNotification({
+          title: "User role change failed",
+          message: user.fullName,
+          type: "error",
+        });
+        setOpenConfirm(false);
+      });
+  };
+
+  const closeModal = () => {
+    setOpenConfirm(false);
+    setConfirmationContent({
+      title: "",
+      message: "",
+      type: "",
+      onConfirm: () => {},
     });
+    setSelectedUser(null);
   };
 
   useEffect(() => {
@@ -99,6 +215,36 @@ function UsersTable({ setUsersCount = () => {} }) {
     };
   }, [debouncedSearch]);
 
+  useEffect(() => {
+    function updateMaxButtons() {
+      const w = window.innerWidth;
+      if (w < 640) {
+        setMaxButtons(5);
+      } else if (w < 1024) {
+        setMaxButtons(7);
+      } else {
+        setMaxButtons(9);
+      }
+    }
+    updateMaxButtons();
+    window.addEventListener("resize", updateMaxButtons);
+    return () => window.removeEventListener("resize", updateMaxButtons);
+  }, []);
+
+  function getPageItems(current, total, max) {
+    if (total <= max) return Array.from({ length: total }, (_, i) => i + 1);
+    const items = [];
+    const side = Math.floor((max - 3) / 2);
+    const start = Math.max(2, current - side);
+    const end = Math.min(total - 1, current + side);
+    items.push(1);
+    if (start > 2) items.push("...");
+    for (let i = start; i <= end; i++) items.push(i);
+    if (end < total - 1) items.push("...");
+    items.push(total);
+    return items;
+  }
+
   return (
     <>
       {" "}
@@ -109,42 +255,52 @@ function UsersTable({ setUsersCount = () => {} }) {
             <FaUsers />
             Users
           </h2>
-
-          <RangePicker setRangeFilter={setRangeFilter} className="mb-4" />
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <input
-                type="text"
-                placeholder="Search by name or email..."
-                value={searchInput}
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex gap-2 items-center text-green-700 mt-1 border cursor-pointer border-green-700 px-2 py-1 w-fit hover:bg-green-100 rounded"
+          >
+            <FaFilter /> Filters
+          </button>
+          <div
+            className="transition-all duration-300 max-h-0 overflow-hidden mt-4"
+            style={{ maxHeight: showFilters ? "500px" : "0px" }}
+          >
+            <RangePicker setRangeFilter={setRangeFilter} className="mb-4" />
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1 relative">
+                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <input
+                  type="text"
+                  placeholder="Search by name or email..."
+                  value={searchInput}
+                  onChange={(e) => {
+                    setSearchInput(e.target.value);
+                    debouncedSearch(e.target.value);
+                  }}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                />
+              </div>
+              <select
+                value={userRoleFilter}
                 onChange={(e) => {
-                  setSearchInput(e.target.value);
-                  debouncedSearch(e.target.value);
+                  if (e.target.value === "ARCHIVED") {
+                    setIsArchived(true);
+                  } else {
+                    setIsArchived(false);
+                    setUserRoleFilter(e.target.value);
+                  }
+                  setPage(1);
                 }}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-              />
+                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              >
+                <option value="ALL">All Roles</option>
+                <option value="USER">User</option>
+                <option value="ADMIN">Admin</option>
+                <option value="MODERATOR">Moderator</option>
+                <option value="CONTRIBUTOR">Contributor</option>
+                <option value="ARCHIVED">Archived</option>
+              </select>
             </div>
-            <select
-              value={userRoleFilter}
-              onChange={(e) => {
-                if (e.target.value === "ARCHIVED") {
-                  setIsArchived(true);
-                } else {
-                  setIsArchived(false);
-                  setUserRoleFilter(e.target.value);
-                }
-                setPage(1);
-              }}
-              className="px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            >
-              <option value="ALL">All Roles</option>
-              <option value="USER">User</option>
-              <option value="ADMIN">Admin</option>
-              <option value="MODERATOR">Moderator</option>
-              <option value="CONTRIBUTOR">Contributor</option>
-              <option value="ARCHIVED">Archived</option>
-            </select>
           </div>
         </div>
 
@@ -249,23 +405,42 @@ function UsersTable({ setUsersCount = () => {} }) {
                           </button>
                           <select
                             value={user.role}
-                            onChange={(e) =>
-                              handleChangeRole(user, e.target.value)
-                            }
+                            onChange={(e) => {
+                              setSelectedUser(user);
+                              setNewRole(e.target.value);
+                              setActionType("changeRole");
+                            }}
                             className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-green-500"
                             title="Change Role"
                           >
-                            <option value="admin">Admin</option>
-                            <option value="moderator">Moderator</option>
-                            <option value="contributor">Contributor</option>
+                            <option value="ADMIN">Admin</option>
+                            <option value="MODERATOR">Moderator</option>
+                            <option value="CONTRIBUTOR">Contributor</option>
+                            <option value="USER">User</option>
                           </select>
-                          <button
-                            onClick={() => handleDeleteUser(user)}
-                            className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded transition-colors"
-                            title="Delete"
+                          {/* <button
+                            disabled={user?.role !== "ADMIN"}
+                            onClick={() => {
+                              setSelectedUser(user);
+                              if (user.isArchived) {
+                                setActionType("delete");
+                              } else {
+                                setActionType("archive");
+                              }
+                            }}
+                            className={`${
+                              user?.role !== "ADMIN"
+                                ? "opacity-50 cursor-not-allowed"
+                                : "text-gray-600 hover:text-gray-900 cursor-pointer p-2 hover:bg-gray-50 rounded transition-colors"
+                            }`}
+                            title={user.isArchived ? "Delete" : "Archive"}
                           >
-                            <FaTrash className="h-4 w-4" />
-                          </button>
+                            {user.isArchived ? (
+                              <FaTrash className="h-4 w-4" />
+                            ) : (
+                              <FaArchive className="h-4 w-4" />
+                            )}
+                          </button> */}
                         </div>
                       </td>
                     </tr>
@@ -304,21 +479,31 @@ function UsersTable({ setUsersCount = () => {} }) {
               >
                 <FaChevronLeft className="h-4 w-4" />
               </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (page) => (
+              {getPageItems(page, totalPages, maxButtons).map((item, idx) => {
+                if (item === "...") {
+                  return (
+                    <span
+                      key={`ellipsis-${idx}`}
+                      className="px-2 text-gray-500 select-none"
+                    >
+                      ...
+                    </span>
+                  );
+                }
+                return (
                   <button
-                    key={page}
-                    onClick={() => setPage(page)}
-                    className={`px-4 py-2 border rounded-md text-sm font-medium transition-colors ${
-                      page === page
+                    key={item}
+                    onClick={() => setPage(item)}
+                    className={`px-3 md:px-4 py-2 border rounded-md text-sm font-medium transition-colors ${
+                      page === item
                         ? "bg-green-600 text-white border-green-600"
                         : "border-gray-300 text-gray-700 hover:bg-gray-50"
                     }`}
                   >
-                    {page}
+                    {item}
                   </button>
-                )
-              )}
+                );
+              })}
               <button
                 onClick={() =>
                   setPage((prev) => Math.min(totalPages, prev + 1))
@@ -332,6 +517,13 @@ function UsersTable({ setUsersCount = () => {} }) {
           </div>
         )}
       </div>
+      <ConfirmationModal
+        title={confirmationContent.title}
+        message={confirmationContent.message}
+        onConfirm={() => confirmationContent.onConfirm(selectedUser)}
+        closeModal={closeModal}
+        isOpen={openConfirm}
+      />
     </>
   );
 }

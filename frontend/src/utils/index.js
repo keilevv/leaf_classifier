@@ -24,7 +24,8 @@ export const formatDate = (dateString) => {
   });
 };
 
-export const getConfidenceColor = (confidence) => {
+export const getConfidenceColor = (confidence = 0, isTag = false) => {
+  if (isTag) return "bg-gray-100 text-gray-800";
   if (confidence >= 0.9) return "bg-green-100 text-green-800";
   if (confidence >= 0.7) return "bg-yellow-100 text-yellow-800";
   return "bg-red-100 text-red-800";

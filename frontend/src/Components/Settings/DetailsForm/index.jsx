@@ -11,9 +11,11 @@ import {
 } from "react-icons/fa";
 import { showNotification } from "../../Common/Notification";
 import useUser from "../../../hooks/useUser";
+import useAdmin from "../../../hooks/useAdmin";
 
-function DetailsForm({ user, loading, onUpdate }) {
+function DetailsForm({ user, loading, onUpdate, admin = false }) {
   const { updateUser } = useUser();
+  const { updateUser: updateUserAdmin } = useAdmin();
   const [userForm, setUserForm] = useState({
     name: user?.name || "",
     email: user?.email || "",
@@ -96,18 +98,34 @@ function DetailsForm({ user, loading, onUpdate }) {
         ...user,
         ...userForm,
       };
-      updateUser(updatedUser.id, updatedUser).then(() => {
-        // Reset form states
-        setOriginalUserForm(userForm);
-        setPassword("");
-        setConfirmPassword("");
-        showNotification({
-          message: "User settings updated successfully!",
-          type: "success",
+
+      if (admin) {
+        updateUserAdmin(updatedUser.id, updatedUser).then(() => {
+          // Reset form states
+          setOriginalUserForm(userForm);
+          setPassword("");
+          setConfirmPassword("");
+          showNotification({
+            message: "User settings updated successfully!",
+            type: "success",
+          });
+          onUpdate(updatedUser);
         });
-        onUpdate(updatedUser);
-      });
+      } else {
+        updateUser(updatedUser.id, updatedUser).then(() => {
+          // Reset form states
+          setOriginalUserForm(userForm);
+          setPassword("");
+          setConfirmPassword("");
+          showNotification({
+            message: "User settings updated successfully!",
+            type: "success",
+          });
+          onUpdate(updatedUser);
+        });
+      }
     } catch (error) {
+      console.log(error);
       showNotification({
         message: "Failed to update user settings",
         type: "error",
@@ -118,7 +136,7 @@ function DetailsForm({ user, loading, onUpdate }) {
   return (
     <form onSubmit={handleUserSubmit} className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-green-700 mb-4">
+        <h2 className="text-xl font-medium text-green-700 mb-4">
           Personal Information
         </h2>
         <div className="grid md:grid-cols-2 gap-6">
@@ -236,7 +254,7 @@ function DetailsForm({ user, loading, onUpdate }) {
           </div>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-6  border-b border-gray-200 pb-4">
           <label
             htmlFor="bio"
             className="block text-sm font-medium text-gray-700 mb-2"
@@ -256,7 +274,7 @@ function DetailsForm({ user, loading, onUpdate }) {
 
       {/* Password Section */}
       <div>
-        <h3 className="text-lg font-semibold text-green-700 mb-4">
+        <h3 className="text-lg font-medium text-green-700 mb-4">
           Change Password
         </h3>
         <div className="grid md:grid-cols-2 gap-6">
@@ -320,7 +338,7 @@ function DetailsForm({ user, loading, onUpdate }) {
             disabled={loading}
             className={` ${
               loading ? "opacity-50 cursor-not-allowed" : ""
-            } bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-md transition-colors flex items-center`}
+            } bg-green-600 hover:bg-green-700 cursor-pointer text-white font-medium py-2 px-6 rounded-md transition-colors flex items-center w-full md:max-w-1/2 justify-center`}
           >
             <FaSave className="h-4 w-4 mr-2" />
             Save Changes

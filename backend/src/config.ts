@@ -45,7 +45,6 @@ export const baseShapes = [
   { key: "palmeate", nameEn: "Palmeate", nameEs: "Palmeada" },
   { key: "spatulate", nameEn: "Spatulate", nameEs: "Espatulada" },
   { key: "aristate", nameEn: "Aristate", nameEs: "Aristada" },
-  { key: "lanceolate2", nameEn: "Lanceolate", nameEs: "Lanceolada" },
   {
     key: "simple_palmeate",
     nameEn: "Simple Palmate",

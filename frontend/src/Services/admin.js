@@ -33,12 +33,17 @@ const adminService = {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
   },
+  deleteAdminClassification(id, accessToken) {
+    return axios.delete(`${apiUrl}/admin/classification/${id}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+  },
   getAdminUser(id, accessToken) {
     return axios.get(`${apiUrl}/admin/user/${id}`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
   },
-  updateAdminUser(id, data, accessToken) {
+  updateUserAdmin(id, data, accessToken) {
     return axios.put(`${apiUrl}/admin/user/${id}`, data, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });

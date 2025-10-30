@@ -52,7 +52,7 @@ function userController() {
         const actingUser = await prisma.user.findUnique({
           where: { id: authUser.id },
         });
-        if (!actingUser || actingUser.role !== "admin") {
+        if (!actingUser || actingUser.role !== "ADMIN") {
           return res.status(403).json({ error: "Forbidden" });
         }
       }
