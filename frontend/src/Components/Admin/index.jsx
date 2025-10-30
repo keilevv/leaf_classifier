@@ -3,7 +3,7 @@ import { useState } from "react";
 import { FaUsers, FaImages } from "react-icons/fa";
 import AdminHeader from "./Header";
 import ClassificationsTable from "./Classifications";
-import UsersTable from "./Users";
+import Users from "./Users";
 import { useNavigate } from "react-router-dom";
 
 function classNames(...classes) {
@@ -84,7 +84,7 @@ export default function AdminPage({ initialTab = 0 }) {
 
             {/* Users Panel */}
             <Tab.Panel>
-              <UsersTable setUsersCount={setUsersCount} />
+              <Users setUsersCount={setUsersCount} />
             </Tab.Panel>
           </Tab.Panels>
         </Tab.Group>

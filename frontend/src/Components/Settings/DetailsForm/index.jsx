@@ -125,7 +125,6 @@ function DetailsForm({ user, loading, onUpdate, admin = false }) {
         });
       }
     } catch (error) {
-      console.log(error);
       showNotification({
         message: "Failed to update user settings",
         type: "error",

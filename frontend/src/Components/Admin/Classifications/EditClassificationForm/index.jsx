@@ -43,8 +43,6 @@ function EditClassificationForm() {
     useAdmin();
   const { id } = useParams();
   const { user } = useStore();
-  console.log("classification", classification);
-
 
   useEffect(() => {
     if (id) {

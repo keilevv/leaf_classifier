@@ -1,7 +1,7 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { FaTimes } from "react-icons/fa";
-function ConfirmationModal({ isOpen, closeModal, onConfirm, message, title }) {
+function ConfirmationModal({ isOpen, closeModal, onConfirm, message, title, icon: Icon, iconColor }) {
   return (
     <>
       {" "}
@@ -32,16 +32,13 @@ function ConfirmationModal({ isOpen, closeModal, onConfirm, message, title }) {
               >
                 <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                   <div className="flex justify-between items-center mb-4">
-                    <Dialog.Title
-                      as="h3"
-                      className="text-lg font-medium leading-6 text-gray-900"
-                    >
-                      {title || "Confirm Action"}
-                    </Dialog.Title>
-                    <button
-                      onClick={closeModal}
-                      className="text-gray-400 hover:text-gray-600 transition-colors"
-                    >
+                    <div className="flex items-center gap-2">
+                      {Icon && <Icon className={iconColor + " h-6 w-6"} />}
+                      <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+                        {title || "Confirm Action"}
+                      </Dialog.Title>
+                    </div>
+                    <button onClick={closeModal} className="text-gray-400 hover:text-gray-600 transition-colors">
                       <FaTimes className="h-5 w-5" />
                     </button>
                   </div>
