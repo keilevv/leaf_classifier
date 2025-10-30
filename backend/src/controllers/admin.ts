@@ -210,12 +210,10 @@ function adminController() {
         res.status(403).json({ error: "Unauthorized" });
         return;
       }
-      console.log("body", req.body);
       const classification = await prisma.classification.update({
         where: { id },
         data: { taggedShape, taggedSpecies, isHealthy, status, isArchived },
       });
-      console.log("classification", classification);
       const response = {
         message: "Classification updated successfully",
         results: classification,
@@ -396,6 +394,8 @@ function adminController() {
         bio,
         password,
         emailNotifications,
+        role,
+        isArchived,
       } = req.body;
       const user = await prisma.user.findUnique({
         where: { id },
@@ -425,6 +425,8 @@ function adminController() {
         location,
         bio,
         emailNotifications,
+        role,
+        isArchived,
       };
       if (
         password &&

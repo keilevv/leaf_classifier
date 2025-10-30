@@ -7,11 +7,13 @@ import {
   FaEdit,
   FaUsers,
   FaFilter,
+  FaArchive,
 } from "react-icons/fa";
 import { useState, useEffect, useCallback } from "react";
 import { formatDate, getRoleBadge } from "../../../utils";
 import _debounce from "lodash/debounce";
 import { showNotification } from "../../Common/Notification";
+import ConfirmationModal from "../../Common/ConfirmationModal";
 import useAdmin from "../../../hooks/useAdmin";
 import useStore from "../../../hooks/useStore";
 import RangePicker from "../../Common/RangePicker";
@@ -28,12 +30,66 @@ function UsersTable({ setUsersCount = () => {} }) {
   const pageSize = preferences?.pageSize || 6;
   const [userRoleFilter, setUserRoleFilter] = useState("ALL");
   const [isArchived, setIsArchived] = useState(false);
-  const { users: usersData, getUsers, usersCount } = useAdmin();
+  const { users: usersData, getUsers, usersCount, updateUser } = useAdmin();
   const [rangeFilter, setRangeFilter] = useState({ start: null, end: null });
   const [showFilters, setShowFilters] = useState(false);
   const [maxButtons, setMaxButtons] = useState(5);
+  const [newRole, setNewRole] = useState("");
+  const [openConfirm, setOpenConfirm] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [confirmationContent, setConfirmationContent] = useState({
+    title: "",
+    message: "",
+    type: "",
+    onConfirm: () => {},
+  });
+  const [actionType, setActionType] = useState(null);
 
   const totalPages = Math.ceil(users.length / pageSize);
+
+  function confirmModalContent(actionType) {
+    setOpenConfirm(true);
+    switch (actionType) {
+      case "archive":
+        setConfirmationContent({
+          title: "Archive User",
+          message: `Archive confirmation for user: ${selectedUser?.fullName}`,
+          type: "warning",
+          onConfirm: () => handleArchiveUser(selectedUser),
+        });
+        return;
+      case "delete":
+        setConfirmationContent({
+          title: "Delete User",
+          message: `Delete confirmation for user: ${selectedUser?.fullName}`,
+          type: "warning",
+          onConfirm: () => handleDeleteUser(selectedUser),
+        });
+        return;
+      case "changeRole":
+        setConfirmationContent({
+          title: "Change Role",
+          message: `Change role confirmation for user: ${selectedUser?.fullName} to ${newRole}`,
+          type: "warning",
+          onConfirm: () => handleChangeRole(selectedUser, newRole),
+        });
+        return;
+      default:
+        setConfirmationContent({
+          title: "Confirmation",
+          message: `Are you sure you want to perform this action for user: ${userselectedUser?.fullName}`,
+          type: "warning",
+          onConfirm: () => {},
+        });
+        return;
+    }
+  }
+
+  useEffect(() => {
+    if (selectedUser) {
+      confirmModalContent(actionType);
+    }
+  }, [selectedUser, actionType]);
 
   // User actions
   const handleEditUser = (user) => {
@@ -43,7 +99,7 @@ function UsersTable({ setUsersCount = () => {} }) {
   const handleDeleteUser = (user) => {
     showNotification({
       title: "Delete User",
-      message: `Delete confirmation for user: ${user.name}`,
+      message: `Delete confirmation for user: ${userselectedUser?.fullName}`,
       type: "warning",
     });
     // Simulate deletion
@@ -57,15 +113,72 @@ function UsersTable({ setUsersCount = () => {} }) {
     }, 1000);
   };
 
+  const handleArchiveUser = (user) => {
+    updateUser(user.id, { isArchived: true })
+      .then(() => {
+        showNotification({
+          title: "User archived",
+          message: user.fullName,
+          type: "success",
+        });
+        setOpenConfirm(false);
+      })
+      .catch((error) => {
+        console.error("Error archiving user:", error);
+        showNotification({
+          title: "User archiving failed",
+          message: user.fullName,
+          type: "error",
+        });
+        setOpenConfirm(false);
+      });
+  };
+
   const handleChangeRole = (user, newRole) => {
-    setUsers((prev) =>
-      prev.map((u) => (u.id === user.id ? { ...u, role: newRole } : u))
-    );
-    showNotification({
-      title: "User role changed",
-      message: `User role changed to ${newRole}`,
-      type: "success",
+    updateUser(user.id, { role: newRole })
+      .then(() => {
+        // Refresh users list with current filters
+        const filters = {
+          ...(searchString.length && { search: searchString }),
+          role: userRoleFilter,
+          isArchived,
+          ...(rangeFilter.start &&
+            rangeFilter.end && {
+              createdAt_gte: rangeFilter.start,
+              createdAt_lte: rangeFilter.end,
+            }),
+        };
+
+        return getUsers(page, pageSize, "createdAt", "desc", filters);
+      })
+      .then(() => {
+        setOpenConfirm(false);
+        showNotification({
+          title: "User role changed",
+          message: newRole,
+          type: "success",
+        });
+      })
+      .catch((error) => {
+        console.error("Error updating user role:", error);
+        showNotification({
+          title: "User role change failed",
+          message: user.fullName,
+          type: "error",
+        });
+        setOpenConfirm(false);
+      });
+  };
+
+  const closeModal = () => {
+    setOpenConfirm(false);
+    setConfirmationContent({
+      title: "",
+      message: "",
+      type: "",
+      onConfirm: () => {},
     });
+    setSelectedUser(null);
   };
 
   useEffect(() => {
@@ -292,23 +405,42 @@ function UsersTable({ setUsersCount = () => {} }) {
                           </button>
                           <select
                             value={user.role}
-                            onChange={(e) =>
-                              handleChangeRole(user, e.target.value)
-                            }
+                            onChange={(e) => {
+                              setSelectedUser(user);
+                              setNewRole(e.target.value);
+                              setActionType("changeRole");
+                            }}
                             className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-green-500"
                             title="Change Role"
                           >
-                            <option value="admin">Admin</option>
-                            <option value="moderator">Moderator</option>
-                            <option value="contributor">Contributor</option>
+                            <option value="ADMIN">Admin</option>
+                            <option value="MODERATOR">Moderator</option>
+                            <option value="CONTRIBUTOR">Contributor</option>
+                            <option value="USER">User</option>
                           </select>
-                          <button
-                            onClick={() => handleDeleteUser(user)}
-                            className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded transition-colors"
-                            title="Delete"
+                          {/* <button
+                            disabled={user?.role !== "ADMIN"}
+                            onClick={() => {
+                              setSelectedUser(user);
+                              if (user.isArchived) {
+                                setActionType("delete");
+                              } else {
+                                setActionType("archive");
+                              }
+                            }}
+                            className={`${
+                              user?.role !== "ADMIN"
+                                ? "opacity-50 cursor-not-allowed"
+                                : "text-gray-600 hover:text-gray-900 cursor-pointer p-2 hover:bg-gray-50 rounded transition-colors"
+                            }`}
+                            title={user.isArchived ? "Delete" : "Archive"}
                           >
-                            <FaTrash className="h-4 w-4" />
-                          </button>
+                            {user.isArchived ? (
+                              <FaTrash className="h-4 w-4" />
+                            ) : (
+                              <FaArchive className="h-4 w-4" />
+                            )}
+                          </button> */}
                         </div>
                       </td>
                     </tr>
@@ -385,6 +517,13 @@ function UsersTable({ setUsersCount = () => {} }) {
           </div>
         )}
       </div>
+      <ConfirmationModal
+        title={confirmationContent.title}
+        message={confirmationContent.message}
+        onConfirm={() => confirmationContent.onConfirm(selectedUser)}
+        closeModal={closeModal}
+        isOpen={openConfirm}
+      />
     </>
   );
 }
