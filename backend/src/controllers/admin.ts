@@ -157,6 +157,9 @@ function adminController() {
         res.status(401).json({ error: "Authentication required" });
         return;
       }
+      const actingUser = await prisma.user.findUnique({
+        where: { id: req.user.id },
+      });
       const classification = await prisma.classification.findUnique({
         where: { id },
         include: { user: true },
@@ -165,9 +168,19 @@ function adminController() {
         res.status(404).json({ error: "Classification not found" });
         return;
       }
+
+      const species = await prisma.species.findFirst({
+        where: { key: classification.species },
+      });
+      const commonName =
+        actingUser?.language === "EN"
+          ? species?.commonNameEn
+          : species?.commonNameEs;
+
+      const scientificName = species?.scientificName;
       const response = {
         message: "Classification fetched successfully",
-        results: classification,
+        results: { ...classification, commonName, scientificName },
       };
       res.json(response);
     } catch (error) {
@@ -183,7 +196,8 @@ function adminController() {
     res: Response
   ) => {
     const id = req.params.id;
-    const { taggedShape, taggedSpecies, isHealthy, status } = req.body;
+    const { taggedShape, taggedSpecies, isHealthy, status, isArchived } =
+      req.body;
     try {
       if (!req.user) {
         res.status(401).json({ error: "Authentication required" });
@@ -196,10 +210,12 @@ function adminController() {
         res.status(403).json({ error: "Unauthorized" });
         return;
       }
+      console.log("body", req.body);
       const classification = await prisma.classification.update({
         where: { id },
-        data: { taggedShape, taggedSpecies, isHealthy, status },
+        data: { taggedShape, taggedSpecies, isHealthy, status, isArchived },
       });
+      console.log("classification", classification);
       const response = {
         message: "Classification updated successfully",
         results: classification,
@@ -208,6 +224,39 @@ function adminController() {
     } catch (error) {
       res.status(500).json({
         error: "Failed to update classification",
+        message: error.message,
+      });
+    }
+  };
+
+  const deleteClassificationAdmin = async (
+    req: AuthenticatedRequest,
+    res: Response
+  ) => {
+    const id = req.params.id;
+    try {
+      if (!req.user) {
+        res.status(401).json({ error: "Authentication required" });
+        return;
+      }
+      const actingUser = await prisma.user.findUnique({
+        where: { id: req.user.id },
+      });
+      if (actingUser?.role !== "ADMIN") {
+        res.status(403).json({ error: "Unauthorized" });
+        return;
+      }
+      const classification = await prisma.classification.delete({
+        where: { id },
+      });
+      const response = {
+        message: "Classification deleted successfully",
+        results: classification,
+      };
+      res.json(response);
+    } catch (error) {
+      res.status(500).json({
+        error: "Failed to delete classification",
         message: error.message,
       });
     }
@@ -401,6 +450,7 @@ function adminController() {
     getClassificationsAdmin,
     getClassificationAdmin,
     updateClassificationAdmin,
+    deleteClassificationAdmin,
     getUserAdmin,
     updateUserAdmin,
   };

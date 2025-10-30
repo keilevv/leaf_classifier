@@ -43,8 +43,8 @@ function EditClassificationForm() {
     useAdmin();
   const { id } = useParams();
   const { user } = useStore();
+  console.log("classification", classification);
 
-  console.log("user", user);
 
   useEffect(() => {
     if (id) {
@@ -216,7 +216,7 @@ function EditClassificationForm() {
                   Species
                 </label>
                 <ClassificationBadge
-                  classification={classification?.species}
+                  classification={`${classification?.scientificName} | ${classification?.commonName}`}
                   confidence={classification?.speciesConfidence}
                 />
               </div>

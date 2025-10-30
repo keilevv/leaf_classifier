@@ -79,6 +79,21 @@ function useAdmin() {
         setIsLoading(false);
       });
   }
+  function deleteClassification(id) {
+    setIsLoading(true);
+    return adminService
+      .deleteAdminClassification(id, accessToken)
+      .then((response) => {
+        setIsLoading(false);
+        setClassification(response.data.results);
+        return response.data.results;
+      })
+      .catch((error) => {
+        console.error("Error deleting classification:", error);
+        setError(error);
+        setIsLoading(false);
+      });
+  }
   function getUsers(page, limit, sortBy, sortOrder, filters = {}) {
     setIsLoading(true);
     return adminService
@@ -137,6 +152,7 @@ function useAdmin() {
     getClassifications,
     getClassification,
     updateClassification,
+    deleteClassification,
     users,
     getUsers,
     usersCount,
