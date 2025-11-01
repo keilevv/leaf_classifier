@@ -307,6 +307,14 @@ function ClassificationsTable({
                   classification.isArchived ? "ARCHIVED" : classification.status
                 );
                 const StatusIcon = statusBadge.icon;
+                const commonName =
+                  user.language === "EN"
+                    ? classification.commonNameEn
+                    : classification.commonNameEs;
+                const taggedShape = shapes.find(
+                  (shape) => shape.nameEn === classification.taggedShape
+                )?.nameEn;
+
                 return (
                   <tr key={classification.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -329,9 +337,7 @@ function ClassificationsTable({
                     <td className="px-6 py-4 flex flex-col gap-2">
                       <ClassificationBadge
                         classification={
-                          classification.scientificName +
-                          " | " +
-                          classification.commonName
+                          classification.scientificName + " | " + commonName
                         }
                         confidence={classification.speciesConfidence}
                       />
@@ -345,8 +351,7 @@ function ClassificationsTable({
                         <span
                           className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium w-auto self-start bg-gray-100 text-gray-800`}
                         >
-                          {classification.scientificName} |{" "}
-                          {classification.commonName}
+                          {classification.scientificName} | {commonName}
                         </span>
                         <span
                           className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium w-auto self-start bg-gray-100 text-gray-800`}

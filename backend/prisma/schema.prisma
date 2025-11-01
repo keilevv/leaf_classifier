@@ -60,13 +60,17 @@ model Classification {
   status            ClassificationStatus @default(PENDING)
   isHealthy         Boolean              @default(true)
   isPlant           Boolean              @default(false)
+  commonNameEn      String?
+  commonNameEs      String?
+  scientificName    String?
+  speciesId         String?
 }
 
 model Species {
   id             String   @id @default(cuid())
   commonNameEs   String
   commonNameEn   String
-  key            String?   @default(cuid())
+  slug           String?  @unique 
   scientificName String
   createdAt      DateTime @default(now())
   updatedAt      DateTime @default(now())

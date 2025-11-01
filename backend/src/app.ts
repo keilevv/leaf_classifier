@@ -12,23 +12,33 @@ import prisma from "./lib/prisma";
 import {
   createDefaultAdmin,
   createDefaultSpecies,
-  updateSpecies,
-  updateTaggedSpeciesAndShape,
+  updateEntriedSpecies,
+  updateEntriedClassifications,
 } from "./utils";
 
 // Create default admin user if none exists
-createDefaultAdmin().catch((error) => {
-  console.error("Error creating default admin user:", error);
-});
-createDefaultSpecies().catch((error) => {
-  console.error("Error creating default species:", error);
-});
-updateSpecies().catch((error) => {
-  console.error("Error updating species:", error);
-});
-updateTaggedSpeciesAndShape().catch((error) => {
-  console.error("Error updating tagged species and shape:", error);
-});
+createDefaultAdmin()
+  .catch((error) => {
+    console.error("Error creating default admin user:", error);
+  })
+  .then(() => {
+    createDefaultSpecies()
+      .catch((error) => {
+        console.error("Error creating default species:", error);
+      })
+      .then(() => {
+        updateEntriedSpecies()
+          .catch((error) => {
+            console.error("Error updating species:", error);
+          })
+          .then(() => {
+            updateEntriedClassifications().catch((error) => {
+              console.error("Error updating classifications:", error);
+            });
+          });
+      });
+  });
+
 const app = express();
 
 // Graceful shutdown

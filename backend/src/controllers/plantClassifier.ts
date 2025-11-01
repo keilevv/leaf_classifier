@@ -32,6 +32,13 @@ function plantClassifierController() {
       const userId = req.user.id;
       const image = req.file;
 
+      const actingUser = await prisma.user.findUnique({
+        where: { id: userId },
+      });
+      if (!actingUser) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
       if (!image) {
         return res.status(400).json({ error: "No image uploaded" });
       }
@@ -132,6 +139,10 @@ function plantClassifierController() {
                 imageUrl = uploadResult.url!;
               }
 
+              const matchingSpecies = await prisma.species.findFirst({
+                where: { slug: species },
+              });
+
               // Step 4: Create classification entry in DB with final path
               const classificationEntry = await prisma.classification.create({
                 data: {
@@ -143,6 +154,9 @@ function plantClassifierController() {
                   taggedShape,
                   speciesConfidence: species_confidence,
                   shapeConfidence: shape_confidence,
+                  commonNameEn: matchingSpecies?.commonNameEn,
+                  commonNameEs: matchingSpecies?.commonNameEs,
+                  scientificName: matchingSpecies?.scientificName,
                   isHealthy,
                   userId,
                 },
@@ -151,15 +165,9 @@ function plantClassifierController() {
               // Step 5: Clean up temporary local file
               fs.unlinkSync(uploadPath);
 
-              // Add full URL for the response
-              const classificationWithUrl = {
-                ...classificationEntry,
-                imageUrl: imageUrl,
-              };
-
               return res.status(200).json({
                 message: "Image uploaded and classified successfully",
-                classification: classificationWithUrl,
+                classification: classificationEntry,
                 storageType: uploadResult.success ? "R2" : "local",
                 imageUrl: imageUrl,
               });
@@ -213,6 +221,9 @@ function plantClassifierController() {
         res.status(401).json({ error: "Authentication required" });
         return;
       }
+      const actingUser = await prisma.user.findUnique({
+        where: { id: req.user.id },
+      });
 
       // Build Prisma where filter
       const where: any = {};
@@ -222,10 +233,10 @@ function plantClassifierController() {
       }
 
       // Only allow admin to filter by userId, otherwise restrict to own
-      if (req.user.role === "admin" && req.query.userId) {
+      if (actingUser?.role === "ADMIN" && req.query.userId) {
         where.userId = req.query.userId;
       } else {
-        where.userId = req.user.id;
+        where.userId = req.user.id; // Only allow own
       }
 
       // Filter by isArchived, default to false if not provided

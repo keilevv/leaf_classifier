@@ -106,22 +106,11 @@ function adminController() {
       // Add full URL for images (R2 or local)
       const classificationsWithUser = await Promise.all(
         classifications.map(async (classification) => {
-          const species = await prisma.species.findUnique({
-            where: { key: classification.species },
-          });
-
-          const commonName =
-            actingUser?.language === "EN"
-              ? species?.commonNameEn
-              : species?.commonNameEs;
-          const scientificName = species?.scientificName;
           return {
             ...classification,
             user: classification.user
               ? sanitizeUser(classification.user)
               : undefined,
-            commonName,
-            scientificName,
           };
         })
       );
@@ -160,27 +149,25 @@ function adminController() {
       const actingUser = await prisma.user.findUnique({
         where: { id: req.user.id },
       });
+
+      if (actingUser?.role !== "ADMIN" && actingUser?.role !== "MODERATOR") {
+        res.status(403).json({ error: "Unauthorized" });
+        return;
+      }
+
       const classification = await prisma.classification.findUnique({
         where: { id },
         include: { user: true },
       });
+
       if (!classification) {
         res.status(404).json({ error: "Classification not found" });
         return;
       }
 
-      const species = await prisma.species.findFirst({
-        where: { key: classification.species },
-      });
-      const commonName =
-        actingUser?.language === "EN"
-          ? species?.commonNameEn
-          : species?.commonNameEs;
-
-      const scientificName = species?.scientificName;
       const response = {
         message: "Classification fetched successfully",
-        results: { ...classification, commonName, scientificName },
+        results: { ...classification },
       };
       res.json(response);
     } catch (error) {
@@ -206,7 +193,7 @@ function adminController() {
       const actingUser = await prisma.user.findUnique({
         where: { id: req.user.id },
       });
-      if (actingUser?.role !== "ADMIN") {
+      if (actingUser?.role !== "ADMIN" && actingUser?.role !== "MODERATOR") {
         res.status(403).json({ error: "Unauthorized" });
         return;
       }
@@ -215,18 +202,9 @@ function adminController() {
         data: { taggedShape, taggedSpecies, isHealthy, status, isArchived },
       });
 
-      const species = await prisma.species.findFirst({
-        where: { key: classification.species },
-      });
-      const commonName =
-        actingUser?.language === "EN"
-          ? species?.commonNameEn
-          : species?.commonNameEs;
-      const scientificName = species?.scientificName;
-
       const response = {
         message: "Classification updated successfully",
-        results: { ...classification, commonName, scientificName },
+        results: { ...classification },
       };
       res.json(response);
     } catch (error) {
@@ -283,6 +261,15 @@ function adminController() {
     try {
       if (!req.user) {
         res.status(401).json({ error: "Authentication required" });
+        return;
+      }
+
+      const actingUser = await prisma.user.findUnique({
+        where: { id: req.user.id },
+      });
+
+      if (actingUser?.role !== "ADMIN" && actingUser?.role !== "MODERATOR") {
+        res.status(403).json({ error: "Unauthorized" });
         return;
       }
       const where: any = {};
@@ -360,11 +347,13 @@ function adminController() {
       const adminUser = await prisma.user.findUnique({
         where: { id: req.user.id },
       });
+
       if (!adminUser) {
         res.status(404).json({ error: "Admin user not found" });
         return;
       }
-      if (adminUser.role !== "ADMIN") {
+
+      if (adminUser.role !== "ADMIN" && adminUser.role !== "MODERATOR") {
         res.status(403).json({ error: "Unauthorized" });
         return;
       }

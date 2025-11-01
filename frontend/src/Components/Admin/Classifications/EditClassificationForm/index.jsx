@@ -44,6 +44,9 @@ function EditClassificationForm() {
   const { id } = useParams();
   const { user } = useStore();
 
+  console.log("selectedSpecies", selectedSpecies);
+  console.log("species", species);
+
   useEffect(() => {
     if (id) {
       getClassification(id);
@@ -251,7 +254,7 @@ function EditClassificationForm() {
                       className="block w-full rounded-md border-gray-400 border-2 focus:ring-green-500 focus:ring-2 p-1"
                       displayValue={(val) => {
                         if (!val) return "";
-                        const s = species.find((sp) => sp.key === val);
+                        const s = species.find((sp) => sp.slug === val);
                         return s
                           ? `${s.scientificName} - ${s.commonNameEn}`
                           : "";

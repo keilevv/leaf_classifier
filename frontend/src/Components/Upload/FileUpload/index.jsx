@@ -86,12 +86,10 @@ export default function FileUpload({ onUpload }) {
               type: "success",
               message:
                 "Image classified successfully! Click here to view details.",
-              onClick: () => {
-                setSelectedUpload(response.classification);
-                setOpenModal(true);
-              },
               duration: 5000,
             });
+            setOpenModal(true);
+            setSelectedUpload(response.classification);
           }
 
           // Call onUpload with the classification data
