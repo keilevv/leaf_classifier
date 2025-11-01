@@ -118,3 +118,16 @@ export async function updateEntriedClassifications() {
     }
   });
 }
+
+export async function updateTaggedHealthy() {
+  const classifications = await prisma.classification.findMany({});
+  classifications.map(async (classification) => {
+    await prisma.classification.update({
+      where: { id: classification.id },
+      data: {
+        taggedHealthy: classification.isHealthy,
+      },
+    });
+    console.log("Updated classification:", classification.id);
+  });
+}

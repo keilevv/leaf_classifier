@@ -51,7 +51,7 @@ function UploadModal({ isOpen, closeModal, selectedUpload }) {
 
                   {selectedUpload && (
                     <div className="space-y-4">
-                      <div className="flex justify-center">
+                      <div className="flex justify-center bg-gray-100 p-4 rounded-lg">
                         <img
                           src={selectedUpload.imagePath}
                           alt={selectedUpload.originalFilename}
@@ -91,6 +91,20 @@ function UploadModal({ isOpen, closeModal, selectedUpload }) {
                             {Math.round(selectedUpload.shapeConfidence * 100)}%
                           </span>
                         </div>
+                        <div>
+                          <p className="font-medium text-gray-900">Health:</p>
+                          <span
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getConfidenceColor(
+                              selectedUpload.speciesConfidence
+                            )}`}
+                          >
+                            {selectedUpload.isHealthy ? "Healthy" : "Unhealthy"}{" "}
+                            {Math.round(selectedUpload.speciesConfidence * 100)}
+                            %
+                          </span>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 text-sm border-t border-gray-200 pt-4">
                         <div>
                           <p className="font-medium text-gray-900">
                             Original File Name:

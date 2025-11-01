@@ -4,11 +4,12 @@ import useStore from "../hooks/useStore";
 function useClassifier() {
   const { accessToken } = useStore();
   const [uploads, setUploads] = useState([]);
+  const [shapes, setShapes] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [pages, setPages] = useState(1);
 
-  function uploadImage(imageData) {
+  function uploadClassification(imageData) {
     setIsLoading(true);
     return plantClassifierService
       .uploadImage(imageData)
@@ -34,6 +35,7 @@ function useClassifier() {
       .getClassifications(page, limit, sortBy, sortOrder, filters, accessToken)
       .then((response) => {
         setUploads(response.data.results);
+        setShapes(response.data.shapes);
         setIsLoading(false);
         setPages(response.data.pages);
       })
@@ -75,10 +77,11 @@ function useClassifier() {
   }
 
   return {
-    uploadImage,
+    uploadClassification,
     getUploads,
     addUpload,
     updateClassification,
+    shapes,
     uploads,
     isLoading,
     error,

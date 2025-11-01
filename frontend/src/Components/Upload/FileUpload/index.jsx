@@ -17,7 +17,7 @@ export default function FileUpload({ onUpload }) {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef(null);
-  const { uploadImage, isLoading } = useClassifier();
+  const { uploadClassification, isLoading } = useClassifier();
   const [openModal, setOpenModal] = useState(false);
   const [selectedUpload, setSelectedUpload] = useState(null);
 
@@ -79,7 +79,7 @@ export default function FileUpload({ onUpload }) {
       const formData = new FormData();
       formData.append("image", selectedFile);
 
-      uploadImage(formData)
+      uploadClassification(formData)
         .then((response) => {
           if (response && response.classification) {
             showNotification({

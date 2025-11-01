@@ -22,8 +22,14 @@ export default function UploadHistory() {
   const [isOpen, setIsOpen] = useState(false);
   const [openConfirm, setOpenConfirm] = useState(false);
   const [page, setPage] = useState(1);
-  const { getUploads, uploads, isLoading, pages, updateClassification } =
-    useClassifier();
+  const {
+    getUploads,
+    uploads,
+    shapes,
+    isLoading,
+    pages,
+    updateClassification,
+  } = useClassifier();
   const { preferences } = useStore();
   const [rangeFilter, setRangeFilter] = useState({ start: null, end: null });
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -124,6 +130,7 @@ export default function UploadHistory() {
               {uploads.map((upload) => {
                 return (
                   <UploadCard
+                    shapes={shapes}
                     key={upload.id}
                     upload={upload}
                     openModal={openModal}

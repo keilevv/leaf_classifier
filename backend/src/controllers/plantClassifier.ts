@@ -7,6 +7,7 @@ import FormData from "form-data";
 import { R2Service } from "../services/r2Service";
 import { v4 as uuidv4 } from "uuid";
 import { sanitizeUser } from "../utils";
+import { baseShapes } from "../config";
 
 // Extend the Request interface to include user and file properties
 interface AuthenticatedRequest extends Request {
@@ -240,9 +241,9 @@ function plantClassifierController() {
       }
 
       // Filter by isArchived, default to false if not provided
-      if (typeof req.query.isArchived !== "undefined") {
-        if (req.query.isArchived === "true") where.isArchived = true;
-        else if (req.query.isArchived === "false") where.isArchived = false;
+      if (typeof isArchived !== "undefined") {
+        if (isArchived === "true") where.isArchived = true;
+        else if (isArchived === "false") where.isArchived = false;
       } else {
         where.isArchived = false;
       }
@@ -307,6 +308,7 @@ function plantClassifierController() {
         count,
         pages: totalPages,
         results: classificationsWithUser,
+        shapes: baseShapes,
       };
 
       res.json(response);

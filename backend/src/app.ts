@@ -13,7 +13,7 @@ import {
   createDefaultAdmin,
   createDefaultSpecies,
   updateEntriedSpecies,
-  updateEntriedClassifications,
+  updateTaggedHealthy,
 } from "./utils";
 
 // Create default admin user if none exists
@@ -32,9 +32,13 @@ createDefaultAdmin()
             console.error("Error updating species:", error);
           })
           .then(() => {
-            updateEntriedClassifications().catch((error) => {
-              console.error("Error updating classifications:", error);
-            });
+            updateTaggedHealthy()
+              .catch((error) => {
+                console.error("Error updating tagged healthy:", error);
+              })
+              .then(() => {
+                console.log("All updates completed successfully");
+              });
           });
       });
   });
