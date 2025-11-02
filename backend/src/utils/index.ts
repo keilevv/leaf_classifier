@@ -93,7 +93,6 @@ export async function updateEntriedSpecies() {
           slug: foundMatch.slug,
         },
       });
-      console.log("Updated species:", species);
     }
   });
 }
@@ -114,7 +113,6 @@ export async function updateEntriedClassifications() {
           speciesId: matchingSpecies.id,
         },
       });
-      console.log("Updated classification:", classification.id);
     }
   });
 }
@@ -122,12 +120,13 @@ export async function updateEntriedClassifications() {
 export async function updateTaggedHealthy() {
   const classifications = await prisma.classification.findMany({});
   classifications.map(async (classification) => {
-    await prisma.classification.update({
-      where: { id: classification.id },
-      data: {
-        taggedHealthy: classification.isHealthy,
-      },
-    });
-    console.log("Updated classification:", classification.id);
+    if (classification.isHealthy !== classification.taggedHealthy) {
+      await prisma.classification.update({
+        where: { id: classification.id },
+        data: {
+          taggedHealthy: classification.isHealthy,
+        },
+      });
+    }
   });
 }

@@ -216,6 +216,7 @@ function plantClassifierController() {
     const search = req.query.search as string;
     const status = req.query.status as string;
     const isArchived = req.query.isArchived as string;
+    const isHealthy = req.query.isHealthy as string;
 
     try {
       if (!req.user) {
@@ -246,6 +247,13 @@ function plantClassifierController() {
         else if (isArchived === "false") where.isArchived = false;
       } else {
         where.isArchived = false;
+      }
+
+      if (typeof isHealthy !== "undefined") {
+        if (isHealthy === "true") where.isHealthy = true;
+        else if (isHealthy === "false") where.isHealthy = false;
+      } else {
+        where.isHealthy = false;
       }
 
       // Filter by classification (exact match)
