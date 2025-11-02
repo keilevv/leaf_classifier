@@ -4,7 +4,6 @@ import { AuthenticatedRequest } from "../types";
 import { baseShapes } from "../config";
 
 function SpeciesController() {
-  
   const getSpecies = async (
     req: AuthenticatedRequest,
     res: Response
@@ -21,21 +20,19 @@ function SpeciesController() {
       const isArchived = req.query.isArchived as string;
       const createdBy = req.query.createdBy as string;
 
+      const actingUser = await prisma.user.findUnique({
+        where: {
+          id: req.user.id,
+        },
+      });
       // Build Prisma where filter
       const where: any = {};
-
-
-      // Only allow admin to filter by createdBy, otherwise restrict to own
-      if (req.user.role === "ADMIN" && createdBy) {
-        where.createdById = createdBy;
-      } else {
-        where.createdById = req.user.id;
-      }
+  
 
       // Filter by isArchived, default to false if not provided
-      if (typeof req.query.isArchived !== "undefined") {
-        if (req.query.isArchived === "true") where.isArchived = true;
-        else if (req.query.isArchived === "false") where.isArchived = false;
+      if (typeof isArchived !== "undefined") {
+        if (isArchived === "true") where.isArchived = true;
+        else if (isArchived === "false") where.isArchived = false;
       } else {
         where.isArchived = false;
       }

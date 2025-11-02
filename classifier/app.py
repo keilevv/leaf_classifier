@@ -23,7 +23,7 @@ PLANTS = [
     ]
 
 SHAPES = [
-    'Eliptic', 'Imparipinnate', 'Lanceolate', 'Obovate', 'Ovate', 'Palmeate', 'Trifoliate'
+    'Elliptic', 'Imparipinnate', 'Lanceolate', 'Obovate', 'Ovate', 'Palmeate', 'Trifoliate'
     ]
 
 SPECIES = [

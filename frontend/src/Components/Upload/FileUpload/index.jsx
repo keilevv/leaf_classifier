@@ -7,17 +7,22 @@ import {
   FaTrash,
   FaSpinner,
   FaUpload,
+  FaBrain,
 } from "react-icons/fa";
 import useClassifier from "../../../hooks/useClassifier";
 import UploadModal from "../UploadModal";
+import { useNavigate } from "react-router-dom";
 import { showNotification } from "../../Common/Notification";
+import useStore from "../../../hooks/useStore";
 
 export default function FileUpload({ onUpload }) {
+  const navigate = useNavigate();
+  const { user } = useStore();
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef(null);
-  const { uploadImage, isLoading } = useClassifier();
+  const { uploadClassification, isLoading } = useClassifier();
   const [openModal, setOpenModal] = useState(false);
   const [selectedUpload, setSelectedUpload] = useState(null);
 
@@ -79,19 +84,17 @@ export default function FileUpload({ onUpload }) {
       const formData = new FormData();
       formData.append("image", selectedFile);
 
-      uploadImage(formData)
+      uploadClassification(formData)
         .then((response) => {
           if (response && response.classification) {
             showNotification({
               type: "success",
               message:
                 "Image classified successfully! Click here to view details.",
-              onClick: () => {
-                setSelectedUpload(response.classification);
-                setOpenModal(true);
-              },
               duration: 5000,
             });
+            setOpenModal(true);
+            setSelectedUpload(response.classification);
           }
 
           // Call onUpload with the classification data
@@ -120,6 +123,23 @@ export default function FileUpload({ onUpload }) {
 
   return (
     <div className="space-y-6">
+      {!user.requestedContributorStatus && (
+        <div className="bg-white rounded lg shadow-lg p-6 gap-2 flex flex-col">
+          <p className="text-xl font-semibold text-green-700 flex items-center gap-2">
+            <FaBrain className="text-blue-700 h-10 w-10" /> Want to help us
+            train our AI model?
+          </p>
+          <p className="text-gray-600 mt-1">
+            Fill out your details and request to become a contributor
+          </p>
+          <button
+            onClick={() => navigate("/settings/request-to-contribute")}
+            className="max-w-fit cursor-pointer bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+          >
+            Request to become a contributor
+          </button>
+        </div>
+      )}
       <div className="bg-white rounded-lg shadow-lg">
         <div className="p-6 border-b border-gray-200">
           <h2 className="flex items-center gap-2 text-xl font-semibold text-green-700">

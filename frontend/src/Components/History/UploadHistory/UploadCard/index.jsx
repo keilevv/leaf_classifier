@@ -1,7 +1,8 @@
 import { FaCalendarAlt, FaArchive, FaEye } from "react-icons/fa";
 import { formatDate, getStatusBadge } from "../../../../utils";
 import ClassificationBadge from "../../../Common/Classifications/ClassificationBadge";
-function UploadCard({ upload, openModal, openConfirmModal }) {
+
+function UploadCard({ upload, openModal, openConfirmModal, shapes = [] }) {
   const filename = upload.originalFilename.split("/").pop();
   const statusBadge = getStatusBadge(
     upload.isArchived ? "ARCHIVED" : upload.status
@@ -11,7 +12,7 @@ function UploadCard({ upload, openModal, openConfirmModal }) {
   return (
     <div
       key={upload.id}
-      className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
+      className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow flex flex-col h-full"
     >
       <div className="relative" style={{ height: "200px" }}>
         <img
@@ -21,32 +22,92 @@ function UploadCard({ upload, openModal, openConfirmModal }) {
           style={{ border: "1px solid #ccc" }}
         />
       </div>
-      <div className="p-4">
-        <div className="space-y-3">
+      <div className="p-4 flex flex-col flex-1">
+        <div className="space-y-3 flex flex-col h-full">
           <div>
-            <h3 className="font-medium text-gray-900 truncate">{filename}</h3>
+            <h3 className="font-medium text-gray-900 truncate overflow-ellipsis">
+              {filename}
+            </h3>
             <div className="flex items-center text-sm text-gray-500 mt-1">
               <FaCalendarAlt className="h-3 w-3 mr-1" />
               {formatDate(upload.createdAt)}
             </div>
           </div>
-          <div>
-            <p className="text-sm font-medium text-gray-900 mb-1">Species:</p>
-            <ClassificationBadge
-              classification={upload.species}
-              confidence={upload.speciesConfidence}
-            />
-          </div>
+          <p className="text-md font-medium text-green-700 mb-2">
+            Model Output
+          </p>
 
-          <div>
-            <p className="text-sm font-medium text-gray-900 mb-1">Shape:</p>
-            <ClassificationBadge
-              classification={upload.shape}
-              confidence={upload.shapeConfidence}
-            />
+          <div className="grid grid-cols-2 gap-2 ">
+            <div className="flex flex-col">
+              <div className="flex flex-col">
+                <p className="text-sm font-medium text-gray-900 mb-1">
+                  Species:
+                </p>
+                <ClassificationBadge
+                  classification={`${upload.scientificName} - ${upload.commonNameEn}`}
+                  confidence={upload.speciesConfidence}
+                />
+              </div>
+              <div className="flex flex-col mt-2">
+                <p className="text-sm font-medium text-gray-900 mb-1">
+                  Health:
+                </p>
+                <ClassificationBadge
+                  classification={`${
+                    upload.isHealthy ? "Healthy" : "Deseased"
+                  }`}
+                  confidence={upload.speciesConfidence}
+                />
+              </div>
+            </div>
+
+            <div>
+              <p className="text-sm font-medium text-gray-900 mb-1">Shape:</p>
+              <ClassificationBadge
+                classification={upload.shape}
+                confidence={upload.shapeConfidence}
+              />
+            </div>
+          </div>
+          <p className="text-md font-medium text-green-700 my-2">User Output</p>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex flex-col gap-2">
+              <div>
+                <p className="text-sm font-medium text-gray-900 mb-1">
+                  Species:
+                </p>
+                <span
+                  className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium w-auto self-start bg-gray-100 text-gray-800`}
+                >
+                  {upload.scientificName} | {upload.commonNameEn}
+                </span>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-900 mb-1">
+                  Health:
+                </p>
+                <span
+                  className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium w-auto self-start bg-gray-100 text-gray-800`}
+                >
+                  {upload.taggedHealthy ? "Healthy" : "Deseased"}
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-sm font-medium text-gray-900 mb-1">Shape:</p>
+              <span
+                className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium w-auto self-start bg-gray-100 text-gray-800`}
+              >
+                {
+                  shapes.find((shape) => shape.nameEn === upload.taggedShape)
+                    ?.nameEn
+                }
+              </span>
+            </div>
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-900 mb-1">Status:</p>
+            <p className="text-md font-medium text-green-700 my-2">Status:</p>
             <span
               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusBadge.color}`}
             >
@@ -54,7 +115,7 @@ function UploadCard({ upload, openModal, openConfirmModal }) {
               {upload.status}
             </span>{" "}
           </div>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0 mt-auto pt-2">
             <div className="flex space-x-2">
               <button
                 onClick={() => openConfirmModal(upload)}

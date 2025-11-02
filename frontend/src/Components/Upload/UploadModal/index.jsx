@@ -2,6 +2,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { FaTimes } from "react-icons/fa";
 import { getConfidenceColor, formatDate } from "../../../utils";
+import { FaImage, FaEdit } from "react-icons/fa";
 function UploadModal({ isOpen, closeModal, selectedUpload }) {
   const filename = selectedUpload?.imagePath.split("/").pop();
   return (
@@ -36,9 +37,9 @@ function UploadModal({ isOpen, closeModal, selectedUpload }) {
                   <div className="flex justify-between items-center mb-4">
                     <Dialog.Title
                       as="h3"
-                      className="text-lg font-medium leading-6 text-gray-900"
+                      className="text-lg font-medium leading-6 text-gray-900 flex gap-2"
                     >
-                      {filename}
+                      <FaImage className="h-5 w-5 text-green-700" /> {filename}
                     </Dialog.Title>
                     <button
                       onClick={closeModal}
@@ -50,7 +51,7 @@ function UploadModal({ isOpen, closeModal, selectedUpload }) {
 
                   {selectedUpload && (
                     <div className="space-y-4">
-                      <div className="flex justify-center">
+                      <div className="flex justify-center bg-gray-100 p-4 rounded-lg">
                         <img
                           src={selectedUpload.imagePath}
                           alt={selectedUpload.originalFilename}
@@ -73,7 +74,8 @@ function UploadModal({ isOpen, closeModal, selectedUpload }) {
                               selectedUpload.speciesConfidence
                             )}`}
                           >
-                            {selectedUpload.species}{" "}
+                            {selectedUpload.scientificName} |{" "}
+                            {selectedUpload.commonName}{" "}
                             {Math.round(selectedUpload.speciesConfidence * 100)}
                             %
                           </span>
@@ -89,6 +91,20 @@ function UploadModal({ isOpen, closeModal, selectedUpload }) {
                             {Math.round(selectedUpload.shapeConfidence * 100)}%
                           </span>
                         </div>
+                        <div>
+                          <p className="font-medium text-gray-900">Health:</p>
+                          <span
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getConfidenceColor(
+                              selectedUpload.speciesConfidence
+                            )}`}
+                          >
+                            {selectedUpload.isHealthy ? "Healthy" : "Unhealthy"}{" "}
+                            {Math.round(selectedUpload.speciesConfidence * 100)}
+                            %
+                          </span>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 text-sm border-t border-gray-200 pt-4">
                         <div>
                           <p className="font-medium text-gray-900">
                             Original File Name:

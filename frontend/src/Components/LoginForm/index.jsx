@@ -266,7 +266,7 @@ export default function LoginForm({
 
               {/* Remember Me & Forgot Password */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center">
+                {/* <div className="flex items-center">
                   <input
                     id="remember-me"
                     type="checkbox"
@@ -280,13 +280,13 @@ export default function LoginForm({
                   >
                     Remember me
                   </label>
-                </div>
-                <a
+                </div> */}
+                {/* <a
                   href="#"
                   className="text-sm font-medium text-green-600 hover:text-green-500"
                 >
                   Forgot password?
-                </a>
+                </a> */}
               </div>
 
               {/* Submit Button */}

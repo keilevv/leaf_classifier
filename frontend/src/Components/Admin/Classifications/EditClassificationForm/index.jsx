@@ -5,7 +5,7 @@ import {
   ComboboxOption,
   ComboboxOptions,
 } from "@headlessui/react";
-import { FaChevronDown } from "react-icons/fa";
+import { FaChevronDown, FaSave } from "react-icons/fa";
 import ClassificationBadge from "../../../Common/Classifications/ClassificationBadge";
 import { getStatusBadge } from "../../../../utils";
 import useSpecies from "../../../../hooks/useSpecies";
@@ -129,11 +129,11 @@ function EditClassificationForm() {
             <h1 className="text-lg font-medium text-green-700 pb-2">
               Image Details{" "}
             </h1>
-            <div className=" rounded-2xl overflow-hidden mb-2  w-full max-w-[250px]  md:max-w-[300px] lg:max-w-[350px] xl:max-w-[400px]">
+            <div className=" rounded-2xl overflow-hidden mb-2  w-full bg-gray-100 p-4">
               <img
                 src={classification.imagePath}
                 alt={classification.originalFilename}
-                className="w-full h-full object-cover m-auto "
+                className="w-full h-full object-cover m-auto max-w-[350px] rounded-lg"
               />
             </div>
             <div className="flex flex-col gap-2 border-b border-gray-200 py-4">
@@ -141,13 +141,15 @@ function EditClassificationForm() {
                 <p className="text-sm font-medium text-gray-700">
                   Original filename
                 </p>
-                <p className="">{classification.originalFilename}</p>
+                <p className="break-words text-sm mt-1">
+                  {classification.originalFilename}
+                </p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-700">
                   Dataset filename
                 </p>
-                <p className="">{datasetFilename}</p>
+                <p className="break-words text-sm mt-1">{datasetFilename}</p>
               </div>
             </div>
             <div className="flex flex-col border-b border-gray-200 pt-4 md: border-none">
@@ -214,7 +216,7 @@ function EditClassificationForm() {
                   Species
                 </label>
                 <ClassificationBadge
-                  classification={`${classification?.scientificName} | ${classification?.commonName}`}
+                  classification={`${classification?.scientificName} | ${classification?.commonNameEn}`}
                   confidence={classification?.speciesConfidence}
                 />
               </div>
@@ -225,6 +227,17 @@ function EditClassificationForm() {
                 <ClassificationBadge
                   classification={classification?.shape}
                   confidence={classification?.shapeConfidence}
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Health
+                </label>
+                <ClassificationBadge
+                  classification={
+                    classification?.isHealthy ? "Healthy" : "Deseased"
+                  }
+                  confidence={classification?.speciesConfidence}
                 />
               </div>
             </div>
@@ -251,7 +264,7 @@ function EditClassificationForm() {
                       className="block w-full rounded-md border-gray-400 border-2 focus:ring-green-500 focus:ring-2 p-1"
                       displayValue={(val) => {
                         if (!val) return "";
-                        const s = species.find((sp) => sp.key === val);
+                        const s = species.find((sp) => sp.slug === val);
                         return s
                           ? `${s.scientificName} - ${s.commonNameEn}`
                           : "";
@@ -294,7 +307,7 @@ function EditClassificationForm() {
                   </div>
                 </Combobox>
               </div>
-              <div className="flex flex-col">
+              <div className="flex flex-col mt-2">
                 <label
                   htmlFor="shape"
                   className="text-sm font-medium text-gray-700"
@@ -364,6 +377,12 @@ function EditClassificationForm() {
                   className="w-32 h-auto mx-auto"
                 />
               )}
+              <label
+                htmlFor="shape"
+                className="text-sm font-medium text-gray-700"
+              >
+                Health
+              </label>
               <Switch
                 defaultValue={isHealthy}
                 isSelected={isHealthy}
@@ -410,14 +429,14 @@ function EditClassificationForm() {
                 disabled={!enableButton}
                 type="submit"
                 className={cn(
-                  "mt-4 w-full rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm",
+                  "mt-4 w-full flex justify-center items-center rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm",
                   "hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2",
                   enableButton
                     ? "cursor-pointer"
                     : "opacity-50 cursor-not-allowed"
                 )}
               >
-                Save
+                <FaSave className="mr-2 "/> Save
               </button>
             </form>
           </div>

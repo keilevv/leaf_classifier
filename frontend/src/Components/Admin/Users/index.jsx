@@ -1,4 +1,4 @@
-import { FaSearch, FaUsers, FaFilter } from "react-icons/fa";
+import { FaSearch, FaUsers, FaFilter, FaBrush } from "react-icons/fa";
 import { useState, useEffect, useCallback } from "react";
 import _debounce from "lodash/debounce";
 import useAdmin from "../../../hooks/useAdmin";
@@ -6,6 +6,7 @@ import useStore from "../../../hooks/useStore";
 import RangePicker from "../../Common/RangePicker";
 import UsersTable from "./UsersTable";
 import { useNavigate } from "react-router-dom";
+import SwitchComponent from "../../Common/SwitchComponent";
 
 function Users({ setUsersCount = () => {} }) {
   const { preferences } = useStore();
@@ -49,6 +50,15 @@ function Users({ setUsersCount = () => {} }) {
   const debouncedSearch = useCallback(_debounce(handleSearch, 300), []);
   useEffect(() => () => debouncedSearch.cancel(), [debouncedSearch]);
 
+  const handleCleanFilters = () => {
+    setSearchString("");
+    setSearchInput("");
+    setUserRoleFilter("ALL");
+    setIsArchived(false);
+    setRangeFilter({ start: null, end: null });
+    setPage(1);
+  };
+
   function onUpdateUser() {
     const filters = {};
     if (searchString.length) filters.search = searchString;
@@ -76,10 +86,14 @@ function Users({ setUsersCount = () => {} }) {
           >
             <FaFilter /> Filters
           </button>
-          <div className="transition-all duration-300 max-h-0 overflow-hidden mt-4" style={{ maxHeight: showFilters ? "500px" : "0px" }}>
-            <RangePicker setRangeFilter={setRangeFilter} className="mb-4" />
+          <div
+            className={`transition-height duration-300 max-h-0 overflow-hidden ${
+              showFilters ? "mt-4" : "mt-0"
+            }`}
+            style={{ maxHeight: showFilters ? "500px" : "0px" }}
+          >
             <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1 relative">
+              <div className="flex-1 relative mb-4">
                 <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <input
                   type="text"
@@ -95,23 +109,40 @@ function Users({ setUsersCount = () => {} }) {
               <select
                 value={userRoleFilter}
                 onChange={(e) => {
-                  if (e.target.value === "ARCHIVED") {
-                    setIsArchived(true);
-                  } else {
-                    setIsArchived(false);
-                    setUserRoleFilter(e.target.value);
-                  }
+                  setUserRoleFilter(e.target.value);
                   setPage(1);
                 }}
-                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="px-4 py-2 mb-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
               >
                 <option value="ALL">All Roles</option>
                 <option value="USER">User</option>
                 <option value="ADMIN">Admin</option>
                 <option value="MODERATOR">Moderator</option>
                 <option value="CONTRIBUTOR">Contributor</option>
-                <option value="ARCHIVED">Archived</option>
               </select>
+            </div>
+            <div className="flex flex-col md:flex-row gap-4 mt-2">
+              <RangePicker setRangeFilter={setRangeFilter} className="mb-4" />
+              <div className="flex flex-col gap-2 md:border-l md:px-4 border-gray-200">
+                <label className="text-sm font-medium text-gray-700">
+                  Archived
+                </label>
+                <SwitchComponent
+                  loading={false}
+                  defaultValue={isArchived}
+                  isSelected={isArchived}
+                  onChange={setIsArchived}
+                  title={isArchived ? "Archived" : "Not Archived"}
+                />
+              </div>
+              <div className="flex flex-col gap-2 md:border-l md:px-4 border-gray-200 justify-center">
+                <button
+                  onClick={handleCleanFilters}
+                  className="px-4 py-2 flex gap-2 justify-center items-center border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
+                >
+                  <FaBrush /> Clean Filters
+                </button>
+              </div>
             </div>
           </div>
         </div>

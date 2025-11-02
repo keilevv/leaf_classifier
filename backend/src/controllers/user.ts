@@ -36,6 +36,7 @@ function userController() {
         bio,
         password,
         emailNotifications,
+        requestedContributorStatus,
       } = req.body;
       const user = await prisma.user.findUnique({
         where: { id },
@@ -56,6 +57,27 @@ function userController() {
           return res.status(403).json({ error: "Forbidden" });
         }
       }
+
+      if (requestedContributorStatus === true) {
+        const requiredFields = [
+          "fullName",
+          "email",
+          "phone",
+          "institution",
+          "department",
+          "location",
+          "bio",
+        ];
+        // Validate against the values that will be persisted (existing user overlaid with body)
+        const candidate: any = { ...user, ...req.body };
+        for (const field of requiredFields) {
+          if (!candidate[field] || candidate[field] === "") {
+            return res.status(400).json({
+              error: `Missing required field: ${field}`,
+            });
+          }
+        }
+      }
       const data: any = {
         fullName,
         email,
@@ -65,6 +87,7 @@ function userController() {
         location,
         bio,
         emailNotifications,
+        requestedContributorStatus,
       };
       if (
         password &&

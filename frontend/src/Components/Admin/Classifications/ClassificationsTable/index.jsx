@@ -63,7 +63,8 @@ function ClassificationsTable({
           type: "warning",
           icon: FaCheckCircle,
           iconColor: "text-green-500",
-          onConfirm: () => handleVerifyClassificationSubmit("VERIFIED"),
+          onConfirm: () =>
+            handleVerifyClassificationSubmit("VERIFIED", classification),
         };
         break;
       case "archive":
@@ -103,7 +104,8 @@ function ClassificationsTable({
           type: "warning",
           icon: FaTimesCircle,
           iconColor: "text-red-400",
-          onConfirm: () => handleVerifyClassificationSubmit("REJECTED"),
+          onConfirm: () =>
+            handleVerifyClassificationSubmit("REJECTED", classification),
         };
         break;
       default:
@@ -131,18 +133,8 @@ function ClassificationsTable({
     navigate(`/admin/classification/${classification.id}`);
   };
 
-  // for Delete/Archive/Verify/Reject actions, call openConfirmationModal instead
-  const handleDeleteClassification = (classification) => {
-    setSelectedClassification(classification);
-    openConfirmationModal("delete", classification);
-  };
-
-  const handleArchiveClassification = (classification) => {
-    setSelectedClassification(classification);
-    openConfirmationModal("archive", classification);
-  };
-
   const handleVerifyClassification = (classification, status = "REJECTED") => {
+    setSelectedClassification(classification);
     if (status === "REJECTED") {
       openConfirmationModal("reject", classification);
     } else {
@@ -150,15 +142,18 @@ function ClassificationsTable({
     }
   };
 
-  const handleVerifyClassificationSubmit = (status = "REJECTED") => {
-    updateClassification(selectedClassification?.id, { status })
+  const handleVerifyClassificationSubmit = (
+    status = "REJECTED",
+    classification
+  ) => {
+    updateClassification(classification?.id, { status })
       .then(() => {
         showNotification({
           title: "Classification verified",
           message: "Classification verified successfully",
           type: "success",
         });
-        onUpdateClassification(selectedClassification);
+        onUpdateClassification(classification);
         setOpenConfirmation(false);
       })
       .catch((error) => {
@@ -194,15 +189,15 @@ function ClassificationsTable({
       });
   };
 
-  const handleDeleteClassificationSubmit = () => {
-    deleteClassification(selectedClassification?.id)
+  const handleDeleteClassificationSubmit = (classification) => {
+    deleteClassification(classification?.id)
       .then(() => {
         showNotification({
           title: "Classification deleted",
           message: fileName,
           type: "success",
         });
-        onUpdateClassification(selectedClassification);
+        onUpdateClassification(classification);
         setOpenConfirmation(false);
       })
       .catch((error) => {
@@ -293,7 +288,7 @@ function ClassificationsTable({
                 Status
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Date
+                Info
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
@@ -307,6 +302,14 @@ function ClassificationsTable({
                   classification.isArchived ? "ARCHIVED" : classification.status
                 );
                 const StatusIcon = statusBadge.icon;
+                const commonName =
+                  user.language === "EN"
+                    ? classification.commonNameEn
+                    : classification.commonNameEs;
+                const taggedShape = shapes.find(
+                  (shape) => shape.nameEn === classification.taggedShape
+                )?.nameEn;
+
                 return (
                   <tr key={classification.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -329,9 +332,7 @@ function ClassificationsTable({
                     <td className="px-6 py-4 flex flex-col gap-2">
                       <ClassificationBadge
                         classification={
-                          classification.scientificName +
-                          " | " +
-                          classification.commonName
+                          classification.scientificName + " | " + commonName
                         }
                         confidence={classification.speciesConfidence}
                       />
@@ -345,8 +346,7 @@ function ClassificationsTable({
                         <span
                           className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium w-auto self-start bg-gray-100 text-gray-800`}
                         >
-                          {classification.scientificName} |{" "}
-                          {classification.commonName}
+                          {classification.scientificName} | {commonName}
                         </span>
                         <span
                           className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium w-auto self-start bg-gray-100 text-gray-800`}
@@ -368,8 +368,21 @@ function ClassificationsTable({
                         {classification.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(classification.createdAt)}
+                    <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
+                      <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-1">
+                          <p className="text-gray-900">Date</p>
+                          <span className="truncate">
+                            {formatDate(classification.createdAt)}
+                          </span>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <p className="text-gray-900">Filename</p>
+                          <span className="truncate">
+                            {classification?.imagePath?.split("/").pop()}
+                          </span>
+                        </div>
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end space-x-2">

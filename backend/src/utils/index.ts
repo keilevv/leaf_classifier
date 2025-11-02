@@ -44,127 +44,89 @@ export async function createDefaultSpecies() {
   const defaultEmail = process.env.DEFAULT_EMAIL || "adminleaf@yopmail.com";
   const speciesCount = await prisma.species.count({});
   if (speciesCount > 0) {
-    return null; // Species already exists
+    return null;
   }
-
   const adminUser = await prisma.user.findUnique({
     where: { email: defaultEmail },
   });
-
   baseSpecies.map(async (defaultSpecies) => {
     const existingSpecies = await prisma.species.findUnique({
-      where: { scientificName: defaultSpecies.scientificName },
+      where: { slug: defaultSpecies.slug },
     });
     if (existingSpecies) {
-      return null; // Species with default scientific name already exists
+      return null;
     }
-
     const species = await prisma.species.create({
       data: {
         commonNameEs: defaultSpecies.commonNameEs,
         commonNameEn: defaultSpecies.commonNameEn,
         scientificName: defaultSpecies.scientificName,
         createdById: adminUser?.id,
+        slug: defaultSpecies.slug,
       },
     });
 
     console.log("Default species created:");
-    console.log(`  Common Name: ${species.commonName}`);
+    console.log(`  Common Name: ${species.commonNameEn}`);
     console.log(`  Scientific Name: ${species.scientificName}`);
     return species;
   });
 }
 
-export async function updateIsHealthy() {
-  const classifications = await prisma.classification.findMany({});
-
-  classifications.map(async (classification) => {
-    const isHealthy = classification.imagePath.includes("healthy");
-    console.log("isHealthy", isHealthy);
-    const updatedClassification = await prisma.classification.update({
-      where: { id: classification.id },
-      data: { isHealthy: isHealthy },
-    });
-    console.log("Default classification updated:");
-    console.log(`  ID: ${updatedClassification.id}`);
-    console.log(`  Is Healthy: ${updatedClassification.isHealthy}`);
-  });
-}
-
-export async function updateImagePathByIsHealthy() {
-  const classifications = await prisma.classification.findMany({});
-
-  classifications.map(async (classification) => {
-    const imagePath = classification.imagePath.split("/").pop();
-    let newImagePath = "";
-    if (imagePath?.includes("healthy") && !classification.isHealthy) {
-      newImagePath = imagePath.replace("healthy", "deseased");
-    } else {
-      if (imagePath?.includes("deseased") && classification.isHealthy) {
-        newImagePath = imagePath.replace("deseased", "healthy");
-      }
-    }
-    console.log("imagePath", imagePath);
-    console.log("isHealthy", classification.isHealthy);
-    console.log("newImagePath", newImagePath);
-  });
-}
-
-export async function updateSpecies() {
+export async function updateEntriedSpecies() {
   const species = await prisma.species.findMany({});
   species.map(async (species) => {
-    const foundMatch = baseSpecies.find(
-      (sp) => sp.scientificName === species.scientificName
-    );
+    const foundMatch = baseSpecies.find((sp) => sp.slug === species.slug);
     if (
       foundMatch &&
-      (foundMatch.key !== species.key ||
+      (foundMatch.slug !== species.slug ||
         foundMatch.commonNameEs !== species.commonNameEs ||
         foundMatch.commonNameEn !== species.commonNameEn)
     ) {
+      console.log("Updating species:", species);
       await prisma.species.update({
         where: { id: species.id },
         data: {
           commonNameEs: foundMatch.commonNameEs,
           commonNameEn: foundMatch.commonNameEn,
           scientificName: foundMatch.scientificName,
-          key: foundMatch.key,
+          slug: foundMatch.slug,
         },
       });
     }
   });
 }
 
-export async function formatClassificationSpecies() {
+export async function updateEntriedClassifications() {
   const classifications = await prisma.classification.findMany({});
   classifications.map(async (classification) => {
-    if (classification.species.includes("_")) {
-      const updatedClassification = await prisma.classification.update({
+    const matchingSpecies = await prisma.species.findUnique({
+      where: { slug: classification.species },
+    });
+    if (matchingSpecies) {
+      await prisma.classification.update({
         where: { id: classification.id },
         data: {
-          species: classification.species.split("_")[0],
+          commonNameEs: matchingSpecies.commonNameEs,
+          commonNameEn: matchingSpecies.commonNameEn,
+          scientificName: matchingSpecies.scientificName,
+          speciesId: matchingSpecies.id,
         },
       });
-      console.log("Updated classification:", updatedClassification);
     }
   });
 }
 
-export async function updateTaggedSpeciesAndShape() {
+export async function updateTaggedHealthy() {
   const classifications = await prisma.classification.findMany({});
   classifications.map(async (classification) => {
-    if (
-      classification.taggedSpecies == "" ||
-      classification.taggedShape == ""
-    ) {
-      const updatedClassification = await prisma.classification.update({
+    if (classification.isHealthy !== classification.taggedHealthy) {
+      await prisma.classification.update({
         where: { id: classification.id },
         data: {
-          taggedSpecies: classification.species,
-          taggedShape: classification.shape,
+          taggedHealthy: classification.isHealthy,
         },
       });
-      console.log("Updated classification:", updatedClassification);
     }
   });
 }

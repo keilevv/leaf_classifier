@@ -15,11 +15,12 @@ function useUser() {
       .then((response) => {
         setLoading(false);
         setUser(response.data?.user);
-        return response;
+        return response.data?.user;
       })
       .catch((error) => {
         setLoading(false);
         setError(error);
+        throw error;
       });
   }
   function updateUser(userId, data) {
@@ -31,11 +32,12 @@ function useUser() {
         if (response.data?.user) {
           setUser(response.data?.user);
         }
-        return response;
+        return response.data?.user;
       })
       .catch((error) => {
         setLoading(false);
         setError(error);
+        throw error;
       });
   }
   return { user, setUser, getUser, updateUser, error, loading };
