@@ -92,7 +92,9 @@ function Classifications({ setClassificationsCount = () => {} }) {
             <FaFilter /> Filters
           </button>
           <div
-            className="transition-all duration-300 max-h-0 overflow-hidden mt-4"
+            className={`transition-height duration-300 max-h-0 overflow-hidden ${
+              showFilters ? "mt-4" : "mt-0"
+            }`}
             style={{ maxHeight: showFilters ? "500px" : "0px" }}
           >
             <div className="flex flex-col md:flex-row gap-4">
