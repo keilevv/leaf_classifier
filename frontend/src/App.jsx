@@ -68,6 +68,14 @@ function App() {
           }
         />
         <Route
+          path="/settings/request-to-contribute"
+          element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/dashboard"
           element={
             <ProtectedRoute>

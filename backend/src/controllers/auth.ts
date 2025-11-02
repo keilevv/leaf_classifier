@@ -90,6 +90,8 @@ function authController() {
   const localRegister = async (req: Request, res: Response) => {
     const { fullName, email, password, phone } = req.body;
 
+    
+
     try {
       const existing = await prisma.user.findUnique({ where: { email } });
       if (existing)

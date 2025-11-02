@@ -34,6 +34,7 @@ model User {
   emailNotifications Boolean          @default(true)
   isArchived         Boolean          @default(false)
   language           String           @default("EN")
+  requestedContributorStatus Boolean  @default(false)
 }
 
 enum ClassificationStatus {
