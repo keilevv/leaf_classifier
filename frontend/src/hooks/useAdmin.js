@@ -13,7 +13,10 @@ function useAdmin() {
     pending: 0,
     archived: 0,
   });
-  const [usersCount, setUsersCount] = useState({ total: 0 });
+  const [usersCount, setUsersCount] = useState({
+    total: 0,
+    requestedContributor: 0,
+  });
   const [error, setError] = useState(null);
   const [pages, setPages] = useState(1);
   const [users, setUsers] = useState([]);
@@ -101,7 +104,10 @@ function useAdmin() {
       .then((response) => {
         setUsers(response.data.results);
         setPages(response.data.pages);
-        setUsersCount({ total: response.data.count });
+        setUsersCount({
+          total: response.data.count,
+          requestedContributor: response.data.requestedContributorCount,
+        });
         setIsLoading(false);
       })
       .catch((error) => {

@@ -23,8 +23,8 @@ export function showNotification(props) {
 function NotificationItem({
   id = "",
   type = "default",
-  title,
-  message,
+  title = "",
+  message = "",
   duration = 5000,
   onClose,
   onClick,

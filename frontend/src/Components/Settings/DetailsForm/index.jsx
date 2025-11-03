@@ -156,7 +156,8 @@ function DetailsForm({ user, loading, onUpdate, admin = false }) {
       })
       .catch((error) => {
         showNotification({
-          message: "Failed to request contributor role",
+          title: "Error requesting contributor role",
+          message: error.response.data.error,
           type: "error",
         });
       });
@@ -382,6 +383,10 @@ function DetailsForm({ user, loading, onUpdate, admin = false }) {
           <h3 className="text-lg font-medium text-green-700 mb-4">
             Request Contributor Role
           </h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Make sure to fill out all your personal information before
+            requesting a contributor role.
+          </p>
         </div>
       </form>
       <button

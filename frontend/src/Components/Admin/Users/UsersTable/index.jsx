@@ -1,4 +1,12 @@
-import { FaTrash, FaArchive, FaEdit, FaUndo } from "react-icons/fa";
+import {
+  FaTrash,
+  FaArchive,
+  FaEdit,
+  FaUndo,
+  FaUserPlus,
+  FaTimesCircle,
+  FaUserMinus,
+} from "react-icons/fa";
 import { useState } from "react";
 import { showNotification } from "../../../Common/Notification";
 import ConfirmationModal from "../../../Common/ConfirmationModal";
@@ -38,7 +46,7 @@ function UsersTable({
     return items;
   }
 
-  const openConfirmationModal = (action, user) => {
+  const openConfirmationModal = (action, user, newRole = null) => {
     setSelectedUser(user);
     let modal = {};
     if (action === "archive") {
@@ -73,6 +81,22 @@ function UsersTable({
         iconColor: "text-blue-600",
         onConfirm: () => handleChangeRole(user, newRole),
       };
+    } else if (action === "assignContributor") {
+      modal = {
+        title: "Assign Contributor",
+        message: `Assign contributor for user: ${user?.fullName}`,
+        icon: FaUserPlus,
+        iconColor: "text-green-600",
+        onConfirm: () => handleAssignContributor(user),
+      };
+    } else if (action === "rejectContributor") {
+      modal = {
+        title: "Reject Contributor",
+        message: `Reject contributor for user: ${user?.fullName}`,
+        icon: FaUserMinus,
+        iconColor: "text-red-600",
+        onConfirm: () => handleRejectContributor(user),
+      };
     } else {
       modal = {
         title: "Confirm Action",
@@ -84,14 +108,6 @@ function UsersTable({
     }
     setConfirmationContent(modal);
     setOpenConfirmation(true);
-  };
-
-  const handleArchiveOrDelete = (user) => {
-    if (user.isArchived) {
-      openConfirmationModal("delete", user);
-    } else {
-      openConfirmationModal("archive", user);
-    }
   };
 
   const handleArchiveUser = (user) => {
@@ -141,13 +157,21 @@ function UsersTable({
   const handleUnarchiveUser = (user) => {
     updateUser(user.id, { isArchived: false })
       .then(() => {
-        showNotification({ title: "User unarchived", message: user.fullName, type: "success" });
+        showNotification({
+          title: "User unarchived",
+          message: user.fullName,
+          type: "success",
+        });
         setOpenConfirmation(false);
         onUpdateUser(user);
       })
       .catch((error) => {
         console.error("Error unarchiving user:", error);
-        showNotification({ title: "User unarchive failed", message: user.fullName, type: "error" });
+        showNotification({
+          title: "User unarchive failed",
+          message: user.fullName,
+          type: "error",
+        });
         setOpenConfirmation(false);
       });
   };
@@ -155,13 +179,65 @@ function UsersTable({
   const handleChangeRole = (user, nextRole) => {
     updateUser(user.id, { role: nextRole })
       .then(() => {
-        showNotification({ title: "User role changed", message: nextRole, type: "success" });
+        showNotification({
+          title: "User role changed",
+          message: nextRole,
+          type: "success",
+        });
         setOpenConfirmation(false);
         onUpdateUser(user);
       })
       .catch((error) => {
         console.error("Error updating user role:", error);
-        showNotification({ title: "User role change failed", message: user.fullName, type: "error" });
+        showNotification({
+          title: "User role change failed",
+          message: user.fullName,
+          type: "error",
+        });
+        setOpenConfirmation(false);
+      });
+  };
+
+  const handleAssignContributor = (user) => {
+    updateUser(user.id, { role: "CONTRIBUTOR" })
+      .then(() => {
+        showNotification({
+          title: "User role changed",
+          message: "CONTRIBUTOR",
+          type: "success",
+        });
+        setOpenConfirmation(false);
+        onUpdateUser(user);
+      })
+      .catch((error) => {
+        console.error("Error updating user role:", error);
+        showNotification({
+          title: "User role change failed",
+          message: user.fullName,
+          type: "error",
+        });
+        setOpenConfirmation(false);
+      });
+  };
+
+  const handleRejectContributor = (user) => {
+    updateUser(user.id, { role: "USER", requestedContributorStatus: false })
+      .then(() => {
+        showNotification({
+          title: "Contributor request rejected",
+          message: user.fullName,
+          type: "success",
+        });
+        setOpenConfirmation(false);
+        onUpdateUser(user);
+      })
+      .catch((error) => {
+        console.error("Error updating user role:", error);
+        showNotification({
+          title: "Contributor request reject failed",
+          message: user.fullName,
+          type: "error",
+        });
         setOpenConfirmation(false);
       });
   };
@@ -220,13 +296,22 @@ function UsersTable({
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap flex flex-col gap-2">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${roleBadge.color}`}
+                        className={`self-start inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${roleBadge.color}`}
                       >
                         <RoleIcon className="h-3 w-3 mr-1" />
                         {user.role}
                       </span>
+                      {user.requestedContributorStatus &&
+                        user.role === "USER" && (
+                          <span
+                            className={`inline-flex self-start items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-200 text-gray-900`}
+                          >
+                            <FaUserPlus className="h-3 w-3 mr-1" /> Conrtributor
+                            Request
+                          </span>
+                        )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm font-medium text-gray-900">
@@ -245,11 +330,45 @@ function UsersTable({
                         >
                           <FaEdit className="h-4 w-4" />
                         </button>
+                        {user.requestedContributorStatus &&
+                          user.role === "USER" && (
+                            <>
+                              <button
+                                onClick={() =>
+                                  openConfirmationModal(
+                                    "assignContributor",
+                                    user
+                                  )
+                                }
+                                className="cursor-pointer text-green-600 hover:text-green-900 p-2 hover:bg-green-50 rounded transition-colors"
+                                title="Assign Contributor"
+                              >
+                                <FaUserPlus className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() =>
+                                  openConfirmationModal(
+                                    "rejectContributor",
+                                    user
+                                  )
+                                }
+                                className="cursor-pointer text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded transition-colors"
+                                title="Reject Contributor"
+                              >
+                                <FaTimesCircle className="h-4 w-4" />
+                              </button>
+                            </>
+                          )}
                         <select
                           value={user.role}
                           onChange={(e) => {
                             setNewRole(e.target.value);
-                            openConfirmationModal("changeRole", user);
+                            setSelectedUser(user);
+                            openConfirmationModal(
+                              "changeRole",
+                              user,
+                              e.target.value
+                            );
                           }}
                           className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-green-500"
                           title="Change Role"
@@ -262,14 +381,18 @@ function UsersTable({
                         {user.isArchived ? (
                           <div className="flex gap-2">
                             <button
-                              onClick={() => openConfirmationModal("unarchive", user)}
+                              onClick={() =>
+                                openConfirmationModal("unarchive", user)
+                              }
                               className="text-green-600 hover:text-green-900 hover:bg-green-50 cursor-pointer p-2 rounded transition-colors"
                               title="Unarchive"
                             >
                               <FaUndo className="h-4 w-4" />
                             </button>
                             <button
-                              onClick={() => openConfirmationModal("delete", user)}
+                              onClick={() =>
+                                openConfirmationModal("delete", user)
+                              }
                               className="text-red-600 hover:text-red-900 hover:bg-red-50 cursor-pointer p-2 rounded transition-colors"
                               title="Delete"
                             >
@@ -278,7 +401,9 @@ function UsersTable({
                           </div>
                         ) : (
                           <button
-                            onClick={() => openConfirmationModal("archive", user)}
+                            onClick={() =>
+                              openConfirmationModal("archive", user)
+                            }
                             className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 cursor-pointer p-2 rounded transition-colors"
                             title="Archive"
                           >
