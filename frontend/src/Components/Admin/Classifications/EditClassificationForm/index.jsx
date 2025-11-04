@@ -231,6 +231,7 @@ function EditClassificationForm({ isAdmin = false }) {
                     <div className="relative">
                       <ComboboxInput
                         id="species"
+                        disabled={true}
                         name="species"
                         className="block w-full rounded-md border-gray-400 border-2 focus:ring-green-500 focus:ring-2 p-1"
                         placeholder="Select a species"
@@ -311,7 +312,10 @@ function EditClassificationForm({ isAdmin = false }) {
                 >
                   Species
                 </label>
-                <Combobox value={selectedSpecies} onChange={setSelectedSpecies}>
+                <Combobox
+                  value={selectedSpecies}
+                  onChange={(value) => setSelectedSpecies(value)}
+                >
                   <div className="relative mt-2">
                     <ComboboxInput
                       id="species"
@@ -330,7 +334,10 @@ function EditClassificationForm({ isAdmin = false }) {
                     <ComboboxButton className="absolute inset-y-0 right-0 flex items-center px-2">
                       <FaChevronDown className="h-4 w-4 text-gray-500" />
                     </ComboboxButton>
-                    <ComboboxOptions className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                    <ComboboxOptions
+                      onSelect={(e) => e.stopPropagation()}
+                      className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+                    >
                       {species
                         .filter((sp) => {
                           if (!speciesQuery) return true;
@@ -341,7 +348,7 @@ function EditClassificationForm({ isAdmin = false }) {
                         .map((sp) => (
                           <ComboboxOption
                             key={sp.id}
-                            value={sp.key}
+                            value={sp.slug}
                             className={({ active }) =>
                               `relative cursor-pointer select-none py-2 pl-3 pr-4 ${
                                 active

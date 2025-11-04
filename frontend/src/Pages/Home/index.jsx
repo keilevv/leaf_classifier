@@ -48,26 +48,26 @@ export default function Home() {
   const steps = [
     {
       icon: FaCamera,
-      title: "Take Photo",
+      title: "Take a photo",
       description:
-        "Capture a clear image of a plant leaf following our guidelines",
+        "Capture a clear image of a plant leaf following our photography guidelines",
     },
     {
       icon: FaUpload,
-      title: "Upload Image",
+      title: "Upload image",
       description: "Upload your photo to our AI-powered classification system",
     },
     {
       icon: FaBrain,
       title: "AI Analysis",
       description:
-        "Our AI attempts to identify the plant species automatically",
+        "Our AI attempts to automatically identify the plant species",
     },
     {
       icon: FaUsers,
-      title: "Human Input",
+      title: "Human Contribution",
       description:
-        "If AI can't identify it, you help by providing the species name",
+        "If the AI cannot identify it, you help by providing the species name",
     },
     {
       icon: FaDatabase,
@@ -80,35 +80,35 @@ export default function Home() {
   const photographyTips = [
     {
       icon: FaEye,
-      title: "Fill the Frame",
+      title: "Fill the frame",
       description: "Make sure the leaf occupies most of the image frame",
-      example: "✅ Leaf covers 70-80% of the photo",
+      example: "✅ The leaf covers 70-80% of the photo",
     },
     {
       icon: FaLightbulb,
-      title: "Good Lighting",
+      title: "Good lighting",
       description: "Use natural light or bright indoor lighting",
       example: "✅ Avoid shadows and dark areas",
     },
     {
       icon: FaHandPaper,
-      title: "Steady Shot",
+      title: "Steady shot",
       description: "Keep the camera steady to avoid blurry images",
       example: "✅ Use both hands or a stable surface",
     },
     {
       icon: FaLeaf,
-      title: "Single Leaf",
+      title: "Single leaf",
       description: "Focus on one leaf at a time for best results",
-      example: "✅ Avoid multiple overlapping leaves",
+      example: "✅ Avoid overlapping multiple leaves",
     },
   ];
 
   const stats = [
-    { number: "10,000+", label: "Images Collected", icon: FaCamera },
-    { number: "500+", label: "Species Identified", icon: FaSeedling },
+    { number: "100,000+", label: "Images Collected", icon: FaCamera },
+    { number: "1,000+", label: "Species Identified", icon: FaSeedling },
     { number: "1,200+", label: "Contributors", icon: FaUsers },
-    { number: "85%", label: "AI Accuracy", icon: FaBrain },
+    { number: "95%", label: "AI Accuracy", icon: FaBrain },
   ];
 
   return (
@@ -120,35 +120,35 @@ export default function Home() {
           src={backgroundImage}
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 z-0 h-full w-full object-cover opacity-40"
+          className="absolute inset-0 z-0 h-full w-full object-cover opacity-20"
         />
         <div className="absolute inset-0 z-10 pointer-events-none" />
         <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center">
-            <div className="flex items-center justify-center mb-6  flex-col-reverse md:flex-row">
-              <img src={utbLogo} alt="utblogo" className="h-25" />
-              <div className="flex justify-center mb-8">
-                <div className="relative">
-                  <div className="p-6 bg-green-100 rounded-full">
-                    <FaLeaf className="h-16 w-16 text-green-600" />
-                  </div>
-                  <div className="absolute -top-2 -right-2 p-2 bg-blue-100 rounded-full">
-                    <FaBrain className="h-6 w-6 text-blue-600" />
-                  </div>
+            <div className="flex justify-center mb-8">
+              <div className="relative">
+                <div className="p-6 bg-green-100 rounded-full">
+                  <FaLeaf className="h-16 w-16 text-green-600" />
+                </div>
+                <div className="absolute -top-2 -right-2 p-2 bg-blue-100 rounded-full">
+                  <FaBrain className="h-6 w-6 text-blue-600" />
                 </div>
               </div>
+            </div>{" "}
+            <div className=" bg-blue-100 rounded-full size-fit mx-auto mb-8 max-w-[300px] px-10 py-4">
+              <img src={utbLogo} alt="UTB Logo" className="" />
             </div>
-
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-              SAPS<span className="text-green-600">AI</span> Dataset
+              SAPS<span className="text-green-600">AI</span>
             </h1>
-
-            <p className="text-xl md:text-2xl text-gray-900 mb-8 max-w-3xl mx-auto">
-              Help us build the world's largest crowdsourced plant
-              identification dataset. Your photos train AI to recognize plant
-              species worldwide.
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-6">
+              System for adquisicion, processing and storage of plant images
+            </h2>
+            <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
+              Help us create the world's largest collaborative database for
+              plant identification. Your photos train AI to recognize plant
+              species from around the world.
             </p>
-
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12 ">
               <div className="relative inline-flex group cursor-pointer">
                 <div className="absolute z-30 transitiona-all duration-1000 opacity-70 -inset-px bg-gradient-to-r from-[#44BCFF] via-[#FF44EC] to-[#FF675E] rounded-xl blur-lg group-hover:opacity-100 group-hover:-inset-1 group-hover:duration-200 animate-tilt"></div>
@@ -158,19 +158,21 @@ export default function Home() {
                   onClick={onGetStarted}
                 >
                   <FaCamera className="mr-2" />
-                  Start Contributing
+                  Start contributing
                   <FaArrowRight className="ml-2" />{" "}
                 </a>
               </div>
               <button
-                className=" cursor-pointer  text-green-600 hover:bg-green-50 font-semibold py-4 px-8 rounded-lg text-lg transition-colors flex items-center justify-center bg-white"
+                className=" cursor-pointer border-2 border-green-600 text-green-600 hover:bg-green-50 font-semibold py-4 px-8 rounded-lg text-lg transition-colors flex items-center justify-center"
                 onClick={onLearnMore}
               >
                 <FaBookOpen className="mr-2" />
-                Learn More
+                Learn more
               </button>
             </div>
-
+            <h2 className="text-3xl md:text-3xl font-bold text-green-600 mb-8">
+              Our Aim
+            </h2>
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
               {stats.map((stat, index) => (
@@ -194,11 +196,11 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              How It Works
+              How does it work?
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Our crowdsourcing approach combines AI technology with human
-              expertise to build a comprehensive plant database
+              expertise to build a comprehensive plant database.
             </p>
           </div>
 
@@ -282,37 +284,37 @@ export default function Home() {
           {/* Visual Examples */}
           <div className="bg-white rounded-lg p-8 shadow-lg">
             <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-              Photo Examples
+              Examples of photographs
             </h3>
             <div className="grid md:grid-cols-2 gap-8">
               <div className="text-center">
-                <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6 mb-4">
+                <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6 mb-4 overflow-hidden">
                   <img
-                    src="/placeholder.svg?height=200&width=300&text=Good+Example"
+                    src="/ejemplofotobueno.png?height=200&width=300&text=Good+Example"
                     alt="Good photo example"
-                    className="w-full h-48 object-cover rounded-lg mb-4"
+                    className="w-full h-auto object-contain rounded-lg mb-4"
                   />
                   <div className="flex items-center justify-center text-green-600 font-semibold">
                     <FaCheckCircle className="mr-2" />
-                    Good Example
+                    Good example
                   </div>
                   <p className="text-sm text-gray-600 mt-2">
-                    Leaf fills frame, good lighting, clear focus, single
+                    The leaf fills the frame, good lighting, clear focus, unique
                     specimen
                   </p>
                 </div>
               </div>
 
               <div className="text-center">
-                <div className="bg-red-50 border-2 border-red-200 rounded-lg p-6 mb-4">
+                <div className="bg-red-50 border-2 border-red-200 rounded-lg p-6 mb-4 overflow-hidden">
                   <img
-                    src="/placeholder.svg?height=200&width=300&text=Avoid+This"
+                    src="/ejemplofotomalo.png?height=200&width=300&text=Avoid+This"
                     alt="Bad photo example"
-                    className="w-full h-48 object-cover rounded-lg mb-4"
+                    className="w-full h-auto object-contain rounded-lg mb-4"
                   />
                   <div className="flex items-center justify-center text-red-600 font-semibold">
                     <FaExclamationTriangle className="mr-2" />
-                    Avoid This
+                    Avoid this
                   </div>
                   <p className="text-sm text-gray-600 mt-2">
                     Too far away, poor lighting, multiple leaves, blurry image
@@ -338,20 +340,20 @@ export default function Home() {
                     University Research Project
                   </h3>
                   <p className="text-gray-600">
-                    Department of Computer Science & Biology
+                    Faculty of Engineering - School of Digital Transformation
                   </p>
                 </div>
               </div>
 
               <h2 className="text-4xl font-bold text-gray-900 mb-6">
-                Advancing Plant Science Through AI
+                Advances in Plant Science through AI
               </h2>
 
               <p className="text-lg text-gray-600 mb-6">
-                This project is part of ongoing research at our university to
-                develop more accurate and accessible plant identification
-                systems. Your contributions directly support scientific research
-                and conservation efforts worldwide.
+                This project is part of an ongoing research initiative at our
+                university to develop more accurate and accessible plant
+                identification methods. Its contributions directly support
+                scientific research and conservation efforts worldwide.
               </p>
 
               <div className="space-y-4 mb-8">
@@ -359,10 +361,11 @@ export default function Home() {
                   <FaFlask className="h-6 w-6 text-green-600 mr-3 mt-1" />
                   <div>
                     <h4 className="font-semibold text-gray-900">
-                      Research Impact
+                      Impact of Research
                     </h4>
                     <p className="text-gray-600">
-                      Supporting biodiversity research and conservation efforts
+                      Supporting research on biodiversity and conservation
+                      efforts
                     </p>
                   </div>
                 </div>
@@ -386,7 +389,7 @@ export default function Home() {
                       Open Science
                     </h4>
                     <p className="text-gray-600">
-                      All data will be made available for scientific research
+                      All data will be available for scientific research
                     </p>
                   </div>
                 </div>
@@ -394,16 +397,26 @@ export default function Home() {
 
               <div className="bg-gray-50 rounded-lg p-6">
                 <h4 className="font-semibold text-gray-900 mb-2">
-                  Principal Investigators
+                  Main Work Team
                 </h4>
                 <p className="text-gray-600 mb-2">
-                  Dr. Sarah Johnson - Computer Science Department
+                  Lic. Andrea Menco Tovar - Bachelor in Mathematics and Master
+                  in Applied Statistics
                 </p>
                 <p className="text-gray-600 mb-2">
-                  Dr. Michael Chen - Biology Department
+                  Caleb Villalba Hernández - Student of Systems and Computing
+                  Engineering
+                </p>
+                <p className="text-gray-600 mb-2">
+                  Victor Martínez Toscano - Student of Systems and Computing
+                  Engineering
+                </p>
+                <p className="text-gray-600 mb-2">
+                  Felipe Jiménez Acuña - Student of Systems and Computing
+                  Engineering
                 </p>
                 <p className="text-sm text-gray-500">
-                  University of Technology • Plant AI Research Lab
+                  Universidad Tecnológica de Bolívar • 2025
                 </p>
               </div>
             </div>
@@ -413,25 +426,25 @@ export default function Home() {
                 <div className="flex items-center mb-4">
                   <FaChartLine className="h-8 w-8 text-green-600 mr-3" />
                   <h3 className="text-xl font-bold text-gray-900">
-                    Project Goals
+                    Project objectives
                   </h3>
                 </div>
                 <ul className="space-y-3 text-gray-700">
                   <li className="flex items-center">
                     <FaCheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                    Collect 100,000+ plant images
+                    Collect over 100,000 images of plants
                   </li>
                   <li className="flex items-center">
                     <FaCheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                    Identify 1,000+ plant species
+                    Identify over 1,000 plant species
                   </li>
                   <li className="flex items-center">
                     <FaCheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                    Achieve 95% AI accuracy
+                    Achieve 95% accuracy in AI
                   </li>
                   <li className="flex items-center">
                     <FaCheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                    Open-source the dataset
+                    Publish the dataset as open source
                   </li>
                 </ul>
               </div>
@@ -473,11 +486,12 @@ export default function Home() {
       <section className="py-20 bg-gradient-to-r from-green-600 to-emerald-600">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl font-bold text-white mb-6">
-            Ready to Make a Difference?
+            Ready to make a difference?
           </h2>
           <p className="text-xl text-green-100 mb-8">
             Every photo you contribute helps advance plant science and
-            conservation. Join thousands of contributors making a real impact.
+            conservation. Join thousands of contributors who are making a real
+            impact.
           </p>
 
           <button
@@ -490,7 +504,7 @@ export default function Home() {
           </button>
 
           <p className="text-green-100 mt-6 text-sm">
-            Free to use • No registration required • Make an impact today
+            Free to use • Easy registration • Make an impact today
           </p>
         </div>
       </section>
