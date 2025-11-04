@@ -1,5 +1,5 @@
 import { Tab } from "@headlessui/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaUsers, FaImages } from "react-icons/fa";
 import AdminHeader from "./Header";
 import ClassificationsTable from "./Classifications";
@@ -17,9 +17,20 @@ export default function AdminPage({ initialTab = 0 }) {
     pending: 0,
     archived: 0,
   });
-  const [usersCount, setUsersCount] = useState({ total: 0 });
+  const [usersCount, setUsersCount] = useState({
+    total: 0,
+    requestedContributor: 0,
+  });
   const [selectedTab, setSelectedTab] = useState("classifications");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (window.location.pathname === "/admin/classifications") {
+      setSelectedTab("classifications");
+    } else if (window.location.pathname === "/admin/users") {
+      setSelectedTab("users");
+    }
+  }, [window.location.pathname]);
 
   return (
     <div>

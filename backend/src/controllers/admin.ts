@@ -257,6 +257,8 @@ function adminController() {
     const searchQuery = (req.query.search as string) || "";
     const role = (req.query.role as string) || "ALL";
     const isArchived = (req.query.isArchived as string) || "false";
+    const requestedContributorStatus =
+      (req.query.requestedContributorStatus as string) || "false";
 
     try {
       if (!req.user) {
@@ -302,9 +304,14 @@ function adminController() {
         ];
       }
 
-      // Add more filters as needed...
+      // requestedContributorStatus filter
+      if (typeof req.query.requestedContributorStatus !== "undefined") {
+        const val = req.query.requestedContributorStatus as string;
+        if (val === "true") where.requestedContributorStatus = true;
+        else if (val === "false") where.requestedContributorStatus = false;
+      }
 
-      const [users, count] = await Promise.all([
+      const [users, count, requestedContributorCount] = await Promise.all([
         prisma.user.findMany({
           where,
           orderBy: { [sortBy]: sortOrder },
@@ -313,6 +320,12 @@ function adminController() {
           include: { _count: { select: { classifications: true } } },
         }),
         prisma.user.count({ where }),
+        prisma.user.count({
+          where: {
+            role: "USER",
+            requestedContributorStatus: true,
+          },
+        }),
       ]);
       const usersWithCounts = users.map((user) => ({
         ...sanitizeUser(user as any),
@@ -323,6 +336,7 @@ function adminController() {
 
       const response = {
         count,
+        requestedContributorCount,
         pages: totalPages,
         results: usersWithCounts,
       };
@@ -395,6 +409,7 @@ function adminController() {
         emailNotifications,
         role,
         isArchived,
+        requestedContributorStatus,
       } = req.body;
       const user = await prisma.user.findUnique({
         where: { id },
@@ -426,6 +441,7 @@ function adminController() {
         emailNotifications,
         role,
         isArchived,
+        requestedContributorStatus,
       };
       if (
         password &&

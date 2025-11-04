@@ -1,12 +1,12 @@
 import { FaSearch, FaUsers, FaFilter, FaBrush } from "react-icons/fa";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import _debounce from "lodash/debounce";
 import useAdmin from "../../../hooks/useAdmin";
 import useStore from "../../../hooks/useStore";
 import RangePicker from "../../Common/RangePicker";
 import UsersTable from "./UsersTable";
 import { useNavigate } from "react-router-dom";
-import SwitchComponent from "../../Common/SwitchComponent";
+const Checkbox = lazy(() => import("../../Common/Checkbox"));
 
 function Users({ setUsersCount = () => {} }) {
   const { preferences } = useStore();
@@ -19,6 +19,7 @@ function Users({ setUsersCount = () => {} }) {
   const pageSize = preferences?.pageSize || 6;
   const [userRoleFilter, setUserRoleFilter] = useState("ALL");
   const [isArchived, setIsArchived] = useState(false);
+  const [isRequestedContributor, setIsRequestedContributor] = useState(false);
   const [rangeFilter, setRangeFilter] = useState({ start: null, end: null });
   const [showFilters, setShowFilters] = useState(false);
 
@@ -26,7 +27,10 @@ function Users({ setUsersCount = () => {} }) {
 
   useEffect(() => {
     if (usersData) {
-      setUsersCount({ total: usersCount.total });
+      setUsersCount({
+        total: usersCount.total,
+        requestedContributor: usersCount.requestedContributor,
+      });
       setUsers(usersData);
     }
   }, [usersData, usersCount]);
@@ -36,12 +40,21 @@ function Users({ setUsersCount = () => {} }) {
     if (searchString.length) filters.search = searchString;
     filters.role = userRoleFilter;
     filters.isArchived = isArchived;
+    if (isRequestedContributor) filters.requestedContributorStatus = true;
     if (rangeFilter.start && rangeFilter.end) {
       filters.createdAt_gte = rangeFilter.start;
       filters.createdAt_lte = rangeFilter.end;
     }
     getUsers(page, pageSize, "createdAt", "desc", filters);
-  }, [page, pageSize, userRoleFilter, searchString, isArchived, rangeFilter]);
+  }, [
+    page,
+    pageSize,
+    userRoleFilter,
+    searchString,
+    isArchived,
+    rangeFilter,
+    isRequestedContributor,
+  ]);
 
   function handleSearch(inputValue) {
     setSearchString(inputValue);
@@ -55,6 +68,7 @@ function Users({ setUsersCount = () => {} }) {
     setSearchInput("");
     setUserRoleFilter("ALL");
     setIsArchived(false);
+    setIsRequestedContributor(false);
     setRangeFilter({ start: null, end: null });
     setPage(1);
   };
@@ -64,6 +78,7 @@ function Users({ setUsersCount = () => {} }) {
     if (searchString.length) filters.search = searchString;
     filters.role = userRoleFilter;
     filters.isArchived = isArchived;
+    if (isRequestedContributor) filters.requestedContributorStatus = true;
     if (rangeFilter.start && rangeFilter.end) {
       filters.createdAt_gte = rangeFilter.start;
       filters.createdAt_lte = rangeFilter.end;
@@ -124,16 +139,23 @@ function Users({ setUsersCount = () => {} }) {
             <div className="flex flex-col md:flex-row gap-4 mt-2">
               <RangePicker setRangeFilter={setRangeFilter} className="mb-4" />
               <div className="flex flex-col gap-2 md:border-l md:px-4 border-gray-200">
-                <label className="text-sm font-medium text-gray-700">
-                  Archived
-                </label>
-                <SwitchComponent
-                  loading={false}
-                  defaultValue={isArchived}
-                  isSelected={isArchived}
-                  onChange={setIsArchived}
-                  title={isArchived ? "Archived" : "Not Archived"}
-                />
+                <label className="text-sm font-medium text-gray-700">Filters</label>
+                <div className="flex items-center gap-6">
+                  <Suspense fallback={<div className="text-sm text-gray-500">Loading...</div>}>
+                    <Checkbox
+                      label="Archived"
+                      isSelected={isArchived}
+                      onChange={setIsArchived}
+                    />
+                  </Suspense>
+                  <Suspense fallback={<div className="text-sm text-gray-500">Loading...</div>}>
+                    <Checkbox
+                      label="Contributor Request"
+                      isSelected={isRequestedContributor}
+                      onChange={setIsRequestedContributor}
+                    />
+                  </Suspense>
+                </div>
               </div>
               <div className="flex flex-col gap-2 md:border-l md:px-4 border-gray-200 justify-center">
                 <button

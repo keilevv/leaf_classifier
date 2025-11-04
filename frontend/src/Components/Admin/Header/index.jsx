@@ -1,7 +1,7 @@
 import { FaUserShield } from "react-icons/fa";
 function AdminHeader({
   classificationsCount = { total: 0, verified: 0, pending: 0, archived: 0 },
-  usersCount = { total: 0 },
+  usersCount = { total: 0, requestedContributor: 0 },
   selectedTab = "classifications",
 }) {
   function renderContent() {
@@ -37,6 +37,12 @@ function AdminHeader({
               {usersCount.total}
             </div>
             <div className="text-sm text-gray-600">Total Users</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-yellow-600">
+              {usersCount.requestedContributor}
+            </div>
+            <div className="text-sm text-gray-600">Contributor Requests</div>
           </div>
         </div>
       );

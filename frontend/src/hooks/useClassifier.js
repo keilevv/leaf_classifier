@@ -4,6 +4,7 @@ import useStore from "../hooks/useStore";
 function useClassifier() {
   const { accessToken } = useStore();
   const [uploads, setUploads] = useState([]);
+  const [upload, setUpload] = useState(null);
   const [shapes, setShapes] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -45,6 +46,21 @@ function useClassifier() {
         setIsLoading(false);
       });
   }
+  function getUpload(id) {
+    setIsLoading(true);
+    return plantClassifierService
+      .getUpload(id, accessToken)
+      .then((response) => {
+        setIsLoading(false);
+        setUpload(response.data.result);
+        return response.data;
+      })
+      .catch((error) => {
+        console.error("Error fetching upload:", error);
+        setError(error);
+        setIsLoading(false);
+      });
+  }
 
   function updateClassification(id, data) {
     setIsLoading(true);
@@ -79,10 +95,12 @@ function useClassifier() {
   return {
     uploadClassification,
     getUploads,
+    getUpload,
     addUpload,
     updateClassification,
     shapes,
     uploads,
+    upload,
     isLoading,
     error,
     pages,

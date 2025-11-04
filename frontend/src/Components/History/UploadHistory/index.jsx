@@ -69,9 +69,8 @@ export default function UploadHistory() {
     if (statusFilter !== "ALL") {
       filters.status = statusFilter;
     }
-    if (isArchived) {
-      filters.isArchived = true;
-    }
+    filters.isArchived = isArchived;
+
     getUploads(page, preferences.pageSize, "createdAt", "desc", filters);
   }, [
     page,
