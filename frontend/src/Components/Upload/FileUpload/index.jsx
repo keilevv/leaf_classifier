@@ -123,7 +123,7 @@ export default function FileUpload({ onUpload }) {
 
   return (
     <div className="space-y-6">
-      {!user.requestedContributorStatus && (
+      {!user.requestedContributorStatus && user.role === "USER" && (
         <div className="bg-white rounded lg shadow-lg p-6 gap-2 flex flex-col">
           <p className="text-xl font-semibold text-green-700 flex items-center gap-2">
             <FaBrain className="text-blue-700 h-10 w-10" /> Want to help us

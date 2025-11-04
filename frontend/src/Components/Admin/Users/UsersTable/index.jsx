@@ -10,9 +10,10 @@ import {
 import { useState } from "react";
 import { showNotification } from "../../../Common/Notification";
 import ConfirmationModal from "../../../Common/ConfirmationModal";
-import { getRoleBadge, formatDate } from "../../../../utils";
+import { getRoleBadge, formatDate, cn } from "../../../../utils";
 import useAdmin from "../../../../hooks/useAdmin";
 import { FaExclamationTriangle } from "react-icons/fa";
+import useStore from "../../../../hooks/useStore";
 
 function UsersTable({
   users = [],
@@ -29,6 +30,7 @@ function UsersTable({
   const [selectedUser, setSelectedUser] = useState(null);
   const [confirmationContent, setConfirmationContent] = useState({});
   const [newRole, setNewRole] = useState("");
+  const { user: userState } = useStore();
 
   function getPageItems(current, total, max) {
     if (total <= max) {
@@ -331,7 +333,8 @@ function UsersTable({
                           <FaEdit className="h-4 w-4" />
                         </button>
                         {user.requestedContributorStatus &&
-                          user.role === "USER" && (
+                          (userState?.role === "ADMIN" ||
+                            userState?.role === "MODERATOR") && (
                             <>
                               <button
                                 onClick={() =>
@@ -360,6 +363,12 @@ function UsersTable({
                             </>
                           )}
                         <select
+                          disabled={
+                            userState?.role === "USER" ||
+                            userState?.role === "MODERATOR"
+                              ? "cursor-not-allowed opacity-50"
+                              : ""
+                          }
                           value={user.role}
                           onChange={(e) => {
                             setNewRole(e.target.value);
@@ -370,7 +379,12 @@ function UsersTable({
                               e.target.value
                             );
                           }}
-                          className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-green-500"
+                          className={`text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                            userState?.role === "USER" ||
+                            userState?.role === "MODERATOR"
+                              ? "cursor-not-allowed opacity-50"
+                              : ""
+                          }`}
                           title="Change Role"
                         >
                           <option value="ADMIN">Admin</option>
@@ -404,7 +418,16 @@ function UsersTable({
                             onClick={() =>
                               openConfirmationModal("archive", user)
                             }
-                            className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 cursor-pointer p-2 rounded transition-colors"
+                            disabled={
+                              userState?.role === "USER" ||
+                              userState?.role === "MODERATOR"
+                            }
+                            className={`text-gray-600 hover:text-gray-900 hover:bg-gray-50  p-2 rounded transition-colors ${
+                              userState?.role === "USER" ||
+                              userState?.role === "MODERATOR"
+                                ? "cursor-not-allowed opacity-50"
+                                : "cursor-pointer"
+                            }`}
                             title="Archive"
                           >
                             <FaArchive className="h-4 w-4" />

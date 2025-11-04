@@ -4,7 +4,13 @@ import { Menu, Transition } from "@headlessui/react";
 import useStore from "../../../hooks/useStore";
 import useAuth from "../../../hooks/useAuth";
 import { Fragment } from "react";
-import { FaUser, FaHome, FaLeaf, FaShieldAlt, FaInfoCircle } from "react-icons/fa";
+import {
+  FaUser,
+  FaHome,
+  FaLeaf,
+  FaShieldAlt,
+  FaInfoCircle,
+} from "react-icons/fa";
 import { showNotification } from "../../Common/Notification";
 
 let defaultPages = [
@@ -68,7 +74,7 @@ function Header({ className = "" }) {
         { title: "Upload", key: "upload", url: "/upload", icon: <FaLeaf /> },
       ]); // Add upload link
 
-      if (user.role === "ADMIN") {
+      if (user.role === "ADMIN" || user.role === "MODERATOR") {
         setPages((prevPages) => [
           ...prevPages,
           {

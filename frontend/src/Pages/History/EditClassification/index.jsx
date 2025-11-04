@@ -1,8 +1,8 @@
-import EditClassificationForm from "../../../../Components/Admin/Classifications/EditClassificationForm";
+import EditClassificationForm from "../../../Components/Admin/Classifications/EditClassificationForm";
 import { FaEdit } from "react-icons/fa";
-import Layout from "../../../../Components/Layout";
+import Layout from "../../../Components/Layout";
 
-function ClassificationDetails() {
+function EditClassification() {
   return (
     <Layout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -11,11 +11,11 @@ function ClassificationDetails() {
             <FaEdit className=" mr-2" />
             Edit Classification
           </h1>
-          <EditClassificationForm isAdmin={true} />
+          <EditClassificationForm />
         </div>
       </div>
     </Layout>
   );
 }
 
-export default ClassificationDetails;
+export default EditClassification;

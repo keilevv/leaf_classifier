@@ -10,6 +10,7 @@ import ClassificationBadge from "../../../Common/Classifications/ClassificationB
 import { getStatusBadge } from "../../../../utils";
 import useSpecies from "../../../../hooks/useSpecies";
 import useAdmin from "../../../../hooks/useAdmin";
+import useClassifier from "../../../../hooks/useClassifier";
 import useStore from "../../../../hooks/useStore";
 import { showNotification } from "../../../Common/Notification";
 import { useParams } from "react-router-dom";
@@ -29,7 +30,7 @@ const shapeUrlByKey = Object.fromEntries(
   })
 );
 
-function EditClassificationForm() {
+function EditClassificationForm({ isAdmin = false }) {
   const { species, loading: loadingSpecies, getSpecies, shapes } = useSpecies();
   const [selectedSpecies, setSelectedSpecies] = useState("");
   const [selectedShape, setSelectedShape] = useState("");
@@ -41,18 +42,40 @@ function EditClassificationForm() {
   const [shapeSrc, setShapeSrc] = useState(shapeUrlByKey["lanceolate"] || "");
   const { updateClassification, getClassification, classification, loading } =
     useAdmin();
+  const {
+    getUpload,
+    upload,
+    updateClassification: updateUpload,
+  } = useClassifier();
+  const [dataObject, setDataObject] = useState(null);
   const { id } = useParams();
   const { user } = useStore();
 
   useEffect(() => {
     if (id) {
-      getClassification(id);
+      if (isAdmin) {
+        getClassification(id);
+      } else {
+        getUpload(id);
+      }
       getSpecies();
     }
-  }, [id]);
+  }, [id, isAdmin]);
 
   useEffect(() => {
+    if (!isAdmin) {
+      if (upload) {
+        setDataObject(upload);
+        setIsHealthy(upload.isHealthy);
+        setSelectedSpecies(upload.taggedSpecies);
+        setSelectedShape(upload.taggedShape);
+        setSelectedStatus(upload.status);
+        setSpeciesQuery("");
+        setShapeQuery("");
+      }
+    }
     if (classification) {
+      setDataObject(classification);
       setIsHealthy(classification.isHealthy);
       setSelectedSpecies(classification.taggedSpecies);
       setSelectedShape(classification.taggedShape);
@@ -60,22 +83,33 @@ function EditClassificationForm() {
       setSpeciesQuery("");
       setShapeQuery("");
     }
-  }, [classification, shapes]);
+  }, [classification, upload, shapes, isAdmin]);
 
   useEffect(() => {
-    if (!classification) return;
-    const changed =
-      selectedSpecies !== classification.taggedSpecies ||
-      selectedShape !== classification.taggedShape ||
-      isHealthy !== classification.isHealthy ||
-      selectedStatus !== classification.status;
-    setEnableButton(changed);
+    if (isAdmin) {
+      if (!classification) return;
+      const changed =
+        selectedSpecies !== classification.taggedSpecies ||
+        selectedShape !== classification.taggedShape ||
+        isHealthy !== classification.isHealthy ||
+        selectedStatus !== classification.status;
+      setEnableButton(changed);
+    } else {
+      if (!upload) return;
+      const changed =
+        selectedSpecies !== upload.taggedSpecies ||
+        selectedShape !== upload.taggedShape ||
+        isHealthy !== upload.isHealthy ||
+        selectedStatus !== upload.status;
+      setEnableButton(changed);
+    }
   }, [
     selectedSpecies,
     selectedShape,
     isHealthy,
     classification,
     selectedStatus,
+    upload,
   ]);
 
   useEffect(() => {
@@ -89,24 +123,45 @@ function EditClassificationForm() {
 
   const handleUpdateClassification = async (e) => {
     e.preventDefault();
-    await updateClassification(id, {
-      taggedSpecies: selectedSpecies,
-      taggedShape: selectedShape,
-      isHealthy,
-      status: selectedStatus,
-    })
-      .then(() => {
-        showNotification({
-          title: "Classification tags updated successfully",
-          type: "success",
-        });
+    if (isAdmin) {
+      await updateClassification(id, {
+        taggedSpecies: selectedSpecies,
+        taggedShape: selectedShape,
+        isHealthy,
+        status: selectedStatus,
       })
-      .catch((error) => {
-        showNotification({
-          title: "Error updating classification tags",
-          type: "error",
+        .then(() => {
+          showNotification({
+            title: "Classification tags updated successfully",
+            type: "success",
+          });
+        })
+        .catch((error) => {
+          showNotification({
+            title: "Error updating classification tags",
+            type: "error",
+          });
         });
-      });
+    } else {
+      await updateUpload(id, {
+        taggedSpecies: selectedSpecies,
+        taggedShape: selectedShape,
+        isHealthy,
+        status: selectedStatus,
+      })
+        .then(() => {
+          showNotification({
+            title: "Classification tags updated successfully",
+            type: "success",
+          });
+        })
+        .catch((error) => {
+          showNotification({
+            title: "Error updating classification tags",
+            type: "error",
+          });
+        });
+    }
   };
 
   const statusOptions = [
@@ -116,14 +171,14 @@ function EditClassificationForm() {
   ];
 
   const statusBadge = getStatusBadge(
-    classification?.isArchived ? "ARCHIVED" : classification?.status
+    dataObject?.isArchived ? "ARCHIVED" : dataObject?.status
   );
   const StatusIcon = statusBadge.icon;
-  const datasetFilename = classification?.imagePath.split("/").pop();
+  const datasetFilename = dataObject?.imagePath.split("/").pop();
 
   return (
     <>
-      {classification && (
+      {dataObject && (
         <div className="space-y-6  flex flex-col md:flex-row  gap-4 md:gap-8 w-full">
           <div className="flex flex-col w-full md:w-1/2  ">
             <h1 className="text-lg font-medium text-green-700 pb-2">
@@ -131,8 +186,8 @@ function EditClassificationForm() {
             </h1>
             <div className=" rounded-2xl overflow-hidden mb-2  w-full bg-gray-100 p-4">
               <img
-                src={classification.imagePath}
-                alt={classification.originalFilename}
+                src={dataObject.imagePath}
+                alt={dataObject.originalFilename}
                 className="w-full h-full object-cover m-auto max-w-[350px] rounded-lg"
               />
             </div>
@@ -142,7 +197,7 @@ function EditClassificationForm() {
                   Original filename
                 </p>
                 <p className="break-words text-sm mt-1">
-                  {classification.originalFilename}
+                  {dataObject.originalFilename}
                 </p>
               </div>
               <div>
@@ -161,10 +216,10 @@ function EditClassificationForm() {
                   className={`flex items-center px-2.5 py-1 rounded-full text-xs font-medium self-start  ${statusBadge.color} `}
                 >
                   <StatusIcon className="h-3 w-3 mr-2" />
-                  {classification.status}
+                  {dataObject.status}
                 </div>
               </div>
-              {user?.role == "ADMIN" && (
+              {(user?.role === "ADMIN" || user?.role === "MODERATOR") && (
                 <div className="flex flex-col gap-2 pt-4">
                   <label className="text-sm font-medium text-gray-700">
                     Change Status
@@ -216,8 +271,8 @@ function EditClassificationForm() {
                   Species
                 </label>
                 <ClassificationBadge
-                  classification={`${classification?.scientificName} | ${classification?.commonNameEn}`}
-                  confidence={classification?.speciesConfidence}
+                  classification={`${dataObject?.scientificName} | ${dataObject?.commonNameEn}`}
+                  confidence={dataObject?.speciesConfidence}
                 />
               </div>
               <div className="flex flex-col gap-2">
@@ -225,8 +280,8 @@ function EditClassificationForm() {
                   Shape
                 </label>
                 <ClassificationBadge
-                  classification={classification?.shape}
-                  confidence={classification?.shapeConfidence}
+                  classification={dataObject?.shape}
+                  confidence={dataObject?.shapeConfidence}
                 />
               </div>
               <div className="flex flex-col gap-2">
@@ -235,9 +290,9 @@ function EditClassificationForm() {
                 </label>
                 <ClassificationBadge
                   classification={
-                    classification?.isHealthy ? "Healthy" : "Deseased"
+                    dataObject?.isHealthy ? "Healthy" : "Deseased"
                   }
-                  confidence={classification?.speciesConfidence}
+                  confidence={dataObject?.speciesConfidence}
                 />
               </div>
             </div>
@@ -436,7 +491,7 @@ function EditClassificationForm() {
                     : "opacity-50 cursor-not-allowed"
                 )}
               >
-                <FaSave className="mr-2 "/> Save
+                <FaSave className="mr-2 " /> Save
               </button>
             </form>
           </div>

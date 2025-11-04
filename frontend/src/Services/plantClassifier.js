@@ -17,6 +17,11 @@ const plantClassifierService = {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
   },
+  getUpload(id, accessToken) {
+    return axios.get(`${apiUrl}/plant-classifier/upload/${id}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+  },
   updateClassification(id, data, accessToken) {
     return axios.patch(
       `${apiUrl}/plant-classifier/classifications/${id}`,

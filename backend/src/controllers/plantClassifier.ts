@@ -252,8 +252,6 @@ function plantClassifierController() {
       if (typeof isHealthy !== "undefined") {
         if (isHealthy === "true") where.isHealthy = true;
         else if (isHealthy === "false") where.isHealthy = false;
-      } else {
-        where.isHealthy = false;
       }
 
       // Filter by classification (exact match)
@@ -325,106 +323,70 @@ function plantClassifierController() {
     }
   }
 
-  async function updateClassification(
+  async function getUpload(
     req: AuthenticatedRequest,
     res: Response
-  ): Promise<void> {
+  ): Promise<Response> {
     try {
-      const { id } = req.params;
-      const { isArchived, classification } = req.body;
-      const userId = req.user.id;
-      const userRole = req.user.role;
-
-      // Fetch the classification
-      const existing = await prisma.classification.findUnique({
+      const id = req.params.id;
+      const upload = await prisma.classification.findUnique({
         where: { id },
       });
 
+      if (upload.userId !== req.user.id) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+      return res.status(200).json({ result: upload });
+    } catch {
+      return res.status(500).json({ error: "Failed to fetch upload" });
+    }
+  }
+
+  const updateClassification = async (
+    req: AuthenticatedRequest,
+    res: Response
+  ) => {
+    const id = req.params.id;
+    const { taggedShape, taggedSpecies, isHealthy, isArchived } = req.body;
+    try {
+      if (!req.user) {
+        res.status(401).json({ error: "Authentication required" });
+        return;
+      }
+      const existing = await prisma.classification.findUnique({
+        where: { id },
+      });
       if (!existing) {
         res.status(404).json({ error: "Classification not found" });
         return;
       }
-
-      // Only allow if admin or owner
-      const isOwner = existing.userId === userId;
-      const isAdmin = userRole === "ADMIN";
-      const isModerator = userRole === "MODERATOR";
-
-      if (!isAdmin && !isOwner && !isModerator) {
-        res
-          .status(403)
-          .json({ error: "Not authorized to update this classification" });
+      if (existing.userId !== req.user.id) {
+        res.status(403).json({ error: "Unauthorized" });
         return;
       }
-
-      // Only allow isArchived change for owner, admin, or expert-user
-      // Only allow classification change for admin or expert-user
-      const updateData: any = {};
-
-      if (typeof isArchived !== "undefined") {
-        if (isAdmin || isOwner || isModerator) {
-          updateData.isArchived = isArchived;
-        } else {
-          res
-            .status(403)
-            .json({ error: "Not authorized to update isArchived" });
-          return;
-        }
-      }
-
-      if (typeof classification !== "undefined") {
-        if (isAdmin || isModerator) {
-          updateData.classification = classification;
-        } else {
-          res
-            .status(403)
-            .json({ error: "Not authorized to update classification" });
-          return;
-        }
-      }
-
-      if (Object.keys(updateData).length === 0) {
-        res.status(400).json({ error: "No valid fields to update" });
-        return;
-      }
-
-      const updated = await prisma.classification.update({
+      const classification = await prisma.classification.update({
         where: { id },
-        data: updateData,
+        data: { taggedShape, taggedSpecies, isHealthy, isArchived },
       });
 
-      // Add full URL for images (R2 or local)
-      let imageUrl: string;
-
-      if (R2Service.isR2Key(updated.imagePath)) {
-        // R2 image
-        imageUrl = R2Service.getPublicUrl(updated.imagePath);
-      } else if (updated.imagePath.startsWith("uploads/")) {
-        // Local image with uploads/ prefix
-        imageUrl = `/${updated.imagePath}`;
-      } else {
-        // Fallback to original path
-        imageUrl = updated.imagePath;
-      }
-
-      const updatedWithUrl = {
-        ...updated,
-        imageUrl,
+      const response = {
+        message: "Classification updated successfully",
+        results: { ...classification },
       };
-
-      res.json({
-        message: "Classification updated",
-        classification: updatedWithUrl,
-      });
+      res.json(response);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({
+        error: "Failed to update classification",
+        message: error.message,
+      });
     }
-  }
+  };
 
   return {
     uploadImage,
     getClassifications,
     updateClassification,
+    getUpload,
   };
 }
 

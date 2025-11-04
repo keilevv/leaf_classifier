@@ -1,9 +1,14 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { FaTimes } from "react-icons/fa";
-import { getConfidenceColor, formatDate } from "../../../utils";
+import { getConfidenceColor, formatDate, cn } from "../../../utils";
 import { FaImage, FaEdit } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import useStore from "../../../hooks/useStore";
+
 function UploadModal({ isOpen, closeModal, selectedUpload }) {
+  const navigate = useNavigate();
+  const { user } = useStore();
   const filename = selectedUpload?.imagePath.split("/").pop();
   return (
     <>
@@ -37,7 +42,7 @@ function UploadModal({ isOpen, closeModal, selectedUpload }) {
                   <div className="flex justify-between items-center mb-4">
                     <Dialog.Title
                       as="h3"
-                      className="text-lg font-medium leading-6 text-gray-900 flex gap-2"
+                      className="text-lg font-medium leading-6 text-gray-900 flex gap-2 truncate"
                     >
                       <FaImage className="h-5 w-5 text-green-700" /> {filename}
                     </Dialog.Title>
@@ -75,7 +80,7 @@ function UploadModal({ isOpen, closeModal, selectedUpload }) {
                             )}`}
                           >
                             {selectedUpload.scientificName} |{" "}
-                            {selectedUpload.commonName}{" "}
+                            {selectedUpload.commonNameEn}{" "}
                             {Math.round(selectedUpload.speciesConfidence * 100)}
                             %
                           </span>
@@ -103,6 +108,21 @@ function UploadModal({ isOpen, closeModal, selectedUpload }) {
                             %
                           </span>
                         </div>
+                        {user?.role !== "USER" && (
+                          <button
+                            onClick={() => {
+                              navigate(`/history/edit/${selectedUpload?.id}`);
+                            }}
+                            className={cn(
+                              `flex self-start justify-start items-center max-w-fit`,
+                              "space-x-1 px-3 py-1 border border-gray-300",
+                              "rounded-md text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                            )}
+                          >
+                            <FaEdit className="h-4 w-4" />
+                            <span>Edit</span>
+                          </button>
+                        )}
                       </div>
                       <div className="grid grid-cols-2 gap-4 text-sm border-t border-gray-200 pt-4">
                         <div>

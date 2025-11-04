@@ -10,6 +10,15 @@ function userController() {
   const getUser = async (req: Request, res: Response) => {
     try {
       const id = req.params.id;
+
+      if (id !== req.user.id) {
+        const actingUser = await prisma.user.findUnique({
+          where: { id: req.user.id },
+        });
+        if (!actingUser || actingUser.role !== "ADMIN") {
+          return res.status(403).json({ error: "Forbidden" });
+        }
+      }
       const user = await prisma.user.findUnique({
         where: { id },
       });

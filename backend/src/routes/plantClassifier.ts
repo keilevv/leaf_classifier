@@ -4,13 +4,15 @@ import controller from "../controllers/plantClassifier";
 import bodyParser from "body-parser";
 import { authenticateToken } from "../middleware/auth";
 
-const { uploadImage, getClassifications, updateClassification } = controller();
+const { uploadImage, getClassifications, updateClassification, getUpload } =
+  controller();
 
 const router = express.Router();
 
 const upload = multer({ dest: "./uploads" });
 
 router.post("/upload", bodyParser.json(), upload.single("image"), uploadImage);
+router.get("/upload/:id", authenticateToken, getUpload);
 router.get("/classifications", authenticateToken, getClassifications);
 router.patch("/classifications/:id", authenticateToken, updateClassification);
 

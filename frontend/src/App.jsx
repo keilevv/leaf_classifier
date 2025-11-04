@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./Pages/Home";
 import Upload from "./Pages/Upload";
-import EditClassification from "./Pages/Upload/EditClassification";
+import EditClassification from "./Pages/History/EditClassification";
 import History from "./Pages/History";
 import Login from "./Pages/Login";
 import About from "./Pages/About";
@@ -93,7 +93,7 @@ function App() {
           }
         />
         <Route
-          path="/upload/edit-classification/:id"
+          path="/history/edit/:id"
           element={
             <ProtectedRoute>
               <EditClassification />
