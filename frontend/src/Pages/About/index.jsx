@@ -19,49 +19,83 @@ import {
   FaDatabase,
 } from "react-icons/fa";
 import Header from "../../Components/Layout/Header";
+import HeaderImage from "../../assets/images/about-utb.webp";
+import UtbLogo from "../../assets/images/utblogo.webp";
 
 function About({ onGetStarted }) {
   const investigators = [
     {
-      name: "Dr. María Elena Rodríguez",
+      name: "Caleb Villalba Hernández",
+      title: "Developer",
+      department: "School of Digital Transformation",
+      //specialization: "Ingeniería de Sistemas y Computación",
+      image: "/caleb_villalba.jpeg",
+      bio: "Student of Systems and Computer Engineering at the Technological University of Bolívar.",
+    },
+    {
+      name: "Victor Martinez Toscano",
+      title: "Developer",
+      department: "School of Digital Transformation",
+      //specialization: "Ingeniería de Sistemas y Computación",
+      image: "/Victor Martinez.jpeg",
+      bio: "Student of Systems and Computer Engineering at the Technological University of Bolívar.",
+    },
+    {
+      name: "Felipe Jimenez Acuña",
+      title: "Developer",
+      department: "School of Digital Transformation",
+      //specialization: "Ingeniería de Sistemas y Computación",
+      image: "/Felipe Jimenez.jpeg",
+      bio: "Student of Systems and Computer Engineering at the Technological University of Bolívar.",
+    },
+    {
+      name: "Lic. Andrea Menco Tovar",
       title: "Principal Investigator",
-      department: "Department of Plant Pathology",
-      specialization: "Plant Disease Diagnostics & AI Applications",
-      image: "/placeholder.svg?height=200&width=200&text=Dr.+Rodriguez",
-      bio: "Leading expert in plant pathology with 15+ years of experience in Colombian agricultural systems. Specializes in integrating AI technologies with traditional plant disease diagnosis.",
+      department: "School of Digital Transformation",
+      //specialization: "Licenciada en Matemáticas y Magíster en Estadística Aplicada.",
+      image: "/Andrea Menco.jpeg",
+      bio: "She holds a Bachelor's degree in Mathematics and a Master's degree in Applied Statistics. She is currently pursuing a PhD in Engineering, specializing in Electronics and Computing, at the same university. She is also a recipient of the Ministry of Science and Technology's Call for Proposals 933 for National Doctoral Programs with a Territorial, Ethnic, and Gender Focus, within the framework of the Mission-Oriented Policy. Her research interests include image processing, computer vision, data science, and applied statistics.",
     },
     {
-      name: "Dr. Carlos Andrés Mejía",
-      title: "Co-Principal Investigator",
-      department: "Department of Computer Science",
-      specialization: "Machine Learning & Computer Vision",
-      image: "/placeholder.svg?height=200&width=200&text=Dr.+Mejia",
-      bio: "Computer vision researcher focused on agricultural applications. Expert in deep learning models for image classification and pattern recognition in biological systems.",
+      name: "Dr. Juan Carlos Martinez",
+      title: "Research professor",
+      department: "School of Digital Transformation",
+      //specialization: "",
+      image: "/Juan Martinez.png",
+      bio: "Electronic Engineer, Master in Electric Power from Universidad Industrial de Santander. Ph.D. from Northeastern University, Boston. Fulbright–DNP–Colciencias Scholar (2007). Researcher and professor at Universidad Tecnológica de Bolívar since 2004.",
     },
     {
-      name: "Dr. Ana Lucía Vargas",
-      title: "Research Collaborator",
-      department: "Department of Biology",
-      specialization: "Colombian Flora & Biodiversity",
-      image: "/placeholder.svg?height=200&width=200&text=Dr.+Vargas",
-      bio: "Botanist specializing in Colombian native species. Curator of the university's herbarium with extensive knowledge of regional plant diversity and taxonomy.",
+      name: "Dr. Edwin Puertas",
+      title: "Research professor",
+      department: "School of Digital Transformation",
+      //specialization: "",
+      image: "/Edwin Puertas.png",
+      bio: "Artificial Intelligence Software Architect and Natural Language Processing (NLP) Researcher, with 20 years of experience in both academic and professional settings. He currently serves as Director of the Ph.D. and Master’s Programs in Engineering at Universidad Tecnológica de Bolívar and is an active member of the Artificial Intelligence Standards Committee. His work focuses on bridging the gap between academic research and practical industry applications, leading innovative projects in the field of Artificial Intelligence (AI).",
+    },
+    {
+      name: "Dr. Jairo Serrano Castañeda",
+      title: "Research professor",
+      department: "School of Digital Transformation",
+      //specialization: "",
+      image: "/Jairo Serrano.png",
+      bio: "Systems Engineer graduated from the Universidad Tecnológica de Bolívar and Master’s in Free Software from the Universidad Autónoma de Bucaramanga. PhD candidate in Engineering at Pontificia Universidad Javeriana, developing Social Simulations by applying Artificial Intelligence in Multi-Agent Systems on Distributed Servers. With over 23 years of professional experience, he serves as an Assistant Professor at the Universidad Tecnológica de Bolívar, where he has made significant contributions to academic training and research development.",
     },
   ];
 
   const objectives = [
     {
       icon: FaDatabase,
-      title: "Comprehensive Database Creation",
+      title: "Creation of a comprehensive database",
       description:
-        "Build the most extensive database of Colombian plant species with disease classifications",
+        "Build the largest database of Colombian plant species with disease classification.",
       details:
-        "Targeting 2,000+ native species with multiple disease states documented",
+        "More than 1000 native species with multiple documented pathological states.",
     },
     {
       icon: FaBug,
       title: "Disease Pattern Recognition",
       description:
-        "Develop AI models to identify early signs of plant diseases in Colombian flora",
+        "Develop AI models to identify early signs of diseases in Colombian flora",
       details:
         "Focus on fungal, bacterial, viral, and nutrient deficiency symptoms",
     },
@@ -77,53 +111,53 @@ function About({ onGetStarted }) {
       icon: FaGlobe,
       title: "Biodiversity Conservation",
       description:
-        "Support conservation efforts for Colombia's unique plant biodiversity",
+        "Support the efforts to conserve the unique biodiversity of Colombia's plants",
       details:
-        "Document and preserve knowledge of endemic species and their health patterns",
+        "Document and preserve the knowledge of endemic species and their health patterns",
     },
   ];
 
   const impacts = [
     {
-      category: "Agricultural Impact",
+      category: "Agricultural impact",
       icon: FaSeedling,
       color: "green",
       items: [
         "Reduce crop losses by 30-40% through early disease detection",
-        "Support 50,000+ Colombian farmers with diagnostic tools",
+        "Support over 50,000 Colombian farmers with diagnostic tools",
         "Improve food security for rural communities",
-        "Enhance sustainable farming practices",
+        "Enhance sustainable agricultural practices",
       ],
     },
     {
-      category: "Scientific Impact",
+      category: "Scientific impact",
       icon: FaFlask,
       color: "blue",
       items: [
-        "First comprehensive Colombian plant disease database",
+        "First comprehensive database of Colombian plant diseases",
         "Advance AI applications in tropical agriculture",
         "Support botanical research and taxonomy",
-        "Enable predictive disease modeling",
+        "Enable predictive modeling of diseases",
       ],
     },
     {
-      category: "Economic Impact",
+      category: "Economic impact",
       icon: FaChartLine,
       color: "purple",
       items: [
-        "Prevent $100M+ in annual crop losses",
-        "Create new agtech opportunities",
+        "Prevent crop losses of over $100 million annually",
+        "Create new opportunities in agrotechnology",
         "Support rural economic development",
-        "Reduce pesticide dependency costs",
+        "Reduce the costs of pesticide dependency",
       ],
     },
     {
-      category: "Environmental Impact",
+      category: "Environmental impact",
       icon: FaEnvira,
       color: "emerald",
       items: [
-        "Preserve Colombia's unique biodiversity",
-        "Reduce chemical pesticide usage",
+        "Preserve the unique biodiversity of Colombia",
+        "Reduce the use of chemical pesticides",
         "Support ecosystem health monitoring",
         "Enable climate change adaptation strategies",
       ],
@@ -133,21 +167,21 @@ function About({ onGetStarted }) {
   const challenges = [
     {
       icon: FaExclamationTriangle,
-      title: "Colombia's Agricultural Challenge",
+      title: "Colombia's agricultural challenge",
       description:
-        "Colombia loses 25-30% of its agricultural production annually due to plant diseases, affecting food security and farmer livelihoods.",
+        "Colombia loses around 40.5% of its total agricultural production, which includes losses caused by inadequate practices, technical failures, deficiencies in transportation and storage, as well as pests and diseases.",
     },
     {
       icon: FaEye,
-      title: "Limited Diagnostic Tools",
+      title: "Limited diagnostic tools",
       description:
-        "Rural farmers lack access to plant pathologists and diagnostic laboratories, leading to delayed treatment and crop losses.",
+        "Although there are specialized laboratories and phytosanitary diagnostic services in Colombia, many rural farmers face significant difficulties in accessing these resources due to economic, technological, and geographical barriers.",
     },
     {
       icon: FaGlobe,
-      title: "Biodiversity at Risk",
+      title: "Biodiversity at risk",
       description:
-        "Colombia's unique flora faces threats from climate change and diseases, with limited documentation of disease patterns.",
+        "Colombia's unique flora faces threats from climate change and diseases, with limited documentation on disease patterns.",
     },
   ];
 
@@ -158,11 +192,18 @@ function About({ onGetStarted }) {
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
         {/* Hero Section */}
         <section className="relative  bg-gradient-to-r from-green-600 to-emerald-600">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <img
+            src={HeaderImage}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 z-0 h-full w-full object-cover opacity-20"
+          />
+          <div className="absolute inset-0 z-10 pointer-events-none" />
+          <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
             <div className="text-center text-white">
               <div className="flex justify-center mb-8">
                 <div className="relative">
-                  <div className="p-6 bg-white bg-opacity-20 rounded-full">
+                  <div className="p-6 bg-green-400 bg-opacity-20 rounded-full">
                     <FaLeaf className="h-16 w-16" />
                   </div>
                   <div className="absolute -top-2 -right-2 p-2 bg-yellow-400 rounded-full">
@@ -170,31 +211,36 @@ function About({ onGetStarted }) {
                   </div>
                 </div>
               </div>
+              <div className=" bg-blue-100 rounded-full size-fit mx-auto mb-8 max-w-[300px] px-10 py-4">
+                <img src={UtbLogo} alt="UTB Logo" className="" />
+              </div>
 
               <h1 className="text-5xl md:text-6xl font-bold mb-6">
-                About Our <span className="text-yellow-300">Mission</span>
+                Our <span className="text-yellow-300">Mission</span>
               </h1>
 
               <p className="text-xl md:text-2xl mb-8 max-w-4xl mx-auto opacity-90">
-                Protecting Colombia's agricultural heritage and biodiversity
-                through AI-powered plant disease identification and crowdsourced
-                data collection.
+                Protecting Colombia's agricultural heritage and biodiversity by
+                identifying plant diseases with artificial intelligence
+                technology and collecting data through crowdsourcing.
               </p>
 
               <div className="flex justify-center">
-                <div className="bg-white bg-opacity-10 rounded-lg p-6 backdrop-blur-sm">
+                <div className="bg-green-400 bg-opacity-10 rounded-lg p-6 backdrop-blur-sm">
                   <div className="flex items-center justify-center space-x-8">
                     <div className="text-center">
-                      <div className="text-3xl font-bold">🇨🇴</div>
-                      <div className="text-sm opacity-80">Colombian Focus</div>
+                      <div className="text-3xl font-bold">
+                        🇨🇴 57+ 3014590687
+                      </div>
+                      <div className="text-sm opacity-80">Contact</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-3xl font-bold">2,000+</div>
+                      <div className="text-3xl font-bold">1,000+</div>
                       <div className="text-sm opacity-80">Target Species</div>
                     </div>
                     <div className="text-center">
                       <div className="text-3xl font-bold">AI</div>
-                      <div className="text-sm opacity-80">Powered</div>
+                      <div className="text-sm opacity-80">Technology</div>
                     </div>
                   </div>
                 </div>
@@ -208,11 +254,11 @@ function About({ onGetStarted }) {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl font-bold text-gray-900 mb-4">
-                The Challenge We're Addressing
+                The challenge we face
               </h2>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Colombia faces significant agricultural and biodiversity
-                challenges that require innovative solutions
+                Colombia faces significant challenges in agriculture and
+                biodiversity that require innovative solutions.
               </p>
             </div>
 
@@ -247,9 +293,9 @@ function About({ onGetStarted }) {
                 Our Solution
               </h2>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                A comprehensive approach combining crowdsourcing, AI technology,
-                and expert knowledge to build Colombia's first plant disease
-                classification database
+                A comprehensive approach that combines crowdsourcing, AI
+                technology, and expert knowledge to build a database for
+                classifying plant diseases in Colombia.
               </p>
             </div>
 
@@ -290,10 +336,10 @@ function About({ onGetStarted }) {
                   </div>
                   <div>
                     <h3 className="text-2xl font-bold text-gray-900">
-                      Universidad Nacional de Colombia
+                      Universidad Tecnológica de Bolívar
                     </h3>
                     <p className="text-gray-600">
-                      Sede Bogotá • Facultad de Ciencias
+                      Ternera campus • Faculty of Engineering
                     </p>
                   </div>
                 </div>
@@ -303,10 +349,11 @@ function About({ onGetStarted }) {
                 </h2>
 
                 <p className="text-lg text-gray-600 mb-6">
-                  As Colombia's premier public university, Universidad Nacional
-                  has been at the forefront of agricultural research for over
-                  150 years. Our interdisciplinary approach combines traditional
-                  botanical knowledge with cutting-edge AI technology.
+                  As the leading public university in Colombia, the National
+                  University has been at the forefront of agricultural research
+                  for over 150 years. Our interdisciplinary approach combines
+                  traditional botanical knowledge with cutting-edge AI
+                  technology.
                 </p>
 
                 <div className="space-y-4 mb-8">
@@ -314,10 +361,10 @@ function About({ onGetStarted }) {
                     <FaAward className="h-6 w-6 text-yellow-500 mr-3 mt-1" />
                     <div>
                       <h4 className="font-semibold text-gray-900">
-                        Research Excellence
+                        Excellence in Research
                       </h4>
                       <p className="text-gray-600">
-                        Ranked #1 in Colombia for agricultural and biological
+                        Ranked #1 in Colombia in agricultural and biological
                         sciences
                       </p>
                     </div>
@@ -353,19 +400,19 @@ function About({ onGetStarted }) {
 
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-8">
                 <h3 className="text-xl font-bold text-gray-900 mb-6">
-                  Project Funding & Support
+                  Financing and Support for Projects
                 </h3>
                 <div className="space-y-4">
                   <div className="flex items-center">
                     <FaCheckCircle className="h-5 w-5 text-green-500 mr-3" />
                     <span className="text-gray-700">
-                      COLCIENCIAS Research Grant
+                      COLCIENCIAS research grant
                     </span>
                   </div>
                   <div className="flex items-center">
                     <FaCheckCircle className="h-5 w-5 text-green-500 mr-3" />
                     <span className="text-gray-700">
-                      Ministry of Agriculture Partnership
+                      Alliance with the Ministry of Agriculture
                     </span>
                   </div>
                   <div className="flex items-center">
@@ -377,7 +424,7 @@ function About({ onGetStarted }) {
                   <div className="flex items-center">
                     <FaCheckCircle className="h-5 w-5 text-green-500 mr-3" />
                     <span className="text-gray-700">
-                      Private Sector Partnerships
+                      Partnerships with the private sector
                     </span>
                   </div>
                 </div>
@@ -387,9 +434,9 @@ function About({ onGetStarted }) {
                     Project Timeline
                   </h4>
                   <div className="text-sm text-gray-600">
-                    <p>Phase 1 (2024): Database Development</p>
-                    <p>Phase 2 (2025): AI Model Training</p>
-                    <p>Phase 3 (2026): Field Implementation</p>
+                    <p>Phase 1: Database Development</p>
+                    <p>Phase 2: AI Model Training</p>
+                    <p>Phase 3: Field Implementation</p>
                   </div>
                 </div>
               </div>
@@ -402,25 +449,20 @@ function About({ onGetStarted }) {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl font-bold text-gray-900 mb-4">
-                Meet Our Research Team
+                Meet our research team
               </h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Leading experts in plant pathology, computer science, and
-                Colombian biodiversity working together to advance agricultural
-                science
-              </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="flex flex-wrap gap-8 justify-center">
               {investigators.map((investigator, index) => (
                 <div
                   key={index}
-                  className="bg-white rounded-lg shadow-lg overflow-hidden"
+                  className="bg-white rounded-lg shadow-lg overflow-hidden max-w-[250px]  md:max-w-[300px]"
                 >
                   <img
                     src={investigator.image || "/placeholder.svg"}
                     alt={investigator.name}
-                    className="w-full h-64 object-cover"
+                    className="w-full h-80 object-cover rounded-t-lg"
                   />
                   <div className="p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-1">
@@ -429,7 +471,7 @@ function About({ onGetStarted }) {
                     <p className="text-green-600 font-medium mb-2">
                       {investigator.title}
                     </p>
-                    <p className="text-sm text-gray-600 mb-3">
+                    <p className="text-sm text-blue-600 mb-3">
                       {investigator.department}
                     </p>
                     <p className="text-sm font-medium text-blue-600 mb-3">
@@ -451,8 +493,9 @@ function About({ onGetStarted }) {
                 Expected Impact
               </h2>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                This project will create lasting positive change across multiple
-                sectors in Colombia and beyond
+                This project will generate a positive and lasting change in
+                multiple sectors of the agricultural sector in Colombia and the
+                rest of the world.
               </p>
             </div>
 
@@ -490,7 +533,7 @@ function About({ onGetStarted }) {
         <section className="py-20 bg-gradient-to-r from-green-600 to-emerald-600">
           <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
             <h2 className="text-4xl font-bold text-white mb-6">
-              Join Our Mission
+              Join our mission
             </h2>
             <p className="text-xl text-green-100 mb-8">
               Help us build the future of Colombian agriculture and biodiversity
@@ -505,11 +548,6 @@ function About({ onGetStarted }) {
               Start Contributing
               <FaArrowRight className="ml-3" />
             </button>
-
-            <p className="text-green-100 mt-6 text-sm">
-              Together, we can protect Colombia's agricultural future and
-              preserve its incredible biodiversity
-            </p>
           </div>
         </section>
       </div>
