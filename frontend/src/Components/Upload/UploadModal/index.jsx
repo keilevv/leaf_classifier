@@ -42,9 +42,10 @@ function UploadModal({ isOpen, closeModal, selectedUpload }) {
                   <div className="flex justify-between items-center mb-4">
                     <Dialog.Title
                       as="h3"
-                      className="text-lg font-medium leading-6 text-gray-900 flex gap-2 truncate"
+                      className="text-xl font-semibold leading-6 text-green-700 flex gap-2"
                     >
-                      <FaImage className="h-5 w-5 text-green-700" /> {filename}
+                      <FaImage className="h-5 w-5 text-green-700" /> View Plant
+                      Classification
                     </Dialog.Title>
                     <button
                       onClick={closeModal}
@@ -129,7 +130,7 @@ function UploadModal({ isOpen, closeModal, selectedUpload }) {
                           <p className="font-medium text-gray-900">
                             Original File Name:
                           </p>
-                          <p className="text-gray-700">
+                          <p className="text-gray-700 break-words">
                             {selectedUpload?.originalFilename}
                           </p>
                         </div>
@@ -141,6 +142,12 @@ function UploadModal({ isOpen, closeModal, selectedUpload }) {
                             {formatDate(selectedUpload.createdAt)}
                           </p>
                         </div>
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          Stored File Name:
+                        </p>
+                        <p className="text-gray-700 break-words text-sm">{filename}</p>
                       </div>
                     </div>
                   )}

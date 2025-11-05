@@ -76,7 +76,7 @@ function UploadCard({ upload, openModal, openConfirmModal, shapes = [] }) {
           {user?.role !== "USER" && (
             <>
               <p className="text-md font-medium text-green-700 my-2">
-                User Output
+                User Input
               </p>
               <div className="flex flex-col md:grid  md:grid-cols-2 gap-2">
                 <div className="flex flex-col gap-2">

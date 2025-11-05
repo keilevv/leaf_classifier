@@ -125,18 +125,20 @@ export default function Home() {
         <div className="absolute inset-0 z-10 pointer-events-none" />
         <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center">
-            <div className="flex justify-center mb-8">
-              <div className="relative">
-                <div className="p-6 bg-green-100 rounded-full">
-                  <FaLeaf className="h-16 w-16 text-green-600" />
+            <div className="flex justify-center mb-8 items-center gap-2 flex-col md:flex-row">
+              <div className="flex justify-center">
+                <div className="relative">
+                  <div className="p-6 bg-green-100 rounded-full">
+                    <FaLeaf className="h-16 w-16 text-green-600" />
+                  </div>
+                  <div className="absolute -top-2 -right-2 p-2 bg-blue-100 rounded-full">
+                    <FaBrain className="h-6 w-6 text-blue-600" />
+                  </div>
                 </div>
-                <div className="absolute -top-2 -right-2 p-2 bg-blue-100 rounded-full">
-                  <FaBrain className="h-6 w-6 text-blue-600" />
-                </div>
+              </div>{" "}
+              <div className=" bg-blue-100 rounded-full size-fit  max-w-[300px] px-10 py-4">
+                <img src={utbLogo} alt="UTB Logo" className="" />
               </div>
-            </div>{" "}
-            <div className=" bg-blue-100 rounded-full size-fit mx-auto mb-8 max-w-[300px] px-10 py-4">
-              <img src={utbLogo} alt="UTB Logo" className="" />
             </div>
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
               SAPS<span className="text-green-600">AI</span>
