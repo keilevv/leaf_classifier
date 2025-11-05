@@ -183,7 +183,7 @@ function adminController() {
     res: Response
   ) => {
     const id = req.params.id;
-    const { taggedShape, taggedSpecies, isHealthy, status, isArchived } =
+    const { taggedShape, taggedSpecies, taggedHealthy, status, isArchived } =
       req.body;
     try {
       if (!req.user) {
@@ -197,9 +197,148 @@ function adminController() {
         res.status(403).json({ error: "Unauthorized" });
         return;
       }
+
+      const classificationToUpdate = await prisma.classification.findUnique({
+        where: { id },
+      });
+      const hasStatus =
+        typeof status !== "undefined" && status !== null && status !== "";
+      const tagsChanged =
+        typeof taggedSpecies !== "undefined" ||
+        typeof taggedShape !== "undefined" ||
+        typeof taggedHealthy !== "undefined";
+      const currentStatus = classificationToUpdate?.status;
+      const shouldUnverify = !hasStatus || (hasStatus && status !== "VERIFIED");
+      let splitName: string[] | undefined;
+      let fileName: string | undefined;
+      let fileStructure: string[] | undefined;
+      let finalNewImagePath: string | undefined;
+
+      if (hasStatus || (tagsChanged && shouldUnverify)) {
+        splitName = classificationToUpdate?.imagePath.split("/");
+        fileName = splitName![splitName!.length - 1];
+        fileStructure = fileName.split("_");
+      }
+
+      if (hasStatus && status === "VERIFIED") {
+        if (
+          classificationToUpdate &&
+          classificationToUpdate.status !== "VERIFIED" &&
+          splitName?.length
+        ) {
+          const newSpecies: string =
+            taggedSpecies || classificationToUpdate?.taggedSpecies;
+          const newShape: string =
+            taggedShape || classificationToUpdate?.taggedShape;
+          let newHealth: string = "";
+          if (taggedHealthy !== undefined) {
+            newHealth = taggedHealthy ? "healthy" : "deseased";
+          } else {
+            newHealth = classificationToUpdate?.taggedHealthy
+              ? "healthy"
+              : "deseased";
+          }
+
+          fileStructure![0] = newSpecies;
+          fileStructure![1] = newHealth;
+          fileStructure![2] = newShape;
+          fileStructure![3] = "verified";
+
+          const newFileName = fileStructure!.join("_");
+          splitName[splitName.length - 1] = newFileName;
+          let newImagePath = splitName.join("/");
+          // If stored on R2 (public URL), rename the object and set new public URL
+          if (classificationToUpdate.imagePath.startsWith("http")) {
+            const oldKey = fileName!;
+            const newKey = newFileName;
+
+            const rename = await R2Service.renameObject(oldKey, newKey);
+            if (!rename.success) {
+              return res.status(500).json({
+                error: rename.error || "Failed to rename object in storage",
+              });
+            }
+            newImagePath = rename.url!;
+          }
+
+          // Persist new imagePath below in the update call
+          finalNewImagePath = newImagePath;
+        }
+      } else if (hasStatus || (tagsChanged && shouldUnverify)) {
+        if (classificationToUpdate && splitName?.length && fileStructure) {
+          // Use incoming tagged values if provided; otherwise fallback to current tagged values
+          const newSpecies: string = (
+            typeof taggedSpecies !== "undefined"
+              ? taggedSpecies
+              : classificationToUpdate?.taggedSpecies
+          ) as string;
+          const newShape: string = (
+            typeof taggedShape !== "undefined"
+              ? taggedShape
+              : classificationToUpdate?.taggedShape
+          ) as string;
+          const newHealth: string =
+            typeof taggedHealthy !== "undefined"
+              ? taggedHealthy
+                ? "healthy"
+                : "deseased"
+              : classificationToUpdate?.taggedHealthy
+              ? "healthy"
+              : "deseased";
+
+          fileStructure[0] = newSpecies;
+          fileStructure[1] = newHealth;
+          fileStructure[2] = newShape;
+          fileStructure[3] = "unverified";
+
+          const newFileName = fileStructure.join("_");
+          splitName[splitName.length - 1] = newFileName;
+          // Only rename/update if the filename actually changed
+          if (newFileName !== fileName) {
+            let newImagePath = splitName.join("/");
+            if (classificationToUpdate.imagePath.startsWith("http")) {
+              const oldKey = fileName!;
+              const newKey = newFileName;
+              const rename = await R2Service.renameObject(oldKey, newKey);
+              if (!rename.success) {
+                return res.status(500).json({
+                  error: rename.error || "Failed to rename object in storage",
+                });
+              }
+              newImagePath = rename.url!;
+            }
+
+            // Persist new imagePath below in the update call
+            finalNewImagePath = newImagePath;
+          }
+        }
+      }
+
+      // Build update payload; include imagePath if we computed a new one
+      const updateData: any = {
+        taggedShape,
+        taggedSpecies,
+        taggedHealthy,
+        isArchived,
+      };
+      if (hasStatus) {
+        updateData.status = status;
+      } else if (tagsChanged) {
+        if (currentStatus === "VERIFIED") {
+          updateData.status = "PENDING";
+        }
+        // else keep existing non-VERIFIED status as-is
+      }
+      if (
+        finalNewImagePath &&
+        finalNewImagePath !== classificationToUpdate?.imagePath
+      ) {
+        updateData.imagePath = finalNewImagePath;
+      }
+
       const classification = await prisma.classification.update({
         where: { id },
-        data: { taggedShape, taggedSpecies, isHealthy, status, isArchived },
+        data: updateData,
       });
 
       const response = {

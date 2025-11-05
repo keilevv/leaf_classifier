@@ -5,7 +5,7 @@ import {
   ComboboxOption,
   ComboboxOptions,
 } from "@headlessui/react";
-import { FaChevronDown, FaSave } from "react-icons/fa";
+import { FaChevronDown, FaSave, FaSpinner } from "react-icons/fa";
 import ClassificationBadge from "../../../Common/Classifications/ClassificationBadge";
 import { getStatusBadge } from "../../../../utils";
 import useSpecies from "../../../../hooks/useSpecies";
@@ -39,17 +39,23 @@ function EditClassificationForm({ isAdmin = false }) {
   const [enableButton, setEnableButton] = useState(false);
   const [speciesQuery, setSpeciesQuery] = useState("");
   const [shapeQuery, setShapeQuery] = useState("");
+  const [showChangeRole, setShowChangeRole] = useState(false);
   const [shapeSrc, setShapeSrc] = useState(shapeUrlByKey["lanceolate"] || "");
-  const { updateClassification, getClassification, classification, loading } =
-    useAdmin();
+  const {
+    updateClassification,
+    getClassification,
+    classification,
+    isLoading: loading,
+  } = useAdmin();
   const {
     getUpload,
     upload,
     updateClassification: updateUpload,
+    isLoading,
   } = useClassifier();
   const [dataObject, setDataObject] = useState(null);
   const { id } = useParams();
-  const { user } = useStore();
+  const { user, uiState } = useStore();
 
   useEffect(() => {
     if (id) {
@@ -66,7 +72,7 @@ function EditClassificationForm({ isAdmin = false }) {
     if (!isAdmin) {
       if (upload) {
         setDataObject(upload);
-        setIsHealthy(upload.isHealthy);
+        setIsHealthy(upload.taggedHealthy);
         setSelectedSpecies(upload.taggedSpecies);
         setSelectedShape(upload.taggedShape);
         setSelectedStatus(upload.status);
@@ -76,7 +82,7 @@ function EditClassificationForm({ isAdmin = false }) {
     }
     if (classification) {
       setDataObject(classification);
-      setIsHealthy(classification.isHealthy);
+      setIsHealthy(classification.taggedHealthy);
       setSelectedSpecies(classification.taggedSpecies);
       setSelectedShape(classification.taggedShape);
       setSelectedStatus(classification.status);
@@ -91,7 +97,7 @@ function EditClassificationForm({ isAdmin = false }) {
       const changed =
         selectedSpecies !== classification.taggedSpecies ||
         selectedShape !== classification.taggedShape ||
-        isHealthy !== classification.isHealthy ||
+        isHealthy !== classification.taggedHealthy ||
         selectedStatus !== classification.status;
       setEnableButton(changed);
     } else {
@@ -99,7 +105,7 @@ function EditClassificationForm({ isAdmin = false }) {
       const changed =
         selectedSpecies !== upload.taggedSpecies ||
         selectedShape !== upload.taggedShape ||
-        isHealthy !== upload.isHealthy ||
+        isHealthy !== upload.taggedHealthy ||
         selectedStatus !== upload.status;
       setEnableButton(changed);
     }
@@ -121,15 +127,29 @@ function EditClassificationForm({ isAdmin = false }) {
     }
   }, [selectedShape, shapes]);
 
+  useEffect(() => {
+    if (uiState?.selectedPage !== "admin") return;
+    if (user?.role === "ADMIN" || user?.role === "MODERATOR") {
+      setShowChangeRole(true);
+    }
+  }, [user, uiState]);
+
   const handleUpdateClassification = async (e) => {
     e.preventDefault();
+    const base = isAdmin ? classification : upload;
+    const payload = {};
+    if (!base) return;
+
+    if (selectedSpecies !== base.taggedSpecies)
+      payload.taggedSpecies = selectedSpecies;
+    if (selectedShape !== base.taggedShape) payload.taggedShape = selectedShape;
+    if (isHealthy !== base.taggedHealthy) payload.taggedHealthy = isHealthy;
+    if (selectedStatus !== base.status) payload.status = selectedStatus;
+
+    if (Object.keys(payload).length === 0) return;
+
     if (isAdmin) {
-      await updateClassification(id, {
-        taggedSpecies: selectedSpecies,
-        taggedShape: selectedShape,
-        isHealthy,
-        status: selectedStatus,
-      })
+      await updateClassification(id, payload)
         .then(() => {
           showNotification({
             title: "Classification tags updated successfully",
@@ -143,12 +163,7 @@ function EditClassificationForm({ isAdmin = false }) {
           });
         });
     } else {
-      await updateUpload(id, {
-        taggedSpecies: selectedSpecies,
-        taggedShape: selectedShape,
-        isHealthy,
-        status: selectedStatus,
-      })
+      await updateUpload(id, payload)
         .then(() => {
           showNotification({
             title: "Classification tags updated successfully",
@@ -219,7 +234,7 @@ function EditClassificationForm({ isAdmin = false }) {
                   {dataObject.status}
                 </div>
               </div>
-              {(user?.role === "ADMIN" || user?.role === "MODERATOR") && (
+              {showChangeRole && (
                 <div className="flex flex-col gap-2 pt-4">
                   <label className="text-sm font-medium text-gray-700">
                     Change Status
@@ -488,17 +503,24 @@ function EditClassificationForm({ isAdmin = false }) {
                 )}
               </Switch>
               <button
-                disabled={!enableButton}
+                disabled={!enableButton || loading || isLoading}
                 type="submit"
                 className={cn(
                   "mt-4 w-full flex justify-center items-center rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm",
                   "hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2",
-                  enableButton
+                  enableButton && !loading && !isLoading
                     ? "cursor-pointer"
                     : "opacity-50 cursor-not-allowed"
                 )}
               >
-                <FaSave className="mr-2 " /> Save
+                {loading || isLoading ? (
+                  <FaSpinner className="mr-2 animate-spin" />
+                ) : (
+                  <div className="flex items-center ">
+                    <FaSave className="mr-2" />
+                    Save
+                  </div>
+                )}
               </button>
             </form>
           </div>

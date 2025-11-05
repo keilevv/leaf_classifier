@@ -1,4 +1,9 @@
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  CopyObjectCommand,
+  DeleteObjectCommand,
+} from "@aws-sdk/client-s3";
 import fs from "fs";
 
 // Initialize S3 client for Cloudflare R2
@@ -95,10 +100,9 @@ export class R2Service {
     id: string,
     originalExtension: string
   ): string {
-    // Normalize classification name (remove special characters, convert to lowercase)
+    // Normalize classification name (remove special characters, preserve case)
     const normalizedClassification = classification
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, "_")
+      .replace(/[^a-zA-Z0-9-]/g, "_")
       .replace(/_+/g, "_")
       .replace(/^_|_$/g, "");
 
@@ -121,6 +125,36 @@ export class R2Service {
   static isR2Key(key: string): boolean {
     // Check if the key follows our naming pattern: classification_id.extension
     return /^[a-z0-9_]+_\d{7}\.[a-zA-Z0-9]+$/.test(key);
+  }
+
+  /**
+   * Rename an object in R2 by copying to the new key and deleting the old one
+   */
+  static async renameObject(
+    oldKey: string,
+    newKey: string
+  ): Promise<UploadResult> {
+    try {
+      // Copy to new key
+      const copy = new CopyObjectCommand({
+        Bucket: BUCKET_NAME,
+        CopySource: `${BUCKET_NAME}/${oldKey}`,
+        Key: newKey,
+      });
+      await r2Client.send(copy);
+
+      // Delete old key
+      const del = new DeleteObjectCommand({ Bucket: BUCKET_NAME, Key: oldKey });
+      await r2Client.send(del);
+
+      return { success: true, key: newKey, url: this.getPublicUrl(newKey) };
+    } catch (error) {
+      console.error("Error renaming R2 object:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
   }
 
   /**

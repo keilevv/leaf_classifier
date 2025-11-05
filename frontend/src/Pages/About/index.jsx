@@ -201,20 +201,21 @@ function About({ onGetStarted }) {
           <div className="absolute inset-0 z-10 pointer-events-none" />
           <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
             <div className="text-center text-white">
-              <div className="flex justify-center mb-8">
-                <div className="relative">
-                  <div className="p-6 bg-green-400 bg-opacity-20 rounded-full">
-                    <FaLeaf className="h-16 w-16" />
-                  </div>
-                  <div className="absolute -top-2 -right-2 p-2 bg-yellow-400 rounded-full">
-                    <FaBug className="h-6 w-6 text-yellow-800" />
+              <div className="flex justify-center mb-8 items-center gap-2 flex-col md:flex-row">
+                <div className="flex justify-center">
+                  <div className="relative">
+                    <div className="p-6 bg-green-400 bg-opacity-20 rounded-full">
+                      <FaLeaf className="h-16 w-16" />
+                    </div>
+                    <div className="absolute -top-2 -right-2 p-2 bg-yellow-400 rounded-full">
+                      <FaBug className="h-6 w-6 text-yellow-800" />
+                    </div>
                   </div>
                 </div>
+                <div className=" bg-blue-100 rounded-full size-fit max-w-[300px] px-10 py-4">
+                  <img src={UtbLogo} alt="UTB Logo" className="" />
+                </div>
               </div>
-              <div className=" bg-blue-100 rounded-full size-fit mx-auto mb-8 max-w-[300px] px-10 py-4">
-                <img src={UtbLogo} alt="UTB Logo" className="" />
-              </div>
-
               <h1 className="text-5xl md:text-6xl font-bold mb-6">
                 Our <span className="text-yellow-300">Mission</span>
               </h1>
@@ -227,7 +228,7 @@ function About({ onGetStarted }) {
 
               <div className="flex justify-center">
                 <div className="bg-green-400 bg-opacity-10 rounded-lg p-6 backdrop-blur-sm">
-                  <div className="flex items-center justify-center space-x-8">
+                  <div className="flex items-center justify-center space-x-8 flex-wrap">
                     <div className="text-center">
                       <div className="text-3xl font-bold">
                         🇨🇴 57+ 3014590687

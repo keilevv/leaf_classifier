@@ -81,16 +81,23 @@ function plantClassifierController() {
               const species = model1.class_name.split("_")[0];
               const taggedSpecies = model1.class_name.split("_")[0];
               const isHealthy = model1.class_name.includes("healthy");
+              const taggedHealthy = isHealthy;
               const species_confidence = model1.probability;
               const shape = model2.class_name;
               const taggedShape = model2.class_name;
               const shape_confidence = model2.probability;
 
+              const health = isHealthy ? "healthy" : "deseased";
+
+              const fileName =
+                species + "_" + health + "_" + shape + "_" + "unverified" + "_";
+
               // Step 2: Generate unique ID and create R2 key based on classification
               const uniqueId = uuidv4().replace(/-/g, "").substring(0, 8);
               const fileExtension = path.extname(image.originalname);
+
               const r2Key = R2Service.generateImageKey(
-                species,
+                fileName,
                 uniqueId,
                 fileExtension
               );
@@ -153,6 +160,7 @@ function plantClassifierController() {
                   shape,
                   taggedSpecies,
                   taggedShape,
+                  taggedHealthy,
                   speciesConfidence: species_confidence,
                   shapeConfidence: shape_confidence,
                   commonNameEn: matchingSpecies?.commonNameEn,
@@ -347,7 +355,7 @@ function plantClassifierController() {
     res: Response
   ) => {
     const id = req.params.id;
-    const { taggedShape, taggedSpecies, isHealthy, isArchived } = req.body;
+    const { taggedShape, taggedSpecies, taggedHealthy, isArchived } = req.body;
     try {
       if (!req.user) {
         res.status(401).json({ error: "Authentication required" });
@@ -366,7 +374,7 @@ function plantClassifierController() {
       }
       const classification = await prisma.classification.update({
         where: { id },
-        data: { taggedShape, taggedSpecies, isHealthy, isArchived },
+        data: { taggedShape, taggedSpecies, taggedHealthy, isArchived },
       });
 
       const response = {
