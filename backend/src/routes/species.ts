@@ -4,7 +4,8 @@ import { authenticateToken } from "../middleware/auth";
 
 const router = Router();
 const controller = speciesController();
-const { getSpecies } = controller;
+const { getSpecies, createSpecies } = controller;
 router.get("/", authenticateToken, getSpecies);
+router.post("/", authenticateToken, createSpecies);
 
 export default router;

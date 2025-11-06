@@ -16,6 +16,7 @@ import { showNotification } from "../../../Common/Notification";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Switch } from "react-aria-components";
+import CreateSpeciesModal from "../CreateSpeciesModal";
 import { cn } from "../../../../utils";
 
 const shapeModules = import.meta.glob("/src/assets/images/shapes/*.webp", {
@@ -41,6 +42,7 @@ function EditClassificationForm({ isAdmin = false }) {
   const [shapeQuery, setShapeQuery] = useState("");
   const [showChangeRole, setShowChangeRole] = useState(false);
   const [shapeSrc, setShapeSrc] = useState(shapeUrlByKey["lanceolate"] || "");
+  const [openCreateSpeciesModal, setOpenCreateSpeciesModal] = useState(false);
   const {
     updateClassification,
     getClassification,
@@ -383,6 +385,14 @@ function EditClassificationForm({ isAdmin = false }) {
                     </ComboboxOptions>
                   </div>
                 </Combobox>
+                {user?.role === "ADMIN" && (
+                  <p
+                    onClick={() => setOpenCreateSpeciesModal(true)}
+                    className="mt-2 text-sm text-gray-500 cursor-pointer hover:text-green-500"
+                  >
+                    Create new species
+                  </p>
+                )}
               </div>
               <div className="flex flex-col mt-2">
                 <label
@@ -526,6 +536,14 @@ function EditClassificationForm({ isAdmin = false }) {
           </div>
         </div>
       )}
+      <CreateSpeciesModal
+        isOpen={openCreateSpeciesModal}
+        closeModal={() => setOpenCreateSpeciesModal(false)}
+        onCreated={() => {
+          setOpenCreateSpeciesModal(false);
+          getSpecies();
+        }}
+      />
     </>
   );
 }
