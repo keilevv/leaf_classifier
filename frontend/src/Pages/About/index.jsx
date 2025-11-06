@@ -28,57 +28,86 @@ function About({ onGetStarted }) {
       name: "Caleb Villalba Hernández",
       title: "Developer",
       department: "School of Digital Transformation",
-      //specialization: "Ingeniería de Sistemas y Computación",
+      specialization:
+        "Student of Systems and Computer Engineering - Universidad Tecnológica de Bolívar",
       image: "/caleb_villalba.jpeg",
-      bio: "Student of Systems and Computer Engineering at the Technological University of Bolívar.",
+      bio: [
+        "Over 3 years of professional experience in web development.",
+        "Fullstack developer with JavaScript/TypeSctript, and Python.",
+      ],
     },
     {
       name: "Victor Martinez Toscano",
       title: "Developer",
       department: "School of Digital Transformation",
-      //specialization: "Ingeniería de Sistemas y Computación",
+      specialization:
+        "Student of Systems and Computer Engineering - Universidad Tecnológica de Bolívar",
       image: "/Victor Martinez.jpeg",
-      bio: "Student of Systems and Computer Engineering at the Technological University of Bolívar.",
+      imagePosition: "object-top",
+      bio: [
+        "Student of Systems and Computer Engineering at the Technological University of Bolívar.",
+      ],
     },
     {
       name: "Felipe Jimenez Acuña",
       title: "Developer",
       department: "School of Digital Transformation",
-      //specialization: "Ingeniería de Sistemas y Computación",
+      specialization:
+        "Student of Systems and Computer Engineering - Universidad Tecnológica de Bolívar",
       image: "/Felipe Jimenez.jpeg",
-      bio: "Student of Systems and Computer Engineering at the Technological University of Bolívar.",
+      imagePosition: "object-center",
+      bio: [
+        "Student of Systems and Computer Engineering at the Technological University of Bolívar.",
+      ],
     },
     {
       name: "Lic. Andrea Menco Tovar",
       title: "Principal Investigator",
       department: "School of Digital Transformation",
-      //specialization: "Licenciada en Matemáticas y Magíster en Estadística Aplicada.",
+      specialization: "Lic. in Mathematics and M. Sc. in Applied Statistics",
       image: "/Andrea Menco.jpeg",
-      bio: "She holds a Bachelor's degree in Mathematics and a Master's degree in Applied Statistics. She is currently pursuing a PhD in Engineering, specializing in Electronics and Computing, at the same university. She is also a recipient of the Ministry of Science and Technology's Call for Proposals 933 for National Doctoral Programs with a Territorial, Ethnic, and Gender Focus, within the framework of the Mission-Oriented Policy. Her research interests include image processing, computer vision, data science, and applied statistics.",
+      bio: [
+        "Bachelor's degree in Mathematics and a Master's degree in Applied Statistics. Currently pursuing a PhD in Engineering, specializing in Electronics and Computing, at the same university. ",
+        "She is also a recipient of the Ministry of Science and Technology's Call for Proposals 933 for National Doctoral Programs with a Territorial, Ethnic, and Gender Focus, within the framework of the Mission-Oriented Policy.",
+        "Research interests include image processing, computer vision, data science, and applied statistics.",
+      ],
     },
     {
       name: "Dr. Juan Carlos Martinez",
       title: "Research professor",
       department: "School of Digital Transformation",
-      //specialization: "",
+      specialization: "Ph.D. in Computer Science",
       image: "/Juan Martinez.png",
-      bio: "Electronic Engineer, Master in Electric Power from Universidad Industrial de Santander. Ph.D. from Northeastern University, Boston. Fulbright–DNP–Colciencias Scholar (2007). Researcher and professor at Universidad Tecnológica de Bolívar since 2004.",
+      bio: [
+        "Electronic Engineer, Master in Electric Power from Universidad Industrial de Santander.",
+        "Ph.D. in Computer Science from Northeastern University, Boston. ",
+        "Fulbright DNP Colciencias Scholar (2007).",
+        "Researcher and professor at Universidad Tecnológica de Bolívar since 2004.",
+      ],
     },
     {
       name: "Dr. Edwin Puertas",
       title: "Research professor",
       department: "School of Digital Transformation",
-      //specialization: "",
+      specialization: "Artificial Intelligence Software Architect",
       image: "/Edwin Puertas.png",
-      bio: "Artificial Intelligence Software Architect and Natural Language Processing (NLP) Researcher, with 20 years of experience in both academic and professional settings. He currently serves as Director of the Ph.D. and Master’s Programs in Engineering at Universidad Tecnológica de Bolívar and is an active member of the Artificial Intelligence Standards Committee. His work focuses on bridging the gap between academic research and practical industry applications, leading innovative projects in the field of Artificial Intelligence (AI).",
+      bio: [
+        "Artificial Intelligence Software Architect and Natural Language Processing (NLP) Researcher, with 20 years of experience in both academic and professional settings. ",
+        "Currently serves as Director of the Ph.D. and Master’s Programs in Engineering at Universidad Tecnológica de Bolívar and is an active member of the Artificial Intelligence Standards Committee.",
+        "His work focuses on bridging the gap between academic research and practical industry applications, leading innovative projects in the field of Artificial Intelligence (AI).",
+      ],
     },
     {
       name: "Dr. Jairo Serrano Castañeda",
       title: "Research professor",
       department: "School of Digital Transformation",
-      //specialization: "",
+      specialization: "Ph.D. in Engineering",
       image: "/Jairo Serrano.png",
-      bio: "Systems Engineer graduated from the Universidad Tecnológica de Bolívar and Master’s in Free Software from the Universidad Autónoma de Bucaramanga. PhD candidate in Engineering at Pontificia Universidad Javeriana, developing Social Simulations by applying Artificial Intelligence in Multi-Agent Systems on Distributed Servers. With over 23 years of professional experience, he serves as an Assistant Professor at the Universidad Tecnológica de Bolívar, where he has made significant contributions to academic training and research development.",
+      bio: [
+        "Systems Engineer graduated from the Universidad Tecnológica de Bolívar and Master’s in Free Software from the Universidad Autónoma de Bucaramanga.",
+        "PhD in Engineering at Pontificia Universidad Javeriana, developing Social Simulations by applying Artificial Intelligence in Multi-Agent Systems on Distributed Servers.",
+        "With over 23 years of professional experience, he serves as an Assistant Professor at the Universidad Tecnológica de Bolívar, where he has made significant contributions to academic training and research development.",
+      ],
     },
   ];
 
@@ -350,11 +379,11 @@ function About({ onGetStarted }) {
                 </h2>
 
                 <p className="text-lg text-gray-600 mb-6">
-                  As the leading public university in Colombia, the National
-                  University has been at the forefront of agricultural research
-                  for over 150 years. Our interdisciplinary approach combines
-                  traditional botanical knowledge with cutting-edge AI
-                  technology.
+                  As the leading public university in the Carribbean region of
+                  Colombia, Universidad Tecnológica de Bolívar is aiming to
+                  become a leading institution in agricultural research. Our
+                  interdisciplinary approach combines traditional botanical
+                  knowledge with cutting-edge AI technology.
                 </p>
 
                 <div className="space-y-4 mb-8">
@@ -365,8 +394,8 @@ function About({ onGetStarted }) {
                         Excellence in Research
                       </h4>
                       <p className="text-gray-600">
-                        Ranked #1 in Colombia in agricultural and biological
-                        sciences
+                        Ranked among the top universities in Colombia computer
+                        science and engineering research
                       </p>
                     </div>
                   </div>
@@ -378,8 +407,8 @@ function About({ onGetStarted }) {
                         Herbarium Collection
                       </h4>
                       <p className="text-gray-600">
-                        Home to over 500,000 plant specimens, including rare
-                        Colombian species
+                        Aiming to build a herbarium collection of Colombian
+                        plant species
                       </p>
                     </div>
                   </div>
@@ -391,8 +420,7 @@ function About({ onGetStarted }) {
                         Community Impact
                       </h4>
                       <p className="text-gray-600">
-                        Serving Colombian farmers and communities for
-                        generations
+                        Keeping farmers and communities involved to expand project growth 
                       </p>
                     </div>
                   </div>
@@ -401,7 +429,7 @@ function About({ onGetStarted }) {
 
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-8">
                 <h3 className="text-xl font-bold text-gray-900 mb-6">
-                  Financing and Support for Projects
+                  Financing and Support Goals
                 </h3>
                 <div className="space-y-4">
                   <div className="flex items-center">
@@ -434,10 +462,17 @@ function About({ onGetStarted }) {
                   <h4 className="font-semibold text-gray-900 mb-2">
                     Project Timeline
                   </h4>
-                  <div className="text-sm text-gray-600">
-                    <p>Phase 1: Database Development</p>
-                    <p>Phase 2: AI Model Training</p>
-                    <p>Phase 3: Field Implementation</p>
+                  <div className=" flex flex-col md:grid md:grid-cols-2 text-sm text-gray-600 gap-2">
+                    <p className="font-semibold">February 2025 - May 2025</p>
+                    <p>Data Collection and Algorithm Development</p>
+                    <p className="font-semibold">May 2025 - August 2025</p>
+                    <p>System Design</p>
+                    <p className="font-semibold">August 2025 - November 2025</p>
+                    <p>Web Platform Development</p>
+                    <p className="font-semibold">
+                      November 2025 - December 2025
+                    </p>
+                    <p>Testing and Validation</p>
                   </div>
                 </div>
               </div>
@@ -463,7 +498,9 @@ function About({ onGetStarted }) {
                   <img
                     src={investigator.image || "/placeholder.svg"}
                     alt={investigator.name}
-                    className="w-full h-80 object-cover rounded-t-lg"
+                    className={`w-full h-80 object-cover rounded-t-lg ${
+                      investigator.imagePosition || ""
+                    }`}
                   />
                   <div className="p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-1">
@@ -475,10 +512,14 @@ function About({ onGetStarted }) {
                     <p className="text-sm text-blue-600 mb-3">
                       {investigator.department}
                     </p>
-                    <p className="text-sm font-medium text-blue-600 mb-3">
+                    <p className="text-sm font-semibold mb-3">
                       {investigator.specialization}
                     </p>
-                    <p className="text-sm text-gray-700">{investigator.bio}</p>
+                    <ul className="list-disc list-inside flex flex-col gap-2">
+                      {investigator.bio.map((item) => (
+                        <li className="text-sm text-gray-700">{item}</li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
               ))}

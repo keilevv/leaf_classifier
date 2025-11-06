@@ -1,11 +1,10 @@
 import prisma from "../lib/prisma";
 import { Request, Response } from "express";
-import { AuthenticatedRequest } from "../types";
 import { baseShapes } from "../config";
 
 function SpeciesController() {
   const getSpecies = async (
-    req: AuthenticatedRequest,
+    req: Request,
     res: Response
   ): Promise<void> => {
     try {
@@ -20,11 +19,14 @@ function SpeciesController() {
       const isArchived = req.query.isArchived as string;
       const createdBy = req.query.createdBy as string;
 
-      const actingUser = await prisma.user.findUnique({
-        where: {
-          id: req.user.id,
-        },
-      });
+      const authUser = (req as any).user as { id?: string } | undefined;
+      const actingUser = authUser?.id
+        ? await prisma.user.findUnique({
+            where: {
+              id: authUser.id,
+            },
+          })
+        : null;
       // Build Prisma where filter
       const where: any = {};
   
@@ -79,9 +81,58 @@ function SpeciesController() {
 
       res.json(response);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      console.error(error);
+      res.status(500).json({ error: "Internal server error" });
     }
   };
-  return { getSpecies };
+  const createSpecies = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { scientificName, commonNameEn, commonNameEs } = req.body || {};
+      if (!scientificName || !commonNameEn || !commonNameEs) {
+        res.status(400).json({ error: "scientificName, commonNameEn and commonNameEs are required" });
+        return;
+      }
+      const slug = String(scientificName)
+        .normalize("NFD")
+        .replace(/\p{Diacritic}+/gu, "")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9\s.-]/g, "")
+        .replace(/[\s._]+/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$|\.$/g, "");
+
+      const existing = await prisma.species.findUnique({ where: { slug } });
+      if (existing) {
+        res.status(409).json({ error: "Species with this slug already exists" });
+        return;
+      }
+
+      const authUser = (req as any).user as { id?: string } | undefined;
+      if (!authUser?.id) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+      }
+      const created = await prisma.species.create({
+        data: {
+          scientificName,
+          commonNameEn,
+          commonNameEs,
+          slug,
+          createdById: authUser.id,
+        },
+        include: { createdBy: true },
+      });
+
+      res.status(201).json({ species: created });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  };
+  return { getSpecies, createSpecies };
 }
 export default SpeciesController;

@@ -10,5 +10,10 @@ const speciesService = {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
   },
+  createSpecies(data, accessToken) {
+    return axios.post(`${apiUrl}/species`, data, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+  },
 };
 export default speciesService;

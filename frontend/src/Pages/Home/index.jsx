@@ -294,7 +294,7 @@ export default function Home() {
                   <img
                     src="/ejemplofotobueno.png?height=200&width=300&text=Good+Example"
                     alt="Good photo example"
-                    className="w-full h-auto object-contain rounded-lg mb-4"
+                    className="w-full h-auto object-contain rounded-lg mb-4 max-w-[300px] m-auto"
                   />
                   <div className="flex items-center justify-center text-green-600 font-semibold">
                     <FaCheckCircle className="mr-2" />
@@ -312,7 +312,7 @@ export default function Home() {
                   <img
                     src="/ejemplofotomalo.png?height=200&width=300&text=Avoid+This"
                     alt="Bad photo example"
-                    className="w-full h-auto object-contain rounded-lg mb-4"
+                    className="w-full h-auto object-contain rounded-lg mb-4 max-w-[300px] m-auto"
                   />
                   <div className="flex items-center justify-center text-red-600 font-semibold">
                     <FaExclamationTriangle className="mr-2" />
@@ -401,23 +401,34 @@ export default function Home() {
                 <h4 className="font-semibold text-gray-900 mb-2">
                   Main Work Team
                 </h4>
+                <div>
+                  <p className="text-gray-600 mb-2">
+                    <span className="font-semibold">
+                      {" "}
+                      Lic. Andrea Menco Tovar -
+                    </span>{" "}
+                    Bachelor in Mathematics and Master in Applied Statistics
+                  </p>
+                </div>
                 <p className="text-gray-600 mb-2">
-                  Lic. Andrea Menco Tovar - Bachelor in Mathematics and Master
-                  in Applied Statistics
+                  <span className="font-semibold">
+                    {" "}
+                    Caleb Villalba Hernández -
+                  </span>{" "}
+                  Student of Systems and Computing Engineering
                 </p>
                 <p className="text-gray-600 mb-2">
-                  Caleb Villalba Hernández - Student of Systems and Computing
-                  Engineering
+                  <span className="font-semibold">
+                    {" "}
+                    Victor Martínez Toscano -
+                  </span>{" "}
+                  Student of Systems and Computing Engineering
                 </p>
                 <p className="text-gray-600 mb-2">
-                  Victor Martínez Toscano - Student of Systems and Computing
-                  Engineering
+                  <span className="font-semibold"> Felipe Jiménez Acuña -</span>{" "}
+                  Student of Systems and Computing Engineering
                 </p>
-                <p className="text-gray-600 mb-2">
-                  Felipe Jiménez Acuña - Student of Systems and Computing
-                  Engineering
-                </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 font-semibold">
                   Universidad Tecnológica de Bolívar • 2025
                 </p>
               </div>
@@ -462,7 +473,14 @@ export default function Home() {
                   Become part of a global community of citizen scientists
                   contributing to plant research.
                 </p>
-                <div className="flex space-x-4">
+                <button
+                  onClick={onGetStarted}
+                  className="cursor-pointer bg-white text-blue-600 hover:bg-gray-100 font-bold py-4 px-12 rounded-lg text-xl transition-colors inline-flex items-center"
+                >
+                  Join Us
+                  <FaArrowRight className="ml-3" />
+                </button>
+                {/* <div className="flex space-x-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-blue-600">
                       1,200+
@@ -477,7 +495,7 @@ export default function Home() {
                     <div className="text-2xl font-bold text-blue-600">24/7</div>
                     <div className="text-sm text-gray-600">Active</div>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
