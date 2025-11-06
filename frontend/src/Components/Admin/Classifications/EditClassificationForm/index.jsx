@@ -385,12 +385,14 @@ function EditClassificationForm({ isAdmin = false }) {
                     </ComboboxOptions>
                   </div>
                 </Combobox>
-                <p
-                  onClick={() => setOpenCreateSpeciesModal(true)}
-                  className="mt-2 text-sm text-gray-500 cursor-pointer hover:text-green-500"
-                >
-                  Create new species
-                </p>
+                {user?.role === "ADMIN" && (
+                  <p
+                    onClick={() => setOpenCreateSpeciesModal(true)}
+                    className="mt-2 text-sm text-gray-500 cursor-pointer hover:text-green-500"
+                  >
+                    Create new species
+                  </p>
+                )}
               </div>
               <div className="flex flex-col mt-2">
                 <label
