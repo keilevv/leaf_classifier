@@ -8,6 +8,8 @@ function useSpecies() {
   const [shapes, setShapes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [pages, setPages] = useState(0);
+  const [count, setCount] = useState(0);
   const { accessToken } = useStore();
 
   const getSpecies = async (page, limit, sortBy, sortOrder, filters) => {
@@ -23,6 +25,8 @@ function useSpecies() {
       );
       setSpecies(response.data.results);
       setShapes(response.data.shapes);
+      setPages(response.data.pages || 0);
+      setCount(response.data.count || 0);
     } catch (error) {
       setError(error);
     } finally {
@@ -139,6 +143,8 @@ function useSpecies() {
     shapes,
     loading,
     error,
+    pages,
+    count,
     getSpecies,
     createSpecies,
     updateSpecies,
