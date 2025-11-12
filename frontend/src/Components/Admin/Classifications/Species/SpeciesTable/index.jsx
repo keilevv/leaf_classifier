@@ -25,13 +25,23 @@ function SpeciesTable({ species = [], user, onEdit = () => {}, onDelete = () => 
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{sp.slug}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex justify-end gap-2">
-                    <button
-                      onClick={() => onEdit(sp)}
-                      className="cursor-pointer text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded transition-colors"
-                      title="Edit"
-                    >
-                      <FaEdit className="h-4 w-4" />
-                    </button>
+                    {user?.role === "ADMIN" ? (
+                      <button
+                        onClick={() => onEdit(sp)}
+                        className="cursor-pointer text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded transition-colors"
+                        title="Edit"
+                      >
+                        <FaEdit className="h-4 w-4" />
+                      </button>
+                    ) : (
+                      <button
+                        disabled
+                        className="opacity-50 cursor-not-allowed p-2 rounded"
+                        title="Restricted"
+                      >
+                        <FaEdit className="h-4 w-4" />
+                      </button>
+                    )}
                     {user?.role === "ADMIN" ? (
                       <button
                         onClick={() => onDelete(sp)}

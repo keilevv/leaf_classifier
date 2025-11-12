@@ -5,7 +5,13 @@ import useStore from "../../../../hooks/useStore";
 import CreateSpeciesModal from "./CreateSpeciesModal";
 import { showNotification } from "../../../Common/Notification";
 import ConfirmationModal from "../../../Common/ConfirmationModal";
-import { FaTrash, FaSeedling, FaFilter, FaSearch, FaBrush } from "react-icons/fa";
+import {
+  FaTrash,
+  FaSeedling,
+  FaFilter,
+  FaSearch,
+  FaBrush,
+} from "react-icons/fa";
 import _debounce from "lodash/debounce";
 import RangePicker from "../../../Common/RangePicker";
 import SwitchComponent from "../../../Common/SwitchComponent";
@@ -102,7 +108,7 @@ function SpeciesComponent() {
     <div className=" p-4">
       <div className="max-w-7xl mx-auto bg-white rounded-lg shadow-lg">
         <div className="flex items-center justify-between mb-4 border-b border-gray-200 p-4">
-          <h1 className="text-2xl font-semibold flex gap-2 items-center text-green-600">
+          <h1 className="text-2xl font-bold flex gap-2 items-center text-green-600">
             <FaSeedling className="mr-2" /> Species
           </h1>
           <button
@@ -147,8 +153,10 @@ function SpeciesComponent() {
                 setRangeFilter={setRangeFilter}
                 className="mb-4"
               />
-              <div className="flex flex-col gap-2  md:border-l md:border-t-0 md:px-4 border-gray-200 ">
-                <label className="text-sm font-medium text-gray-700">Archived</label>
+              {/* <div className="flex flex-col gap-2  md:border-l md:border-t-0 md:px-4 border-gray-200 ">
+                <label className="text-sm font-medium text-gray-700">
+                  Archived
+                </label>
                 <SwitchComponent
                   loading={false}
                   defaultValue={isArchived}
@@ -156,7 +164,7 @@ function SpeciesComponent() {
                   onChange={setIsArchived}
                   title={isArchived ? "Archived" : "Not Archived"}
                 />
-              </div>
+              </div> */}
               <div className="flex flex-col gap-2  md:border-l md:border-t-0 md:px-4 border-gray-200  justify-center  ">
                 <button
                   onClick={handleCleanFilters}
@@ -203,7 +211,8 @@ function SpeciesComponent() {
       {pages > 1 && (
         <div className="px-6 py-4 border-t border-gray-200 flex items-center  flex-col-reverse gap-2 md:flex-row md:justify-between">
           <div className="text-sm text-gray-700">
-            Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, count)} of {count} results
+            Showing {(page - 1) * pageSize + 1} to{" "}
+            {Math.min(page * pageSize, count)} of {count} results
           </div>
           <div className="flex space-x-2">
             <button
