@@ -370,21 +370,11 @@ function ClassificationsTable({
                         {classification.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-xs text-gray-500 max-w-[250px]">
-                      <div className="flex flex-col gap-2">
-                        <div className="flex flex-col gap-1">
-                          <p className="text-gray-900">Date:</p>
-                          <span className="">
-                            {formatDate(classification.createdAt)}
-                          </span>
-                        </div>
-                        {/* <div className="flex flex-col gap-1">
-                          <p className="text-gray-900">Filename:</p>
-                          <span className="break-all whitespace-normal">
-                            {classification?.imagePath?.split("/").pop()}
-                          </span>
-                        </div> */}
-                      </div>
+                    <td className="px-6 py-4 text-xs text-gray-500 ">
+                      <p className="text-gray-900">Date:</p>
+                      <span className="">
+                        {formatDate(classification.createdAt)}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end space-x-2">

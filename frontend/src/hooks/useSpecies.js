@@ -30,7 +30,11 @@ function useSpecies() {
     }
   };
 
-  const createSpecies = async ({ scientificName, commonNameEn, commonNameEs }) => {
+  const createSpecies = async ({
+    scientificName,
+    commonNameEn,
+    commonNameEs,
+  }) => {
     setLoading(true);
     setError(null);
     try {
@@ -45,7 +49,9 @@ function useSpecies() {
       showNotification({
         type: "success",
         title: "Species created",
-        message: `${created?.scientificName || scientificName} was added successfully`,
+        message: `${
+          created?.scientificName || scientificName
+        } was added successfully`,
       });
       return created;
     } catch (e) {
@@ -61,6 +67,82 @@ function useSpecies() {
     }
   };
 
-  return { species, shapes, loading, error, getSpecies, createSpecies };
+  const updateSpecies = async (
+    id,
+    { scientificName, commonNameEn, commonNameEs }
+  ) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await speciesService.updateSpecies(
+        id,
+        { scientificName, commonNameEn, commonNameEs },
+        accessToken
+      );
+      const updated = response?.data?.species;
+      if (updated) {
+        setSpecies((prev) =>
+          prev.map((item) => (item.id === id ? updated : item))
+        );
+      }
+      showNotification({
+        type: "success",
+        title: "Species updated",
+        message: `${
+          updated?.scientificName || scientificName
+        } was updated successfully`,
+      });
+      return updated;
+    } catch (e) {
+      setError(e);
+      showNotification({
+        type: "error",
+        title: "Update failed",
+        message: e?.response?.data?.error || "Failed to update species",
+      });
+      throw e;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteSpecies = async (id) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await speciesService.deleteSpecies(id, accessToken);
+      const deleted = response?.data?.species;
+      if (deleted) {
+        setSpecies((prev) => prev.filter((item) => item.id !== id));
+      }
+      showNotification({
+        type: "success",
+        title: "Species deleted",
+        message: `${deleted?.scientificName || id} was deleted successfully`,
+      });
+      return deleted;
+    } catch (e) {
+      setError(e);
+      showNotification({
+        type: "error",
+        title: "Deletion failed",
+        message: e?.response?.data?.error || "Failed to delete species",
+      });
+      throw e;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    species,
+    shapes,
+    loading,
+    error,
+    getSpecies,
+    createSpecies,
+    updateSpecies,
+    deleteSpecies,
+  };
 }
 export default useSpecies;

@@ -15,5 +15,15 @@ const speciesService = {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
   },
+  updateSpecies(id, data, accessToken) {
+    return axios.patch(`${apiUrl}/species/admin/${id}/update`, data, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+  },
+  deleteSpecies(id, accessToken) {
+    return axios.delete(`${apiUrl}/species/admin/${id}/delete`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+  },
 };
 export default speciesService;

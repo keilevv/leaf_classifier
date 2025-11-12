@@ -9,6 +9,7 @@ import Settings from "./Pages/Settings";
 import Admin from "./Pages/Admin";
 import AdminClassificationDetails from "./Pages/Admin/Classifications/ClassificationDetails";
 import AdminUserDetails from "./Pages/Admin/Users/UserDetails";
+import SpeciesPage from "./Pages/Admin/Classifications/Species";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import { Notification } from "./Components/Common/Notification";
 import "./App.css";
@@ -41,6 +42,14 @@ function App() {
           element={
             <ProtectedRoute>
               <AdminClassificationDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/species"
+          element={
+            <ProtectedRoute>
+              <SpeciesPage />
             </ProtectedRoute>
           }
         />

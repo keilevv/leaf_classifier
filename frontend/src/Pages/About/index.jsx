@@ -31,10 +31,7 @@ function About({ onGetStarted }) {
       specialization:
         "Student of Systems and Computer Engineering - Universidad Tecnológica de Bolívar",
       image: "/caleb_villalba.jpeg",
-      bio: [
-        "Over 3 years of professional experience in web development.",
-        "Fullstack developer with JavaScript/TypeSctript, and Python.",
-      ],
+      bio: ["Fullstack developer with JavaScript/TypeSctript, and Python."],
     },
     {
       name: "Victor Martinez Toscano",
@@ -44,9 +41,7 @@ function About({ onGetStarted }) {
         "Student of Systems and Computer Engineering - Universidad Tecnológica de Bolívar",
       image: "/Victor Martinez.jpeg",
       imagePosition: "object-top",
-      bio: [
-        "Student of Systems and Computer Engineering at the Technological University of Bolívar.",
-      ],
+      bio: ["ML Developer"],
     },
     {
       name: "Felipe Jimenez Acuña",
@@ -56,9 +51,7 @@ function About({ onGetStarted }) {
         "Student of Systems and Computer Engineering - Universidad Tecnológica de Bolívar",
       image: "/Felipe Jimenez.jpeg",
       imagePosition: "object-center",
-      bio: [
-        "Student of Systems and Computer Engineering at the Technological University of Bolívar.",
-      ],
+      bio: ["Research, Documentation and Content Creator"],
     },
     {
       name: "Lic. Andrea Menco Tovar",
@@ -420,7 +413,8 @@ function About({ onGetStarted }) {
                         Community Impact
                       </h4>
                       <p className="text-gray-600">
-                        Keeping farmers and communities involved to expand project growth 
+                        Keeping farmers and communities involved to expand
+                        project growth
                       </p>
                     </div>
                   </div>

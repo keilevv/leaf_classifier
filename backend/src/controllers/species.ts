@@ -2,11 +2,20 @@ import prisma from "../lib/prisma";
 import { Request, Response } from "express";
 import { baseShapes } from "../config";
 
+function slugify(string: String) {
+  return String(string)
+    .normalize("NFD")
+    .replace(/\p{Diacritic}+/gu, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\s.-]/g, "")
+    .replace(/[\s._]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$|\.$/g, "");
+}
+
 function SpeciesController() {
-  const getSpecies = async (
-    req: Request,
-    res: Response
-  ): Promise<void> => {
+  const getSpecies = async (req: Request, res: Response): Promise<void> => {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
@@ -29,7 +38,6 @@ function SpeciesController() {
         : null;
       // Build Prisma where filter
       const where: any = {};
-  
 
       // Filter by isArchived, default to false if not provided
       if (typeof isArchived !== "undefined") {
@@ -85,29 +93,22 @@ function SpeciesController() {
       res.status(500).json({ error: "Internal server error" });
     }
   };
-  const createSpecies = async (
-    req: Request,
-    res: Response
-  ): Promise<void> => {
+  const createSpecies = async (req: Request, res: Response): Promise<void> => {
     try {
       const { scientificName, commonNameEn, commonNameEs } = req.body || {};
       if (!scientificName || !commonNameEn || !commonNameEs) {
-        res.status(400).json({ error: "scientificName, commonNameEn and commonNameEs are required" });
+        res.status(400).json({
+          error: "scientificName, commonNameEn and commonNameEs are required",
+        });
         return;
       }
-      const slug = String(scientificName)
-        .normalize("NFD")
-        .replace(/\p{Diacritic}+/gu, "")
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9\s.-]/g, "")
-        .replace(/[\s._]+/g, "-")
-        .replace(/-+/g, "-")
-        .replace(/^-|-$|\.$/g, "");
+      const slug = slugify(scientificName);
 
       const existing = await prisma.species.findUnique({ where: { slug } });
       if (existing) {
-        res.status(409).json({ error: "Species with this slug already exists" });
+        res
+          .status(409)
+          .json({ error: "Species with this slug already exists" });
         return;
       }
 
@@ -133,6 +134,71 @@ function SpeciesController() {
       res.status(500).json({ error: "Internal server error" });
     }
   };
-  return { getSpecies, createSpecies };
+
+  const updateSpecies = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { scientificName, commonNameEn, commonNameEs } = req.body || {};
+      const authUser = (req as any).user as { id?: string } | undefined;
+      if (!authUser?.id) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+      }
+      const actingUser = await prisma.user.findUnique({ where: { id } });
+      if (!actingUser) {
+        res.status(404).json({ error: "User not found" });
+        return;
+      }
+      if (actingUser.role !== "ADMIN") {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+      }
+      if (!id || !scientificName || !commonNameEn || !commonNameEs) {
+        res.status(400).json({
+          error:
+            "id, scientificName, commonNameEn and commonNameEs are required",
+        });
+        return;
+      }
+      const slug = slugify(scientificName);
+      const updated = await prisma.species.update({
+        where: { id },
+        data: { scientificName, commonNameEn, commonNameEs, slug },
+      });
+      res.status(200).json({ species: updated });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  };
+  const deleteSpecies = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const authUser = (req as any).user as { id?: string } | undefined;
+      if (!authUser?.id) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+      }
+      const actingUser = await prisma.user.findUnique({ where: { id } });
+      if (!actingUser) {
+        res.status(404).json({ error: "User not found" });
+        return;
+      }
+      if (actingUser.role !== "ADMIN") {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+      }
+      if (!id) {
+        res.status(400).json({ error: "id is required" });
+        return;
+      }
+      const deleted = await prisma.species.delete({ where: { id } });
+      res.status(200).json({ species: deleted });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  };
+  return { getSpecies, createSpecies, updateSpecies, deleteSpecies };
 }
 export default SpeciesController;
