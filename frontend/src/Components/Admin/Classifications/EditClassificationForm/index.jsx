@@ -16,7 +16,7 @@ import { showNotification } from "../../../Common/Notification";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Switch } from "react-aria-components";
-import CreateSpeciesModal from "../CreateSpeciesModal";
+import CreateSpeciesModal from "../Species/CreateSpeciesModal";
 import { cn } from "../../../../utils";
 
 const shapeModules = import.meta.glob("/src/assets/images/shapes/*.webp", {

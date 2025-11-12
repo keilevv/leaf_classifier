@@ -1,13 +1,21 @@
-import { FaSearch, FaImages, FaFilter, FaBrush } from "react-icons/fa";
+import {
+  FaSearch,
+  FaImages,
+  FaFilter,
+  FaBrush,
+  FaSeedling,
+} from "react-icons/fa";
 import { useState, useEffect, useCallback } from "react";
 import _debounce from "lodash/debounce";
 import useAdmin from "../../../hooks/useAdmin";
 import useStore from "../../../hooks/useStore";
+import { useNavigate } from "react-router-dom";
 import RangePicker from "../../Common/RangePicker";
 import ClassificationsTable from "./ClassificationsTable";
 import SwitchComponent from "../../Common/SwitchComponent";
 
 function Classifications({ setClassificationsCount = () => {} }) {
+  const navigate = useNavigate();
   const { preferences } = useStore();
   const {
     getClassifications,
@@ -81,10 +89,18 @@ function Classifications({ setClassificationsCount = () => {} }) {
       <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
         {/* Search and Filters */}
         <div className="p-6 border-b border-gray-200">
-          <h2 className=" flex gap-2 border-b border-gray-200 text-2xl font-bold mb-4 pb-2 text-green-700 items-center">
-            <FaImages />
-            Classifications
-          </h2>
+          <div
+            onClick={() => navigate("/admin/species")}
+            className="flex justify-between items-center border-b border-gray-200 mb-4 pb-2"
+          >
+            <h2 className=" flex gap-2  text-2xl font-bold  text-green-700 items-center">
+              <FaImages />
+              Classifications
+            </h2>
+            <button className="flex gap-2 items-center text-green-700 mt-1 border cursor-pointer border-green-700 px-2 py-1 w-fit hover:bg-green-100 rounded text-sm">
+              <FaSeedling /> Species
+            </button>
+          </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
             className="flex gap-2 items-center text-green-700 mt-1 border cursor-pointer border-green-700 px-2 py-1 w-fit hover:bg-green-100 rounded"
