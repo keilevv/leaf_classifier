@@ -1,16 +1,31 @@
 import { FaEdit, FaTrash, FaPlus, FaLeaf } from "react-icons/fa";
 
-function SpeciesTable({ species = [], user, onEdit = () => {}, onDelete = () => {} }) {
+function SpeciesTable({
+  species = [],
+  user,
+  onEdit = () => {},
+  onDelete = () => {},
+}) {
   return (
-    <div className=" overflow-hidden">
+    <div className="overflow-auto">
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scientific Name</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Common (EN)</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Common (ES)</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Slug</th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Scientific Name
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Common (EN)
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Common (ES)
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Slug
+            </th>
+            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Actions
+            </th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
@@ -20,9 +35,15 @@ function SpeciesTable({ species = [], user, onEdit = () => {}, onDelete = () => 
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 flex items-center gap-2">
                   <FaLeaf className="text-green-600" /> {sp.scientificName}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{sp.commonNameEn}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{sp.commonNameEs}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{sp.slug}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                  {sp.commonNameEn}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                  {sp.commonNameEs}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {sp.slug}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex justify-end gap-2">
                     {user?.role === "ADMIN" ? (
