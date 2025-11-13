@@ -1,3 +1,2 @@
-*.pth
-
-vit_leaf_classifier.pth
+.env
+data/

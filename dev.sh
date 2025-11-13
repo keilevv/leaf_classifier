@@ -88,7 +88,7 @@ fi
 
 # Activate virtual environment and start Flask app
 source env/bin/activate
-python3 app.py &
+python3 main.py &
 CLASSIFIER_PID=$!
 cd ..
 
