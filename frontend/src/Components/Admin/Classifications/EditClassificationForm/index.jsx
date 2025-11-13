@@ -186,6 +186,7 @@ function EditClassificationForm({ isAdmin = false }) {
     { value: "VERIFIED", label: "Verified" },
     { value: "REJECTED", label: "Rejected" },
   ];
+  const canVerify = user?.role === "ADMIN";
 
   const statusBadge = getStatusBadge(
     dataObject?.isArchived ? "ARCHIVED" : dataObject?.status
@@ -257,21 +258,27 @@ function EditClassificationForm({ isAdmin = false }) {
                         <FaChevronDown className="h-4 w-4 text-gray-500" />
                       </ComboboxButton>
                       <ComboboxOptions className="absolute z-10 left-0 right-0 top-full mt-1 md:top-auto md:mt-0 md:bottom-full md:mb-1 max-h-60 w-full overflow-y-scroll rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                        {statusOptions.map((status) => (
-                          <ComboboxOption
-                            key={status.value}
-                            value={status.value}
-                            className={({ active }) =>
-                              `relative cursor-pointer select-none py-2 pl-3 pr-4 ${
-                                active
-                                  ? "bg-green-100 text-green-900"
-                                  : "text-gray-900"
-                              }`
-                            }
-                          >
-                            {status.label}
-                          </ComboboxOption>
-                        ))}
+                        {statusOptions.map((status) => {
+                          const isDisabled = status.value === "VERIFIED" && !canVerify;
+                          return (
+                            <ComboboxOption
+                              key={status.value}
+                              value={status.value}
+                              disabled={isDisabled}
+                              className={({ active, disabled }) =>
+                                `relative select-none py-2 pl-3 pr-4 ${
+                                  disabled
+                                    ? "text-gray-400 cursor-not-allowed"
+                                    : active
+                                    ? "bg-green-100 text-green-900 cursor-pointer"
+                                    : "text-gray-900 cursor-pointer"
+                                }`
+                              }
+                            >
+                              {status.label}
+                            </ComboboxOption>
+                          );
+                        })}
                       </ComboboxOptions>
                     </div>
                   </Combobox>

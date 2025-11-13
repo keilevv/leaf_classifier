@@ -203,6 +203,10 @@ function adminController() {
       });
       const hasStatus =
         typeof status !== "undefined" && status !== null && status !== "";
+      if (hasStatus && status === "VERIFIED" && actingUser?.role !== "ADMIN") {
+        res.status(403).json({ error: "Only ADMIN can set status to VERIFIED" });
+        return;
+      }
       const tagsChanged =
         typeof taggedSpecies !== "undefined" ||
         typeof taggedShape !== "undefined" ||
