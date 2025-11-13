@@ -1,5 +1,8 @@
-flask==2.3.2
-tensorflow==2.19.0
-numpy==1.26.4
-pillow==10.3.0
-waitress==2.1.2
+fastapi
+uvicorn[standard]
+tensorflow
+pillow
+numpy
+python-multipart
+boto3
+python-dotenv
