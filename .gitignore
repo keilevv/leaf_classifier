@@ -82,3 +82,5 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .vscode
 *.swp
 *.swo
+
+/certbot/conf/renewal
