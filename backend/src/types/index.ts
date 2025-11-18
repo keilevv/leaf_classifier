@@ -1,9 +1,12 @@
+import { Request } from "express";
+
 export interface AuthenticatedRequest extends Request {
-  user: {
+  user?: {
     id: string;
     [key: string]: any;
   };
-  query: string | any;
+  query: any;
+  params: any;
   file?: any; // Multer file object
   body: any;
 }

@@ -6,7 +6,7 @@ services:
     env_file:
       - ./backend/.env
     ports:
-      - '5432:5432'
+      - '5433:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/prisma/migrations:/docker-entrypoint-initdb.d/migrations
@@ -64,6 +64,31 @@ services:
     env_file:
       - ./frontend/.env
     restart: unless-stopped
+    networks:
+      - leaf-network
+
+  test:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: leaf-test
+    depends_on:
+      - db
+      - backend
+      - classifier
+    env_file:
+      - ./backend/.env.local
+    environment:
+      - NODE_ENV=test
+      - BACKEND_URL=http://backend:5000
+      - CLASSIFIER_URL=http://classifier:8000
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public
+    volumes:
+      - ./backend:/usr/src/app
+    command: >
+      sh -c "bunx prisma generate &&
+             bunx prisma migrate deploy &&
+             bun test:integration"
     networks:
       - leaf-network
 

@@ -179,7 +179,10 @@ function SpeciesController() {
         res.status(401).json({ error: "Unauthorized" });
         return;
       }
-      const actingUser = await prisma.user.findUnique({ where: { id } });
+
+      const actingUser = await prisma.user.findUnique({
+        where: { id: authUser.id },
+      });
       if (!actingUser) {
         res.status(404).json({ error: "User not found" });
         return;

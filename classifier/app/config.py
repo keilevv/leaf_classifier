@@ -52,16 +52,8 @@ SHAPES = [
     ]
 
 SPECIES = [
-    'cucumis-sativus_deseased',
-    'cucumis-sativus_healthy',
-    'discorea-alata-l_deseased',
-    'discorea-alata-l_healthy',
-    'manihot-esculenta_deseased',
-    'manihot-esculenta_healthy',
-    'solanum-melongena_deseased',
-    'solanum-melongena_healthy',
-    'zea-mays_deseased',
-    'zea-mays_healthy'
+    'musa-paradisiaca-l_deseased',
+    'solanum-melongena_healthy'
 ]
 
 # Configuración de Cloudflare R2 para descarga de imágenes

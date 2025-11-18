@@ -27,19 +27,19 @@ createDefaultAdmin()
         console.error("Error creating default species:", error);
       })
       .then(() => {
-        updateEntriedSpecies()
-          .catch((error) => {
-            console.error("Error updating species:", error);
-          })
-          .then(() => {
-            updateTaggedHealthy()
-              .catch((error) => {
-                console.error("Error updating tagged healthy:", error);
-              })
-              .then(() => {
-                console.log("All updates completed successfully");
-              });
-          });
+        // updateEntriedSpecies()
+        //   .catch((error) => {
+        //     console.error("Error updating species:", error);
+        //   })
+        //   .then(() => {
+        //     updateTaggedHealthy()
+        //       .catch((error) => {
+        //         console.error("Error updating tagged healthy:", error);
+        //       })
+        //       .then(() => {
+        //         console.log("All updates completed successfully");
+        //       });
+        //   });
       });
   });
 

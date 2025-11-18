@@ -1,10 +1,11 @@
 import { useEffect } from "react";
 import { Tab, TabPanel, TabPanels, TabGroup, TabList } from "@headlessui/react";
 import useUser from "../../hooks/useUser";
-import { FaUser, FaCog } from "react-icons/fa";
+import { FaUser, FaCog, FaBrain } from "react-icons/fa";
 import useStore from "../../hooks/useStore";
 import PreferencesForm from "./PreferencesForm";
 import DetailsForm from "./DetailsForm";
+import ModelSettings from "./ModelSettings";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -41,7 +42,24 @@ export default function Settings() {
 
         {/* Tabs */}
         <TabGroup>
-          <TabList className="flex border-b border-gray-200 bg-gray-50">
+          <TabList className="flex border-b border-gray-200 bg-gray-50 flex-wrap">
+            {user.role === "ADMIN" && (
+              <Tab
+                className={({ selected }) =>
+                  classNames(
+                    "flex-1 py-4 px-6 text-sm font-medium focus:outline-none cursor-pointer",
+                    selected
+                      ? "text-green-600 border-b-2 border-green-600 bg-white"
+                      : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                  )
+                }
+              >
+                <div className="flex items-center justify-center space-x-2">
+                  <FaBrain className="h-4 w-4" />
+                  <span>Model Settings</span>
+                </div>
+              </Tab>
+            )}
             <Tab
               className={({ selected }) =>
                 classNames(
@@ -75,6 +93,12 @@ export default function Settings() {
           </TabList>
 
           <TabPanels>
+            {/* Model Settings Panel */}
+            {user.role === "ADMIN" && (
+              <TabPanel className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <ModelSettings />
+              </TabPanel>
+            )}
             {/* User Settings Panel */}
             <TabPanel className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
               <DetailsForm
