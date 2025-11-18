@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 import threading
 import tensorflow as tf
 import os
+from datetime import datetime
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from ..config import (
     MODEL_DIR, DATA_DIR, BACKUP_DIR, MAX_BACKUPS,
@@ -14,6 +15,11 @@ from ..utils.label_detector import detect_new_classes, update_config_with_new_cl
 from ..utils.cloudflare_downloader import download_verified_images_from_r2
 from ..utils.model_versioning import create_model_version, list_model_versions, restore_model_version, get_version_info
 from ..models_loader import reload_model
+
+# Global training status tracker
+# Format: {model_name: {'is_training': bool, 'started_at': datetime, 'thread': Thread}}
+training_status = {}
+training_lock = threading.Lock()
 
 def get_gpu_info():
     """Obtiene información sobre las GPUs disponibles y su configuración"""
@@ -87,6 +93,19 @@ def init_retrain_route():
                 status_code=400,
                 detail="Debes especificar ?model=especies | hojas | plantas"
             )
+
+        # Check if training is already in progress for this model
+        with training_lock:
+            if model in training_status and training_status[model]['is_training']:
+                raise HTTPException(
+                    status_code=409,
+                    detail=f"El modelo {model} ya está siendo entrenado. Por favor espera a que termine el entrenamiento actual."
+                )
+            # Set training status
+            training_status[model] = {
+                'is_training': True,
+                'started_at': datetime.utcnow().isoformat()
+            }
 
         def train_thread(model_name):
             # Descargar imágenes verificadas de Cloudflare R2 ANTES del entrenamiento
@@ -164,6 +183,21 @@ def init_retrain_route():
             print(f"Reentrenando modelo {model_name}...")
             model_path = os.path.join(MODEL_DIR, f"modelo_{model_name}.h5")
             data_path = os.path.join(DATA_DIR, model_name)
+            train_data_path = os.path.join(data_path, "train")
+            
+            # Validate that training data directory exists
+            if not os.path.exists(train_data_path):
+                error_msg = f"❌ ERROR: El directorio de datos de entrenamiento no existe: {train_data_path}"
+                print(error_msg)
+                print(f"   Por favor, asegúrate de que el directorio existe y contiene las clases de entrenamiento.")
+                raise FileNotFoundError(f"Training data directory not found: {train_data_path}")
+            
+            # Validate that training data directory is not empty
+            if not os.listdir(train_data_path):
+                error_msg = f"❌ ERROR: El directorio de datos de entrenamiento está vacío: {train_data_path}"
+                print(error_msg)
+                print(f"   Por favor, agrega imágenes de entrenamiento organizadas por clases.")
+                raise ValueError(f"Training data directory is empty: {train_data_path}")
 
             # Detectar clases en los datos DESPUÉS de descargar (si se descargaron)
             print(f"Detectando clases en los datos para {model_name}...")
@@ -369,21 +403,73 @@ def init_retrain_route():
                 
                 print(f"   📦 Configurando batch size: {batch_size} {'(GPU optimizado)' if use_gpu else '(CPU)'}")
                 
-                datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2)
-                train_gen = datagen.flow_from_directory(
-                    os.path.join(data_path, "train"),
-                    target_size=(128, 128),
-                    batch_size=batch_size,
-                    subset='training',
-                    class_mode='categorical'
-                )
-                val_gen = datagen.flow_from_directory(
-                    os.path.join(data_path, "train"),
-                    target_size=(128, 128),
-                    batch_size=batch_size,
-                    subset='validation',
-                    class_mode='categorical'
-                )
+                # Validate training data directory again before creating generators
+                if not os.path.exists(train_data_path):
+                    raise FileNotFoundError(f"Training data directory not found: {train_data_path}")
+                if not os.listdir(train_data_path):
+                    raise ValueError(f"Training data directory is empty: {train_data_path}")
+                
+                print(f"   📁 Usando datos de entrenamiento desde: {train_data_path}")
+                
+                # Count total images to determine if we can use validation split
+                total_images = 0
+                for class_dir in os.listdir(train_data_path):
+                    class_path = os.path.join(train_data_path, class_dir)
+                    if os.path.isdir(class_path):
+                        # Count image files in this class directory
+                        image_files = [f for f in os.listdir(class_path) 
+                                     if f.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif'))]
+                        total_images += len(image_files)
+                
+                print(f"   📊 Total de imágenes encontradas: {total_images}")
+                
+                # Determine validation split based on available data
+                # Need at least 5 images per class on average for a 20% validation split
+                # If we have very few images, skip validation or use a smaller split
+                use_validation = total_images >= 10
+                validation_split = 0.2 if use_validation else 0.0
+                
+                if not use_validation:
+                    print(f"   ⚠️  Pocas imágenes ({total_images}). Se entrenará sin conjunto de validación.")
+                    print(f"   💡 Se recomienda tener al menos 10 imágenes para usar validación.")
+                else:
+                    print(f"   ✅ Usando {validation_split*100:.0f}% de los datos para validación.")
+                
+                datagen = ImageDataGenerator(rescale=1./255, validation_split=validation_split)
+                try:
+                    train_gen = datagen.flow_from_directory(
+                        train_data_path,
+                        target_size=(128, 128),
+                        batch_size=batch_size,
+                        subset='training',
+                        class_mode='categorical'
+                    )
+                    
+                    # Only create validation generator if we're using validation
+                    val_gen = None
+                    if use_validation:
+                        val_gen = datagen.flow_from_directory(
+                            train_data_path,
+                            target_size=(128, 128),
+                            batch_size=batch_size,
+                            subset='validation',
+                            class_mode='categorical'
+                        )
+                        
+                        # Verify validation set has images
+                        if val_gen.samples == 0:
+                            print(f"   ⚠️  El conjunto de validación está vacío. Continuando sin validación.")
+                            val_gen = None
+                            use_validation = False
+                except FileNotFoundError as e:
+                    error_msg = f"❌ ERROR: No se pudo acceder al directorio de datos de entrenamiento: {train_data_path}"
+                    print(error_msg)
+                    print(f"   Error: {str(e)}")
+                    raise
+                except Exception as e:
+                    error_msg = f"❌ ERROR: Error al crear generadores de datos: {str(e)}"
+                    print(error_msg)
+                    raise
                 
                 # Verificar que el número de clases del generador coincide con el modelo
                 train_num_classes = train_gen.num_classes
@@ -485,7 +571,14 @@ def init_retrain_route():
                 # Ejecutar entrenamiento - ya estamos dentro del contexto with tf.device(device)
                 # por lo que todas las operaciones se ejecutarán en el dispositivo correcto
                 print(f"\n   ⚡ Ejecutando entrenamiento...")
-                print(f"   📊 Monitorea nvidia-smi - deberías ver 80-100% de utilización")
+                if use_validation and val_gen:
+                    print(f"   📊 Conjunto de entrenamiento: {train_gen.samples} imágenes")
+                    print(f"   📊 Conjunto de validación: {val_gen.samples} imágenes")
+                else:
+                    print(f"   📊 Conjunto de entrenamiento: {train_gen.samples} imágenes")
+                    print(f"   ⚠️  Entrenando sin validación (pocas imágenes disponibles)")
+                if use_gpu:
+                    print(f"   📊 Monitorea nvidia-smi - deberías ver 80-100% de utilización")
                 print(f"   💡 Si ves baja utilización, el modelo puede ser pequeño - considera aumentar batch_size\n")
                 
                 # Intentar entrenar con manejo de errores de memoria
@@ -497,12 +590,15 @@ def init_retrain_route():
                         gc.collect()
                         print(f"   🧹 Memoria del sistema limpiada")
                     
-                    model.fit(
-                        train_gen, 
-                        epochs=5, 
-                        validation_data=val_gen, 
-                        verbose=1
-                    )
+                    # Use validation data only if available
+                    fit_kwargs = {
+                        'epochs': 5,
+                        'verbose': 1
+                    }
+                    if use_validation and val_gen and val_gen.samples > 0:
+                        fit_kwargs['validation_data'] = val_gen
+                    
+                    model.fit(train_gen, **fit_kwargs)
                 except (tf.errors.ResourceExhaustedError, RuntimeError, Exception) as e:
                     error_msg = str(e)
                     # Detectar errores de memoria de GPU
@@ -529,21 +625,25 @@ def init_retrain_route():
                             raise RuntimeError(f"Batch size demasiado pequeño después de reducir por OOM: {batch_size}")
                         
                         # Recrear generadores con nuevo batch size
-                        datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2)
+                        datagen = ImageDataGenerator(rescale=1./255, validation_split=validation_split)
                         train_gen = datagen.flow_from_directory(
-                            os.path.join(data_path, "train"),
+                            train_data_path,
                             target_size=(128, 128),
                             batch_size=batch_size,
                             subset='training',
                             class_mode='categorical'
                         )
-                        val_gen = datagen.flow_from_directory(
-                            os.path.join(data_path, "train"),
-                            target_size=(128, 128),
-                            batch_size=batch_size,
-                            subset='validation',
-                            class_mode='categorical'
-                        )
+                        val_gen = None
+                        if use_validation:
+                            val_gen = datagen.flow_from_directory(
+                                train_data_path,
+                                target_size=(128, 128),
+                                batch_size=batch_size,
+                                subset='validation',
+                                class_mode='categorical'
+                            )
+                            if val_gen.samples == 0:
+                                val_gen = None
                         
                         # Recompilar modelo para asegurar que está en GPU
                         print(f"   🔄 Recompilando modelo con batch_size={batch_size}...")
@@ -554,16 +654,19 @@ def init_retrain_route():
                         print(f"   ✅ Batch size reducido a {batch_size}, reintentando entrenamiento en GPU...\n")
                         # Asegurar que estamos en GPU al reintentar
                         with tf.device('/GPU:0'):
-                            model.fit(
-                                train_gen, 
-                                epochs=5, 
-                                validation_data=val_gen, 
-                                verbose=1
-                            )
+                            fit_kwargs = {
+                                'epochs': 5,
+                                'verbose': 1
+                            }
+                            if use_validation and val_gen and val_gen.samples > 0:
+                                fit_kwargs['validation_data'] = val_gen
+                            
+                            model.fit(train_gen, **fit_kwargs)
                     else:
                         # Re-lanzar el error si no es de memoria
                         raise
 
+            training_error = None
             try:
                 # Crear versión del modelo actual ANTES de guardar el nuevo
                 # Esto preserva el modelo anterior en backups
@@ -595,16 +698,69 @@ def init_retrain_route():
                     print(f"⚠️  Error al recargar modelo {model_name} para predicciones: {reload_error}")
                     print(f"   El modelo fue guardado correctamente, pero será necesario reiniciar la aplicación para usarlo.")
 
-            except Exception as e:
-                print(f"Error al actualizar modelo {model_name}: {e}")
+            except FileNotFoundError as e:
+                error_msg = f"❌ ERROR CRÍTICO: Directorio de datos no encontrado para {model_name}"
+                print(f"\n{'='*60}")
+                print(error_msg)
+                print(f"   Ruta esperada: {os.path.join(DATA_DIR, model_name, 'train')}")
+                print(f"   Error: {str(e)}")
+                print(f"{'='*60}")
+                print(f"💡 SOLUCIÓN:")
+                print(f"   1. Asegúrate de que el directorio de datos existe")
+                print(f"   2. Para especies, las imágenes se descargan automáticamente desde Cloudflare R2")
+                print(f"   3. Verifica que las credenciales de R2 estén configuradas correctamente")
+                print(f"   4. O crea manualmente el directorio y organiza las imágenes por clases")
+                print(f"{'='*60}\n")
                 # Nota: Si hay error, el modelo anterior ya está guardado en versiones
                 # Se puede restaurar usando el endpoint de restauración de versiones
                 print(f"💡 Puedes restaurar una versión anterior usando el endpoint /retrain/restore-version")
+                training_error = str(e)
+            except ValueError as e:
+                error_msg = f"❌ ERROR CRÍTICO: Directorio de datos vacío para {model_name}"
+                print(f"\n{'='*60}")
+                print(error_msg)
+                print(f"   Ruta: {os.path.join(DATA_DIR, model_name, 'train')}")
+                print(f"   Error: {str(e)}")
+                print(f"{'='*60}")
+                print(f"💡 SOLUCIÓN:")
+                print(f"   1. Agrega imágenes de entrenamiento organizadas por clases")
+                print(f"   2. Cada clase debe estar en su propia carpeta dentro de 'train/'")
+                print(f"   3. Para especies, las imágenes se descargan automáticamente desde Cloudflare R2")
+                print(f"   4. Verifica que las credenciales de R2 estén configuradas correctamente")
+                print(f"{'='*60}\n")
+                training_error = str(e)
+            except Exception as e:
+                error_msg = f"❌ ERROR durante el entrenamiento de {model_name}"
+                print(f"\n{'='*60}")
+                print(error_msg)
+                print(f"   Error: {str(e)}")
+                print(f"   Tipo: {type(e).__name__}")
+                print(f"{'='*60}")
+                # Nota: Si hay error, el modelo anterior ya está guardado en versiones
+                # Se puede restaurar usando el endpoint de restauración de versiones
+                print(f"💡 Puedes restaurar una versión anterior usando el endpoint /retrain/restore-version")
+                training_error = str(e)
+            finally:
+                # Clear training status when done (success or error)
+                with training_lock:
+                    if model_name in training_status:
+                        training_status[model_name]['is_training'] = False
+                        training_status[model_name]['completed_at'] = datetime.utcnow().isoformat()
+                        # Store error information if training failed
+                        if training_error:
+                            training_status[model_name]['error'] = training_error
 
         # Detectar clases antes de iniciar el entrenamiento para mostrar información inmediata
         class_info = detect_new_classes(model)
         
-        threading.Thread(target=train_thread, args=(model,)).start()
+        # Start training thread
+        thread = threading.Thread(target=train_thread, args=(model,))
+        thread.daemon = True  # Allow main process to exit even if thread is running
+        thread.start()
+        
+        # Store thread reference
+        with training_lock:
+            training_status[model]['thread'] = thread
 
         response = {
             "status": "Entrenamiento iniciado",
@@ -622,6 +778,40 @@ def init_retrain_route():
             response["message"] = "No se detectaron cambios en las clases. El modelo será reentrenado con las clases existentes."
 
         return response
+    
+    @bp.get(
+        "/status",
+        summary="Estado de entrenamiento",
+        description="""
+        Obtiene el estado actual de entrenamiento para un modelo específico.
+        
+        **Respuesta:**
+        - `is_training`: Indica si el modelo está siendo entrenado actualmente
+        - `started_at`: Timestamp de cuando comenzó el entrenamiento (si está en progreso)
+        - `completed_at`: Timestamp de cuando terminó el entrenamiento (si ya terminó)
+        """,
+        response_description="Estado de entrenamiento del modelo"
+    )
+    def get_training_status(model: str = Query(..., description="Modelo a consultar: especies, hojas o plantas")):
+        if model not in ['especies', 'hojas', 'plantas']:
+            raise HTTPException(
+                status_code=400,
+                detail="Debes especificar ?model=especies | hojas | plantas"
+            )
+        
+        with training_lock:
+            status = training_status.get(model, {
+                'is_training': False,
+                'started_at': None,
+                'completed_at': None
+            })
+            
+            return {
+                "model": model,
+                "is_training": status.get('is_training', False),
+                "started_at": status.get('started_at'),
+                "completed_at": status.get('completed_at')
+            }
     
     @bp.get(
         "/check-classes",

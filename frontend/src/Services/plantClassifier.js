@@ -29,5 +29,49 @@ const plantClassifierService = {
       { headers: { Authorization: `Bearer ${accessToken}` } }
     );
   },
+  listModels(accessToken) {
+    return axios.get(`${apiUrl}/plant-classifier/models`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+  },
+  getModelVersions(model, accessToken) {
+    return axios.get(`${apiUrl}/plant-classifier/models/${model}/versions`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+  },
+  getModelVersionInfo(model, version, accessToken) {
+    return axios.get(
+      `${apiUrl}/plant-classifier/models/${model}/versions/${version}`,
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }
+    );
+  },
+  restoreModelVersion(model, version, accessToken) {
+    return axios.post(
+      `${apiUrl}/plant-classifier/models/${model}/versions/${version}/restore`,
+      undefined,
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }
+    );
+  },
+  retrainModel(model, accessToken) {
+    return axios.post(
+      `${apiUrl}/plant-classifier/retrain/${model}`,
+      undefined,
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }
+    );
+  },
+  getTrainingStatus(model, accessToken) {
+    return axios.get(
+      `${apiUrl}/plant-classifier/retrain/${model}/status`,
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }
+    );
+  },
 };
 export default plantClassifierService;

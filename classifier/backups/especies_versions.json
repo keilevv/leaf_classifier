@@ -1,4 +1,15 @@
 {
-  "versions": [],
-  "current_version": null
+  "versions": [
+    {
+      "version": 1,
+      "timestamp": "2025-11-18T06:26:17.626346",
+      "timestamp_str": "20251118T062617",
+      "filename": "modelo_especies_v0001_20251118T062617.h5",
+      "path": "/home/keilevv/projects/leaf_classifier/classifier/app/../backups/modelo_especies_v0001_20251118T062617.h5",
+      "notes": "Reentrenamiento automático - 2025-11-18 06:26:17",
+      "size_bytes": 32471648
+    }
+  ],
+  "current_version": 1,
+  "last_updated": "2025-11-18T06:26:17.626346"
 }

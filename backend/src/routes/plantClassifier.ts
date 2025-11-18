@@ -14,6 +14,7 @@ const {
   getModelVersionInfo,
   restoreModelVersion,
   retrainModel,
+  getTrainingStatus,
 } = controller();
 
 const router = express.Router();
@@ -49,5 +50,6 @@ router.post(
   restoreModelVersion
 );
 router.post("/retrain/:model", authenticateToken, retrainModel);
+router.get("/retrain/:model/status", authenticateToken, getTrainingStatus);
 
 export default router;

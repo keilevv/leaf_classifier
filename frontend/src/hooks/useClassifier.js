@@ -1,5 +1,5 @@
 import plantClassifierService from "../Services/plantClassifier";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import useStore from "../hooks/useStore";
 function useClassifier() {
   const { accessToken } = useStore();
@@ -9,6 +9,12 @@ function useClassifier() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [pages, setPages] = useState(1);
+
+  const [models, setModels] = useState([]);
+  const [speciesVersions, setSpeciesVersions] = useState(null);
+  const [shapesVersions, setShapesVersions] = useState(null);
+  const [plantVersions, setPlantVersions] = useState(null);
+  const [trainingStatus, setTrainingStatus] = useState(null);
 
   function uploadClassification(imageData) {
     setIsLoading(true);
@@ -92,18 +98,123 @@ function useClassifier() {
     setUploads((prev) => [upload, ...prev]);
   }
 
+  const listModels = useCallback(() => {
+    setIsLoading(true);
+    return plantClassifierService
+      .listModels(accessToken)
+      .then((response) => {
+        setModels(response.data.models);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching models:", error);
+        setError(error);
+        setIsLoading(false);
+      });
+  }, [accessToken]);
+
+  const getModelVersions = useCallback(
+    (model) => {
+      setIsLoading(true);
+      return plantClassifierService
+        .getModelVersions(model, accessToken)
+        .then((response) => {
+          if (model === "especies") {
+            setSpeciesVersions(response.data);
+          } else if (model === "hojas") {
+            setShapesVersions(response.data);
+          } else if (model === "plantas") {
+            setPlantVersions(response.data);
+          }
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          console.error("Error fetching models:", error);
+          setError(error);
+          setIsLoading(false);
+        });
+    },
+    [accessToken]
+  );
+
+  const restoreModelVersion = useCallback(
+    (model, version) => {
+      setIsLoading(true);
+      return plantClassifierService
+        .restoreModelVersion(model, version, accessToken)
+        .then((response) => {
+          setIsLoading(false);
+          return response.data;
+        })
+        .catch((error) => {
+          console.error("Error restoring model version:", error);
+          setError(error);
+          setIsLoading(false);
+        });
+    },
+    [accessToken]
+  );
+
+  const getTrainingStatus = useCallback(
+    (model) => {
+      return plantClassifierService
+        .getTrainingStatus(model, accessToken)
+        .then((response) => {
+          setTrainingStatus(response.data);
+          return response.data;
+        })
+        .catch((error) => {
+          console.error("Error fetching training status:", error);
+          setError(error);
+          return null;
+        });
+    },
+    [accessToken]
+  );
+
+  const retrainModel = useCallback(
+    (model) => {
+      setIsLoading(true);
+      return plantClassifierService
+        .retrainModel(model, accessToken)
+        .then((response) => {
+          setIsLoading(false);
+          // Refresh training status after starting
+          getTrainingStatus(model);
+          return response.data;
+        })
+        .catch((error) => {
+          console.error("Error retraining model:", error);
+          setError(error);
+          setIsLoading(false);
+          throw error;
+        });
+    },
+    [accessToken, getTrainingStatus]
+  );
+
   return {
     uploadClassification,
     getUploads,
     getUpload,
     addUpload,
     updateClassification,
+    listModels,
+    restoreModelVersion,
+    getModelVersions,
+    retrainModel,
+    getTrainingStatus,
     shapes,
     uploads,
     upload,
     isLoading,
     error,
     pages,
+    models,
+    speciesVersions,
+    shapesVersions,
+    plantVersions,
+    trainingStatus,
   };
 }
 export default useClassifier;

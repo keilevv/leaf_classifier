@@ -514,9 +514,44 @@ function plantClassifierController() {
       );
       return res.status(200).json(response.data);
     } catch (error: any) {
+      if (error.response?.status === 409) {
+        return res.status(409).json({ error: error.response.data.detail || "Training already in progress" });
+      }
       return res
         .status(500)
         .json({ error: error.message || "Failed to start retraining" });
+    }
+  };
+
+  const getTrainingStatus = async (
+    req: any,
+    res: Response
+  ) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      const actingUser = await prisma.user.findUnique({ where: { id: req.user.id } });
+      if (!actingUser || actingUser.role !== "ADMIN") {
+        return res.status(403).json({ error: "Unauthorized" });
+      }
+
+      const model = (req.params.model as string) || (req.query.model as string);
+      if (!model || !availableModels.includes(model)) {
+        return res
+          .status(400)
+          .json({ error: "Invalid or missing model. Use especies|hojas|plantas" });
+      }
+
+      const response = await axios.get(
+        `${classifierServiceUrl}/retrain/status`,
+        { params: { model } }
+      );
+      return res.status(200).json(response.data);
+    } catch (error: any) {
+      return res
+        .status(500)
+        .json({ error: error.message || "Failed to get training status" });
     }
   };
 
@@ -530,6 +565,7 @@ function plantClassifierController() {
     getModelVersionInfo,
     restoreModelVersion,
     retrainModel,
+    getTrainingStatus,
   };
 }
 

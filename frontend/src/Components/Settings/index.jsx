@@ -43,21 +43,23 @@ export default function Settings() {
         {/* Tabs */}
         <TabGroup>
           <TabList className="flex border-b border-gray-200 bg-gray-50 flex-wrap">
-            <Tab
-              className={({ selected }) =>
-                classNames(
-                  "flex-1 py-4 px-6 text-sm font-medium focus:outline-none cursor-pointer",
-                  selected
-                    ? "text-green-600 border-b-2 border-green-600 bg-white"
-                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-                )
-              }
-            >
-              <div className="flex items-center justify-center space-x-2">
-                <FaBrain className="h-4 w-4" />
-                <span>Model Settings</span>
-              </div>
-            </Tab>
+            {user.role === "ADMIN" && (
+              <Tab
+                className={({ selected }) =>
+                  classNames(
+                    "flex-1 py-4 px-6 text-sm font-medium focus:outline-none cursor-pointer",
+                    selected
+                      ? "text-green-600 border-b-2 border-green-600 bg-white"
+                      : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                  )
+                }
+              >
+                <div className="flex items-center justify-center space-x-2">
+                  <FaBrain className="h-4 w-4" />
+                  <span>Model Settings</span>
+                </div>
+              </Tab>
+            )}
             <Tab
               className={({ selected }) =>
                 classNames(
@@ -92,9 +94,11 @@ export default function Settings() {
 
           <TabPanels>
             {/* Model Settings Panel */}
-            <TabPanel className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              <ModelSettings />
-            </TabPanel>
+            {user.role === "ADMIN" && (
+              <TabPanel className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <ModelSettings />
+              </TabPanel>
+            )}
             {/* User Settings Panel */}
             <TabPanel className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
               <DetailsForm
