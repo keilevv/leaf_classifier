@@ -1,5 +1,5 @@
 import prisma from "../lib/prisma";
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import path from "path";
 import fs from "fs";
 import axios from "axios";
@@ -9,14 +9,6 @@ import { v4 as uuidv4 } from "uuid";
 import { sanitizeUser } from "../utils";
 import { baseShapes } from "../config";
 
-// Extend the Request interface to include user and file properties
-interface AuthenticatedRequest extends Request {
-  user: {
-    id: string;
-    [key: string]: any;
-  };
-  file?: any; // Multer file object
-}
 
 const classifierServiceUrl =
   process.env.CLASSIFY_SERVICE_URL || "http://localhost:8000/";
@@ -25,11 +17,14 @@ function plantClassifierController() {
   // These now return middleware functions that Express can use
 
   const uploadImage = async (
-    req: AuthenticatedRequest,
+    req: any,
     res: Response,
     next: NextFunction
   ) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
       const userId = req.user.id;
       const image = req.file;
 
@@ -205,13 +200,15 @@ function plantClassifierController() {
           message: "Error classifying image",
         });
       }
-    } catch (error) {
-      return res.status(500).json({ error: error.message });
+    } catch (error: any) {
+      return res
+        .status(500)
+        .json({ error: (error && error.message) || "Internal server error" });
     }
   };
 
   async function getClassifications(
-    req: AuthenticatedRequest,
+    req: any,
     res: Response
   ): Promise<void> {
     const page = parseInt(req.query.page as string) || 1;
@@ -332,7 +329,7 @@ function plantClassifierController() {
   }
 
   async function getUpload(
-    req: AuthenticatedRequest,
+    req: any,
     res: Response
   ): Promise<Response> {
     try {
@@ -340,6 +337,10 @@ function plantClassifierController() {
       const upload = await prisma.classification.findUnique({
         where: { id },
       });
+
+      if (!upload) {
+        return res.status(404).json({ error: "Upload not found" });
+      }
 
       if (upload.userId !== req.user.id) {
         return res.status(403).json({ error: "Forbidden" });
@@ -351,7 +352,7 @@ function plantClassifierController() {
   }
 
   const updateClassification = async (
-    req: AuthenticatedRequest,
+    req: any,
     res: Response
   ) => {
     const id = req.params.id;
@@ -382,11 +383,140 @@ function plantClassifierController() {
         results: { ...classification },
       };
       res.json(response);
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({
         error: "Failed to update classification",
-        message: error.message,
+        message: (error && error.message) || "Internal server error",
       });
+    }
+  };
+
+  const availableModels = ["especies", "hojas", "plantas"];
+
+  const listModels = async (req: any, res: Response) => {
+    try {
+      res.json({ models: availableModels });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to list models" });
+    }
+  };
+
+  const getModelVersions = async (
+    req: any,
+    res: Response
+  ) => {
+    try {
+      const model = (req.params.model as string) || (req.query.model as string);
+      if (!model || !availableModels.includes(model)) {
+        return res
+          .status(400)
+          .json({ error: "Invalid or missing model. Use especies|hojas|plantas" });
+      }
+
+      const response = await axios.get(`${classifierServiceUrl}/retrain/versions`, {
+        params: { model },
+      });
+      return res.status(200).json(response.data);
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message || "Failed to fetch versions" });
+    }
+  };
+
+  const getModelVersionInfo = async (
+    req: any,
+    res: Response
+  ) => {
+    try {
+      const model = req.params.model as string;
+      const version = req.params.version as string;
+      if (!model || !availableModels.includes(model)) {
+        return res
+          .status(400)
+          .json({ error: "Invalid or missing model. Use especies|hojas|plantas" });
+      }
+      if (!version) {
+        return res.status(400).json({ error: "Missing version" });
+      }
+
+      const response = await axios.get(
+        `${classifierServiceUrl}/retrain/version-info`,
+        { params: { model, version } }
+      );
+      return res.status(200).json(response.data);
+    } catch (error: any) {
+      return res
+        .status(500)
+        .json({ error: error.message || "Failed to fetch version info" });
+    }
+  };
+
+  const restoreModelVersion = async (
+    req: any,
+    res: Response
+  ) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      const actingUser = await prisma.user.findUnique({ where: { id: req.user.id } });
+      if (!actingUser || actingUser.role !== "ADMIN") {
+        return res.status(403).json({ error: "Unauthorized" });
+      }
+
+      const model = req.params.model as string;
+      const version = req.params.version as string;
+      if (!model || !availableModels.includes(model)) {
+        return res
+          .status(400)
+          .json({ error: "Invalid or missing model. Use especies|hojas|plantas" });
+      }
+      if (!version) {
+        return res.status(400).json({ error: "Missing version" });
+      }
+
+      const response = await axios.post(
+        `${classifierServiceUrl}/retrain/restore-version`,
+        undefined,
+        { params: { model, version } }
+      );
+      return res.status(200).json(response.data);
+    } catch (error: any) {
+      return res
+        .status(500)
+        .json({ error: error.message || "Failed to restore model version" });
+    }
+  };
+
+  const retrainModel = async (
+    req: any,
+    res: Response
+  ) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      const actingUser = await prisma.user.findUnique({ where: { id: req.user.id } });
+      if (!actingUser || actingUser.role !== "ADMIN") {
+        return res.status(403).json({ error: "Unauthorized" });
+      }
+
+      const model = (req.params.model as string) || (req.query.model as string);
+      if (!model || !availableModels.includes(model)) {
+        return res
+          .status(400)
+          .json({ error: "Invalid or missing model. Use especies|hojas|plantas" });
+      }
+
+      const response = await axios.post(
+        `${classifierServiceUrl}/retrain`,
+        undefined,
+        { params: { model } }
+      );
+      return res.status(200).json(response.data);
+    } catch (error: any) {
+      return res
+        .status(500)
+        .json({ error: error.message || "Failed to start retraining" });
     }
   };
 
@@ -395,6 +525,11 @@ function plantClassifierController() {
     getClassifications,
     updateClassification,
     getUpload,
+    listModels,
+    getModelVersions,
+    getModelVersionInfo,
+    restoreModelVersion,
+    retrainModel,
   };
 }
 

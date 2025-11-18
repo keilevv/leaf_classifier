@@ -4,6 +4,7 @@ import { AuthenticatedRequest } from "../types";
 import { R2Service } from "../services/r2Service";
 import { sanitizeUser } from "../utils";
 import { baseShapes } from "../config";
+import bcrypt from "bcryptjs"
 
 function adminController() {
   async function getClassificationsAdmin(
