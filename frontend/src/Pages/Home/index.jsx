@@ -144,7 +144,7 @@ export default function Home() {
               SAPS<span className="text-green-600">AI</span>
             </h1>
             <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-6">
-              System for adquisicion, processing and storage of plant images
+              System for adquisition, processing and storage of plant images
             </h2>
             <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
               Help us create the world's largest collaborative database for
@@ -173,7 +173,7 @@ export default function Home() {
               </button>
             </div>
             <h2 className="text-3xl md:text-3xl font-bold text-green-600 mb-8">
-              Our Aim
+              Our Goal
             </h2>
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">

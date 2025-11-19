@@ -44,6 +44,11 @@ services:
       context: ./classifier
       dockerfile: Dockerfile
     container_name: leaf-classifier
+    volumes:
+      - ./classifier/models:/app/models
+      - ./classifier/backups:/app/backups
+    env_file:
+      - ./classifier/.env.prod
     restart: unless-stopped
     networks:
       - leaf-network

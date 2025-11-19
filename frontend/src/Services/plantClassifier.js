@@ -4,10 +4,11 @@ const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 axios.defaults.withCredentials = true;
 const plantClassifierService = {
-  uploadImage(formData) {
+  uploadImage(formData, accessToken) {
     return axios.post(`${apiUrl}/plant-classifier/upload`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${accessToken}`,
       },
     });
   },

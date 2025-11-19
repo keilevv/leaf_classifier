@@ -19,7 +19,7 @@ function useClassifier() {
   function uploadClassification(imageData) {
     setIsLoading(true);
     return plantClassifierService
-      .uploadImage(imageData)
+      .uploadImage(imageData, accessToken)
       .then((response) => {
         setIsLoading(false);
         if (response.status === 200) {

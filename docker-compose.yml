@@ -47,6 +47,9 @@ services:
       context: ./classifier
     container_name: leaf-classifier
     restart: unless-stopped
+    volumes:
+      - ./classifier/models:/app/models
+      - ./classifier/backups:/app/backups
     ports:
       - '8000:8000'
     networks:

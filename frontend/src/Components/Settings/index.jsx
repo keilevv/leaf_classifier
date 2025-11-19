@@ -43,7 +43,7 @@ export default function Settings() {
         {/* Tabs */}
         <TabGroup>
           <TabList className="flex border-b border-gray-200 bg-gray-50 flex-wrap">
-            {user.role === "ADMIN" && (
+            {user?.role === "ADMIN" && (
               <Tab
                 className={({ selected }) =>
                   classNames(
@@ -94,7 +94,7 @@ export default function Settings() {
 
           <TabPanels>
             {/* Model Settings Panel */}
-            {user.role === "ADMIN" && (
+            {user?.role === "ADMIN" && (
               <TabPanel className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <ModelSettings />
               </TabPanel>
