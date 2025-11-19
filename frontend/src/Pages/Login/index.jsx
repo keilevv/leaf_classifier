@@ -13,8 +13,8 @@ function Login() {
               <FaLeaf className="h-8 w-8 text-green-600" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Plant Classifier
+          <h1 class="text-xl font-semibold text-gray-900">
+            SAPS<span class="text-green-600">AI</span> Dataset
           </h1>
           <p className="text-gray-600">
             Sign in to classify your plant leaves using AI

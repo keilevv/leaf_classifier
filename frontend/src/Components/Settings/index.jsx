@@ -42,7 +42,7 @@ export default function Settings() {
 
         {/* Tabs */}
         <TabGroup>
-          <TabList className="flex border-b border-gray-200 bg-gray-50 flex-wrap">
+          <TabList className="flex border-b border-gray-200 bg-gray-50 flex-wrap max-w-7xl mx-auto ">
             {user?.role === "ADMIN" && (
               <Tab
                 className={({ selected }) =>
