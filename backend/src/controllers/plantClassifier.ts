@@ -71,8 +71,9 @@ function plantClassifierController() {
           })
           .then(async (response) => {
             const { model1, model2, model3 } = response.data;
+            console.log("response:", response.data);
 
-            if (model3.class_name) {
+            if (model3.class_name && model3.class_name === "True") {
               const species = model1.class_name.split("_")[0];
               const taggedSpecies = model1.class_name.split("_")[0];
               const isHealthy = model1.class_name.includes("healthy");
