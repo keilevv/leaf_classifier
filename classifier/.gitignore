@@ -1,4 +1,3 @@
 .env
 data/
-__pycache__/
-classifier/app/__pycache__/
+**/__pycache__/
