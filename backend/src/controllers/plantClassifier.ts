@@ -9,18 +9,13 @@ import { v4 as uuidv4 } from "uuid";
 import { sanitizeUser } from "../utils";
 import { baseShapes } from "../config";
 
-
 const classifierServiceUrl =
   process.env.CLASSIFY_SERVICE_URL || "http://localhost:8000/";
 
 function plantClassifierController() {
   // These now return middleware functions that Express can use
 
-  const uploadImage = async (
-    req: any,
-    res: Response,
-    next: NextFunction
-  ) => {
+  const uploadImage = async (req: any, res: Response, next: NextFunction) => {
     try {
       if (!req.user) {
         return res.status(401).json({ error: "Authentication required" });
@@ -39,11 +34,12 @@ function plantClassifierController() {
         return res.status(400).json({ error: "No image uploaded" });
       }
 
-      // Save image to temporary uploads folder
+      // Save image to temporary uploads folder with a unique name to avoid collisions
+      const uniqueTempName = `${uuidv4()}_${image.originalname}`;
       const uploadPath = path.join(
         process.cwd(),
         "uploads",
-        image.originalname
+        uniqueTempName,
       );
 
       fs.renameSync(image.path, uploadPath);
@@ -60,7 +56,7 @@ function plantClassifierController() {
         formData.append(
           "image",
           fs.createReadStream(uploadPath),
-          image.originalname
+          image.originalname,
         );
 
         await axios
@@ -71,7 +67,6 @@ function plantClassifierController() {
           })
           .then(async (response) => {
             const { model1, model2, model3 } = response.data;
-            console.log("response:", response.data);
 
             if (model3.class_name && model3.class_name === "True") {
               const species = model1.class_name.split("_")[0];
@@ -95,15 +90,19 @@ function plantClassifierController() {
               const r2Key = R2Service.generateImageKey(
                 fileName,
                 uniqueId,
-                fileExtension
+                fileExtension,
               );
 
               // Step 3: Upload to Cloudflare R2
+              console.log(`[R2 Upload] Starting upload for key: ${r2Key}, mimetype: ${image.mimetype}`);
               const uploadResult = await R2Service.uploadFile(
                 uploadPath,
                 r2Key,
-                image.mimetype
-              );
+                image.mimetype,
+              ).catch(err => {
+                console.error(`[R2 Upload] UNCAUGHT ERROR:`, err);
+                return { success: false, error: err instanceof Error ? err.message : String(err) } as any;
+              });
 
               let finalImagePath: string;
               let imageUrl: string;
@@ -115,6 +114,7 @@ function plantClassifierController() {
                   uploadResult.error?.includes("EntityTooSmall") ||
                   R2Service.isFileTooSmall(uploadPath)
                 ) {
+                  console.warn(`[R2 Upload] File too small for R2, failing back to local storage: ${r2Key}`);
                   // Fallback: Store locally for small files
                   const localPath = `uploads/${r2Key}`;
                   const localUploadPath = path.join(process.cwd(), localPath);
@@ -130,6 +130,7 @@ function plantClassifierController() {
                   finalImagePath = localPath;
                   imageUrl = `/uploads/${r2Key}`;
                 } else {
+                  console.error(`[R2 Upload] FAILED for key: ${r2Key}. Error: ${uploadResult.error}`);
                   // Clean up temporary file for other errors
                   fs.unlinkSync(uploadPath);
                   return res.status(500).json({
@@ -138,6 +139,7 @@ function plantClassifierController() {
                   });
                 }
               } else {
+                console.log(`[R2 Upload] SUCCESS: ${r2Key} -> ${uploadResult.url}`);
                 // R2 upload successful
                 finalImagePath = r2Key;
                 imageUrl = uploadResult.url!;
@@ -184,8 +186,15 @@ function plantClassifierController() {
             }
           })
           .catch((error) => {
-            console.error("response:", error.request);
-            return res.status(500).json({ error: error.message });
+            console.error(`[Classifier Service] FAILED: ${error.message}`);
+            if (error.response) {
+              console.error(`[Classifier Service] Status: ${error.response.status}`);
+              console.error(`[Classifier Service] Data:`, error.response.data);
+            }
+            return res.status(500).json({ 
+              error: error.message,
+              details: error.response?.data 
+            });
           });
       } catch (classificationError) {
         // Clean up temporary file on classification error
@@ -208,10 +217,7 @@ function plantClassifierController() {
     }
   };
 
-  async function getClassifications(
-    req: any,
-    res: Response
-  ): Promise<void> {
+  async function getClassifications(req: any, res: Response): Promise<void> {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
@@ -329,10 +335,7 @@ function plantClassifierController() {
     }
   }
 
-  async function getUpload(
-    req: any,
-    res: Response
-  ): Promise<Response> {
+  async function getUpload(req: any, res: Response): Promise<Response> {
     try {
       const id = req.params.id;
       const upload = await prisma.classification.findUnique({
@@ -352,10 +355,7 @@ function plantClassifierController() {
     }
   }
 
-  const updateClassification = async (
-    req: any,
-    res: Response
-  ) => {
+  const updateClassification = async (req: any, res: Response) => {
     const id = req.params.id;
     const { taggedShape, taggedSpecies, taggedHealthy, isArchived } = req.body;
     try {
@@ -402,38 +402,41 @@ function plantClassifierController() {
     }
   };
 
-  const getModelVersions = async (
-    req: any,
-    res: Response
-  ) => {
+  const getModelVersions = async (req: any, res: Response) => {
     try {
       const model = (req.params.model as string) || (req.query.model as string);
       if (!model || !availableModels.includes(model)) {
         return res
           .status(400)
-          .json({ error: "Invalid or missing model. Use especies|hojas|plantas" });
+          .json({
+            error: "Invalid or missing model. Use especies|hojas|plantas",
+          });
       }
 
-      const response = await axios.get(`${classifierServiceUrl}/retrain/versions`, {
-        params: { model },
-      });
+      const response = await axios.get(
+        `${classifierServiceUrl}/retrain/versions`,
+        {
+          params: { model },
+        },
+      );
       return res.status(200).json(response.data);
     } catch (error: any) {
-      return res.status(500).json({ error: error.message || "Failed to fetch versions" });
+      return res
+        .status(500)
+        .json({ error: error.message || "Failed to fetch versions" });
     }
   };
 
-  const getModelVersionInfo = async (
-    req: any,
-    res: Response
-  ) => {
+  const getModelVersionInfo = async (req: any, res: Response) => {
     try {
       const model = req.params.model as string;
       const version = req.params.version as string;
       if (!model || !availableModels.includes(model)) {
         return res
           .status(400)
-          .json({ error: "Invalid or missing model. Use especies|hojas|plantas" });
+          .json({
+            error: "Invalid or missing model. Use especies|hojas|plantas",
+          });
       }
       if (!version) {
         return res.status(400).json({ error: "Missing version" });
@@ -441,7 +444,7 @@ function plantClassifierController() {
 
       const response = await axios.get(
         `${classifierServiceUrl}/retrain/version-info`,
-        { params: { model, version } }
+        { params: { model, version } },
       );
       return res.status(200).json(response.data);
     } catch (error: any) {
@@ -451,15 +454,14 @@ function plantClassifierController() {
     }
   };
 
-  const restoreModelVersion = async (
-    req: any,
-    res: Response
-  ) => {
+  const restoreModelVersion = async (req: any, res: Response) => {
     try {
       if (!req.user) {
         return res.status(401).json({ error: "Authentication required" });
       }
-      const actingUser = await prisma.user.findUnique({ where: { id: req.user.id } });
+      const actingUser = await prisma.user.findUnique({
+        where: { id: req.user.id },
+      });
       if (!actingUser || actingUser.role !== "ADMIN") {
         return res.status(403).json({ error: "Unauthorized" });
       }
@@ -469,7 +471,9 @@ function plantClassifierController() {
       if (!model || !availableModels.includes(model)) {
         return res
           .status(400)
-          .json({ error: "Invalid or missing model. Use especies|hojas|plantas" });
+          .json({
+            error: "Invalid or missing model. Use especies|hojas|plantas",
+          });
       }
       if (!version) {
         return res.status(400).json({ error: "Missing version" });
@@ -478,7 +482,7 @@ function plantClassifierController() {
       const response = await axios.post(
         `${classifierServiceUrl}/retrain/restore-version`,
         undefined,
-        { params: { model, version } }
+        { params: { model, version } },
       );
       return res.status(200).json(response.data);
     } catch (error: any) {
@@ -488,15 +492,14 @@ function plantClassifierController() {
     }
   };
 
-  const retrainModel = async (
-    req: any,
-    res: Response
-  ) => {
+  const retrainModel = async (req: any, res: Response) => {
     try {
       if (!req.user) {
         return res.status(401).json({ error: "Authentication required" });
       }
-      const actingUser = await prisma.user.findUnique({ where: { id: req.user.id } });
+      const actingUser = await prisma.user.findUnique({
+        where: { id: req.user.id },
+      });
       if (!actingUser || actingUser.role !== "ADMIN") {
         return res.status(403).json({ error: "Unauthorized" });
       }
@@ -505,18 +508,24 @@ function plantClassifierController() {
       if (!model || !availableModels.includes(model)) {
         return res
           .status(400)
-          .json({ error: "Invalid or missing model. Use especies|hojas|plantas" });
+          .json({
+            error: "Invalid or missing model. Use especies|hojas|plantas",
+          });
       }
 
       const response = await axios.post(
         `${classifierServiceUrl}/retrain`,
         undefined,
-        { params: { model } }
+        { params: { model } },
       );
       return res.status(200).json(response.data);
     } catch (error: any) {
       if (error.response?.status === 409) {
-        return res.status(409).json({ error: error.response.data.detail || "Training already in progress" });
+        return res
+          .status(409)
+          .json({
+            error: error.response.data.detail || "Training already in progress",
+          });
       }
       return res
         .status(500)
@@ -524,15 +533,14 @@ function plantClassifierController() {
     }
   };
 
-  const getTrainingStatus = async (
-    req: any,
-    res: Response
-  ) => {
+  const getTrainingStatus = async (req: any, res: Response) => {
     try {
       if (!req.user) {
         return res.status(401).json({ error: "Authentication required" });
       }
-      const actingUser = await prisma.user.findUnique({ where: { id: req.user.id } });
+      const actingUser = await prisma.user.findUnique({
+        where: { id: req.user.id },
+      });
       if (!actingUser || actingUser.role !== "ADMIN") {
         return res.status(403).json({ error: "Unauthorized" });
       }
@@ -541,12 +549,14 @@ function plantClassifierController() {
       if (!model || !availableModels.includes(model)) {
         return res
           .status(400)
-          .json({ error: "Invalid or missing model. Use especies|hojas|plantas" });
+          .json({
+            error: "Invalid or missing model. Use especies|hojas|plantas",
+          });
       }
 
       const response = await axios.get(
         `${classifierServiceUrl}/retrain/status`,
-        { params: { model } }
+        { params: { model } },
       );
       return res.status(200).json(response.data);
     } catch (error: any) {
