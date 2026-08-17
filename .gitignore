@@ -6,6 +6,8 @@ __pycache__/
 # C extensions
 *.so
 
+plant-leaf-dataset/
+
 # Distribution / packaging
 .Python
 build/

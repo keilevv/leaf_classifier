@@ -4,12 +4,12 @@
       "version": 1,
       "timestamp_str": "20251118T150737",
       "filename": "modelo_especies_v0001_20251118T150737.h5",
-      "path": "/app/backups/modelo_especies_v0001_20251118T150737.h5",
+      "path": "/home/keilevv/projects/leaf_classifier/classifier/backups/modelo_especies_v0001_20251118T150737.h5",
       "timestamp": "2025-11-18T15:07:37",
       "size_bytes": 32471648,
       "notes": "Versión detectada automáticamente - 2025-11-18T15:07:37"
     }
   ],
   "current_version": 1,
-  "last_updated": "2026-03-15T22:35:11.319005"
+  "last_updated": "2026-08-17T19:19:57.112469"
 }
