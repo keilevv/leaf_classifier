@@ -1,207 +1,68 @@
-import prisma from "../lib/prisma";
 import { Request, Response } from "express";
-import { baseShapes } from "../config";
-
-function slugify(string: String) {
-  return String(string)
-    .normalize("NFD")
-    .replace(/\p{Diacritic}+/gu, "")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9\s.-]/g, "")
-    .replace(/[\s._]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$|\.$/g, "");
-}
+import { SpeciesService } from "../services/SpeciesService";
 
 function SpeciesController() {
+  const service = new SpeciesService();
+
   const getSpecies = async (req: Request, res: Response): Promise<void> => {
     try {
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 10;
-      const skip = (page - 1) * limit;
-      const sortBy = (req.query.sortBy as string) || "createdAt";
-      const sortOrder = (req.query.sortOrder as "asc" | "desc") || "desc";
-      const createdAt_gte = req.query.createdAt_gte as string;
-      const createdAt_lte = req.query.createdAt_lte as string;
-      const search = req.query.search as string;
-      const isArchived = req.query.isArchived as string;
-      const createdBy = req.query.createdBy as string;
-
-      const authUser = (req as any).user as { id?: string } | undefined;
-      const actingUser = authUser?.id
-        ? await prisma.user.findUnique({
-            where: {
-              id: authUser.id,
-            },
-          })
-        : null;
-      // Build Prisma where filter
-      const where: any = {};
-
-      // Filter by isArchived, default to false if not provided
-      if (typeof isArchived !== "undefined") {
-        if (isArchived === "true") where.isArchived = true;
-        else if (isArchived === "false") where.isArchived = false;
-      } else {
-        where.isArchived = false;
-      }
-
-      // Date filters
-      if (createdAt_gte || createdAt_lte) {
-        where.createdAt = {};
-        if (createdAt_gte) {
-          where.createdAt.gte = new Date(createdAt_gte);
-        }
-        if (createdAt_lte) {
-          where.createdAt.lte = new Date(createdAt_lte);
-        }
-      }
-
-      // Search filter
-      if (search) {
-        where.OR = [
-          { commonNameEs: { contains: search, mode: "insensitive" } },
-          { commonNameEn: { contains: search, mode: "insensitive" } },
-          { scientificName: { contains: search, mode: "insensitive" } },
-        ];
-      }
-
-      const [species, count] = await Promise.all([
-        prisma.species.findMany({
-          where,
-          orderBy: { [sortBy]: sortOrder },
-          skip,
-          take: limit,
-          include: { createdBy: true },
-        }),
-        prisma.species.count({ where }),
-      ]);
-
-      const totalPages = Math.ceil(count / limit);
-
-      const response = {
-        count,
-        pages: totalPages,
-        results: species,
-        shapes: baseShapes,
-      };
-
+      const response = await service.getSpecies(req.query);
       res.json(response);
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Internal server error" });
     }
   };
+
   const createSpecies = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { scientificName, commonNameEn, commonNameEs } = req.body || {};
-      if (!scientificName || !commonNameEn || !commonNameEs) {
-        res.status(400).json({
-          error: "scientificName, commonNameEn and commonNameEs are required",
-        });
-        return;
-      }
-      const slug = slugify(scientificName);
-
-      const existing = await prisma.species.findUnique({ where: { slug } });
-      if (existing) {
-        res
-          .status(409)
-          .json({ error: "Species with this slug already exists" });
-        return;
-      }
-
       const authUser = (req as any).user as { id?: string } | undefined;
       if (!authUser?.id) {
         res.status(401).json({ error: "Unauthorized" });
         return;
       }
-      const created = await prisma.species.create({
-        data: {
-          scientificName,
-          commonNameEn,
-          commonNameEs,
-          slug,
-          createdById: authUser.id,
-        },
-        include: { createdBy: true },
-      });
-
-      res.status(201).json({ species: created });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Internal server error" });
+      const response = await service.createSpecies(authUser.id, req.body);
+      res.status(201).json(response);
+    } catch (error: any) {
+      if (error.message.includes("are required")) res.status(400).json({ error: error.message });
+      else if (error.message === "Species with this slug already exists") res.status(409).json({ error: error.message });
+      else res.status(500).json({ error: "Internal server error" });
     }
   };
 
   const updateSpecies = async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
-      const { scientificName, commonNameEn, commonNameEs } = req.body || {};
       const authUser = (req as any).user as { id?: string } | undefined;
       if (!authUser?.id) {
         res.status(401).json({ error: "Unauthorized" });
         return;
       }
-      const actingUser = await prisma.user.findUnique({ where: { id } });
-      if (!actingUser) {
-        res.status(404).json({ error: "User not found" });
-        return;
-      }
-      if (actingUser.role !== "ADMIN") {
-        res.status(401).json({ error: "Unauthorized" });
-        return;
-      }
-      if (!id || !scientificName || !commonNameEn || !commonNameEs) {
-        res.status(400).json({
-          error:
-            "id, scientificName, commonNameEn and commonNameEs are required",
-        });
-        return;
-      }
-      const slug = slugify(scientificName);
-      const updated = await prisma.species.update({
-        where: { id },
-        data: { scientificName, commonNameEn, commonNameEs, slug },
-      });
-      res.status(200).json({ species: updated });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Internal server error" });
+      const response = await service.updateSpecies(req.params.id, authUser.id, req.body);
+      res.status(200).json(response);
+    } catch (error: any) {
+      if (error.message === "Unauthorized") res.status(401).json({ error: error.message });
+      else if (error.message.includes("are required")) res.status(400).json({ error: error.message });
+      else res.status(500).json({ error: "Internal server error" });
     }
   };
+
   const deleteSpecies = async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
       const authUser = (req as any).user as { id?: string } | undefined;
       if (!authUser?.id) {
         res.status(401).json({ error: "Unauthorized" });
         return;
       }
-
-      const actingUser = await prisma.user.findUnique({
-        where: { id: authUser.id },
-      });
-      if (!actingUser) {
-        res.status(404).json({ error: "User not found" });
-        return;
-      }
-      if (actingUser.role !== "ADMIN") {
-        res.status(401).json({ error: "Unauthorized" });
-        return;
-      }
-      if (!id) {
-        res.status(400).json({ error: "id is required" });
-        return;
-      }
-      const deleted = await prisma.species.delete({ where: { id } });
-      res.status(200).json({ species: deleted });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Internal server error" });
+      const response = await service.deleteSpecies(req.params.id, authUser.id);
+      res.status(200).json(response);
+    } catch (error: any) {
+      if (error.message === "Unauthorized") res.status(401).json({ error: error.message });
+      else if (error.message.includes("is required")) res.status(400).json({ error: error.message });
+      else res.status(500).json({ error: "Internal server error" });
     }
   };
+
   return { getSpecies, createSpecies, updateSpecies, deleteSpecies };
 }
+
 export default SpeciesController;

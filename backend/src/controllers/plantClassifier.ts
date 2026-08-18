@@ -1,402 +1,70 @@
-import prisma from "../lib/prisma";
 import { Response, NextFunction } from "express";
-import path from "path";
-import fs from "fs";
-import axios from "axios";
-import FormData from "form-data";
-import { R2Service } from "../services/r2Service";
-import { v4 as uuidv4 } from "uuid";
-import { sanitizeUser } from "../utils";
-import { baseShapes } from "../config";
-
-const classifierServiceUrl =
-  process.env.CLASSIFY_SERVICE_URL || "http://localhost:8000/";
+import { PlantClassifierService } from "../services/PlantClassifierService";
+import prisma from "../lib/prisma"; // Keeping it for simple user fetches if necessary, or we can use a repository in the service.
 
 function plantClassifierController() {
-  // These now return middleware functions that Express can use
+  const service = new PlantClassifierService();
 
   const uploadImage = async (req: any, res: Response, next: NextFunction) => {
     try {
-      if (!req.user) {
-        return res.status(401).json({ error: "Authentication required" });
-      }
+      if (!req.user) return res.status(401).json({ error: "Authentication required" });
       const userId = req.user.id;
-      const image = req.file;
+      const actingUser = await prisma.user.findUnique({ where: { id: userId } });
+      if (!actingUser) return res.status(401).json({ error: "Authentication required" });
+      if (!req.file) return res.status(400).json({ error: "No image uploaded" });
 
-      const actingUser = await prisma.user.findUnique({
-        where: { id: userId },
-      });
-      if (!actingUser) {
-        return res.status(401).json({ error: "Authentication required" });
-      }
-
-      if (!image) {
-        return res.status(400).json({ error: "No image uploaded" });
-      }
-
-      // Save image to temporary uploads folder with a unique name to avoid collisions
-      const uniqueTempName = `${uuidv4()}_${image.originalname}`;
-      const uploadPath = path.join(
-        process.cwd(),
-        "uploads",
-        uniqueTempName,
-      );
-
-      fs.renameSync(image.path, uploadPath);
-
-      if (!fs.existsSync(uploadPath)) {
-        return res
-          .status(404)
-          .json({ error: `File not found at ${uploadPath}` });
-      }
-
-      try {
-        // Step 1: Get classification from external service first
-        const formData = new FormData();
-        formData.append(
-          "image",
-          fs.createReadStream(uploadPath),
-          image.originalname,
-        );
-
-        await axios
-          .post(`${classifierServiceUrl}/predict`, formData, {
-            headers: {
-              ...formData.getHeaders(),
-            },
-          })
-          .then(async (response) => {
-            const { model1, model2, model3 } = response.data;
-
-            if (model3.class_name && model3.class_name === "True") {
-              const species = model1.class_name.split("_")[0];
-              const taggedSpecies = model1.class_name.split("_")[0];
-              const isHealthy = model1.class_name.includes("healthy");
-              const taggedHealthy = isHealthy;
-              const species_confidence = model1.probability;
-              const shape = model2.class_name;
-              const taggedShape = model2.class_name;
-              const shape_confidence = model2.probability;
-
-              const health = isHealthy ? "healthy" : "deseased";
-
-              const fileName =
-                species + "_" + health + "_" + shape + "_" + "unverified" + "_";
-
-              // Step 2: Generate unique ID and create R2 key based on classification
-              const uniqueId = uuidv4().replace(/-/g, "").substring(0, 8);
-              const fileExtension = path.extname(image.originalname);
-
-              const r2Key = R2Service.generateImageKey(
-                fileName,
-                uniqueId,
-                fileExtension,
-              );
-
-              // Step 3: Upload to Cloudflare R2
-              console.log(`[R2 Upload] Starting upload for key: ${r2Key}, mimetype: ${image.mimetype}`);
-              const uploadResult = await R2Service.uploadFile(
-                uploadPath,
-                r2Key,
-                image.mimetype,
-              ).catch(err => {
-                console.error(`[R2 Upload] UNCAUGHT ERROR:`, err);
-                return { success: false, error: err instanceof Error ? err.message : String(err) } as any;
-              });
-
-              let finalImagePath: string;
-              let imageUrl: string;
-
-              if (!uploadResult.success) {
-                // Check if it's a size-related error
-                if (
-                  uploadResult.error?.includes("too small") ||
-                  uploadResult.error?.includes("EntityTooSmall") ||
-                  R2Service.isFileTooSmall(uploadPath)
-                ) {
-                  console.warn(`[R2 Upload] File too small for R2, failing back to local storage: ${r2Key}`);
-                  // Fallback: Store locally for small files
-                  const localPath = `uploads/${r2Key}`;
-                  const localUploadPath = path.join(process.cwd(), localPath);
-
-                  // Ensure uploads directory exists
-                  const uploadsDir = path.join(process.cwd(), "uploads");
-                  if (!fs.existsSync(uploadsDir)) {
-                    fs.mkdirSync(uploadsDir, { recursive: true });
-                  }
-
-                  // Copy file to local storage
-                  fs.copyFileSync(uploadPath, localUploadPath);
-                  finalImagePath = localPath;
-                  imageUrl = `/uploads/${r2Key}`;
-                } else {
-                  console.error(`[R2 Upload] FAILED for key: ${r2Key}. Error: ${uploadResult.error}`);
-                  // Clean up temporary file for other errors
-                  fs.unlinkSync(uploadPath);
-                  return res.status(500).json({
-                    error: uploadResult.error,
-                    message: "Error uploading to R2",
-                  });
-                }
-              } else {
-                console.log(`[R2 Upload] SUCCESS: ${r2Key} -> ${uploadResult.url}`);
-                // R2 upload successful
-                finalImagePath = r2Key;
-                imageUrl = uploadResult.url!;
-              }
-
-              const matchingSpecies = await prisma.species.findFirst({
-                where: { slug: species },
-              });
-
-              // Step 4: Create classification entry in DB with final path
-              const classificationEntry = await prisma.classification.create({
-                data: {
-                  originalFilename: image.originalname,
-                  imagePath: imageUrl, // Store final path (R2 key or local path)
-                  species,
-                  shape,
-                  taggedSpecies,
-                  taggedShape,
-                  taggedHealthy,
-                  speciesConfidence: species_confidence,
-                  shapeConfidence: shape_confidence,
-                  commonNameEn: matchingSpecies?.commonNameEn,
-                  commonNameEs: matchingSpecies?.commonNameEs,
-                  scientificName: matchingSpecies?.scientificName,
-                  isHealthy,
-                  userId,
-                },
-              });
-
-              // Step 5: Clean up temporary local file
-              fs.unlinkSync(uploadPath);
-
-              return res.status(200).json({
-                message: "Image uploaded and classified successfully",
-                classification: classificationEntry,
-                storageType: uploadResult.success ? "R2" : "local",
-                imageUrl: imageUrl,
-              });
-            } else {
-              return res.status(400).json({
-                error: "no_plant",
-                message: "Image is not a plant",
-              });
-            }
-          })
-          .catch((error) => {
-            console.error(`[Classifier Service] FAILED: ${error.message}`);
-            if (error.response) {
-              console.error(`[Classifier Service] Status: ${error.response.status}`);
-              console.error(`[Classifier Service] Data:`, error.response.data);
-            }
-            return res.status(500).json({ 
-              error: error.message,
-              details: error.response?.data 
-            });
-          });
-      } catch (classificationError) {
-        // Clean up temporary file on classification error
-        if (fs.existsSync(uploadPath)) {
-          fs.unlinkSync(uploadPath);
-        }
-
-        return res.status(500).json({
-          error:
-            classificationError instanceof Error
-              ? classificationError.message
-              : "Unknown error",
-          message: "Error classifying image",
-        });
-      }
+      const response = await service.uploadImage(userId, req.file);
+      return res.status(200).json(response);
     } catch (error: any) {
-      return res
-        .status(500)
-        .json({ error: (error && error.message) || "Internal server error" });
+      if (error.message === "Image is not a plant") return res.status(400).json({ error: "no_plant", message: error.message });
+      return res.status(500).json({ error: error.message || "Internal server error" });
     }
   };
 
-  async function getClassifications(req: any, res: Response): Promise<void> {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
-    const skip = (page - 1) * limit;
-    const sortBy = (req.query.sortBy as string) || "createdAt";
-    const sortOrder = (req.query.sortOrder as "asc" | "desc") || "desc";
-    const createdAt_gte = req.query.createdAt_gte as string;
-    const createdAt_lte = req.query.createdAt_lte as string;
-    const search = req.query.search as string;
-    const status = req.query.status as string;
-    const isArchived = req.query.isArchived as string;
-    const isHealthy = req.query.isHealthy as string;
-
+  const getClassifications = async (req: any, res: Response): Promise<void> => {
     try {
       if (!req.user) {
         res.status(401).json({ error: "Authentication required" });
         return;
       }
-      const actingUser = await prisma.user.findUnique({
-        where: { id: req.user.id },
-      });
-
-      // Build Prisma where filter
-      const where: any = {};
-
-      if (status !== "ALL") {
-        where.status = status;
-      }
-
-      // Only allow admin to filter by userId, otherwise restrict to own
-      if (actingUser?.role === "ADMIN" && req.query.userId) {
-        where.userId = req.query.userId;
-      } else {
-        where.userId = req.user.id; // Only allow own
-      }
-
-      // Filter by isArchived, default to false if not provided
-      if (typeof isArchived !== "undefined") {
-        if (isArchived === "true") where.isArchived = true;
-        else if (isArchived === "false") where.isArchived = false;
-      } else {
-        where.isArchived = false;
-      }
-
-      if (typeof isHealthy !== "undefined") {
-        if (isHealthy === "true") where.isHealthy = true;
-        else if (isHealthy === "false") where.isHealthy = false;
-      }
-
-      // Filter by classification (exact match)
-      if (req.query.classification) {
-        where.classification = req.query.classification;
-      }
-
-      // Filter by originalFilename (partial match)
-      if (req.query.originalFilename) {
-        where.originalFilename = {
-          contains: req.query.originalFilename as string,
-          mode: "insensitive",
-        };
-      }
-
-      // Date filters
-      if (createdAt_gte || createdAt_lte) {
-        where.createdAt = {};
-        if (createdAt_gte) {
-          where.createdAt.gte = new Date(createdAt_gte);
-        }
-        if (createdAt_lte) {
-          where.createdAt.lte = new Date(req.query.createdAt_lte as string);
-        }
-      }
-      // Search filter
-      if (search) {
-        where.OR = [
-          { originalFilename: { contains: search, mode: "insensitive" } },
-          { species: { contains: search, mode: "insensitive" } },
-          { shape: { contains: search, mode: "insensitive" } },
-        ];
-      }
-
-      // Add more filters as needed...
-
-      const [classifications, count] = await Promise.all([
-        prisma.classification.findMany({
-          where,
-          orderBy: { [sortBy]: sortOrder },
-          skip,
-          take: limit,
-          include: { user: true },
-        }),
-        prisma.classification.count({ where }),
-      ]);
-
-      const classificationsWithUser = classifications.map((classification) => {
-        return {
-          ...classification,
-          user: (classification as any).user
-            ? sanitizeUser((classification as any).user)
-            : undefined,
-        };
-      });
-
-      const totalPages = Math.ceil(count / limit);
-
-      const response = {
-        count,
-        pages: totalPages,
-        results: classificationsWithUser,
-        shapes: baseShapes,
-      };
-
+      const actingUser = await prisma.user.findUnique({ where: { id: req.user.id } });
+      const response = await service.getClassifications(req.query, actingUser);
       res.json(response);
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: "Failed to fetch classifications" });
     }
-  }
+  };
 
-  async function getUpload(req: any, res: Response): Promise<Response> {
+  const getUpload = async (req: any, res: Response): Promise<Response> => {
     try {
-      const id = req.params.id;
-      const upload = await prisma.classification.findUnique({
-        where: { id },
-      });
-
-      if (!upload) {
-        return res.status(404).json({ error: "Upload not found" });
-      }
-
-      if (upload.userId !== req.user.id) {
-        return res.status(403).json({ error: "Forbidden" });
-      }
-      return res.status(200).json({ result: upload });
-    } catch {
+      if (!req.user) return res.status(401).json({ error: "Authentication required" });
+      const result = await service.getUpload(req.params.id, req.user.id);
+      return res.status(200).json({ result });
+    } catch (error: any) {
+      if (error.message === "Upload not found") return res.status(404).json({ error: error.message });
+      if (error.message === "Forbidden") return res.status(403).json({ error: error.message });
       return res.status(500).json({ error: "Failed to fetch upload" });
     }
-  }
+  };
 
   const updateClassification = async (req: any, res: Response) => {
-    const id = req.params.id;
-    const { taggedShape, taggedSpecies, taggedHealthy, isArchived } = req.body;
     try {
       if (!req.user) {
         res.status(401).json({ error: "Authentication required" });
         return;
       }
-      const existing = await prisma.classification.findUnique({
-        where: { id },
-      });
-      if (!existing) {
-        res.status(404).json({ error: "Classification not found" });
-        return;
-      }
-      if (existing.userId !== req.user.id) {
-        res.status(403).json({ error: "Unauthorized" });
-        return;
-      }
-      const classification = await prisma.classification.update({
-        where: { id },
-        data: { taggedShape, taggedSpecies, taggedHealthy, isArchived },
-      });
-
-      const response = {
-        message: "Classification updated successfully",
-        results: { ...classification },
-      };
+      const response = await service.updateClassification(req.params.id, req.user.id, req.body);
       res.json(response);
     } catch (error: any) {
-      res.status(500).json({
-        error: "Failed to update classification",
-        message: (error && error.message) || "Internal server error",
-      });
+      if (error.message === "Classification not found") res.status(404).json({ error: error.message });
+      else if (error.message === "Unauthorized") res.status(403).json({ error: error.message });
+      else res.status(500).json({ error: "Failed to update classification", message: error.message });
     }
   };
-
-  const availableModels = ["especies", "hojas", "plantas"];
 
   const listModels = async (req: any, res: Response) => {
     try {
-      res.json({ models: availableModels });
+      res.json(service.listModels());
     } catch (error) {
       res.status(500).json({ error: "Failed to list models" });
     }
@@ -405,164 +73,63 @@ function plantClassifierController() {
   const getModelVersions = async (req: any, res: Response) => {
     try {
       const model = (req.params.model as string) || (req.query.model as string);
-      if (!model || !availableModels.includes(model)) {
-        return res
-          .status(400)
-          .json({
-            error: "Invalid or missing model. Use especies|hojas|plantas",
-          });
-      }
-
-      const response = await axios.get(
-        `${classifierServiceUrl}/retrain/versions`,
-        {
-          params: { model },
-        },
-      );
-      return res.status(200).json(response.data);
+      const response = await service.getModelVersions(model);
+      return res.status(200).json(response);
     } catch (error: any) {
-      return res
-        .status(500)
-        .json({ error: error.message || "Failed to fetch versions" });
+      if (error.message.includes("Invalid")) return res.status(400).json({ error: error.message });
+      return res.status(500).json({ error: error.message || "Failed to fetch versions" });
     }
   };
 
   const getModelVersionInfo = async (req: any, res: Response) => {
     try {
-      const model = req.params.model as string;
-      const version = req.params.version as string;
-      if (!model || !availableModels.includes(model)) {
-        return res
-          .status(400)
-          .json({
-            error: "Invalid or missing model. Use especies|hojas|plantas",
-          });
-      }
-      if (!version) {
-        return res.status(400).json({ error: "Missing version" });
-      }
-
-      const response = await axios.get(
-        `${classifierServiceUrl}/retrain/version-info`,
-        { params: { model, version } },
-      );
-      return res.status(200).json(response.data);
+      const response = await service.getModelVersionInfo(req.params.model, req.params.version);
+      return res.status(200).json(response);
     } catch (error: any) {
-      return res
-        .status(500)
-        .json({ error: error.message || "Failed to fetch version info" });
+      if (error.message.includes("Invalid") || error.message.includes("Missing")) return res.status(400).json({ error: error.message });
+      return res.status(500).json({ error: error.message || "Failed to fetch version info" });
     }
   };
 
   const restoreModelVersion = async (req: any, res: Response) => {
     try {
-      if (!req.user) {
-        return res.status(401).json({ error: "Authentication required" });
-      }
-      const actingUser = await prisma.user.findUnique({
-        where: { id: req.user.id },
-      });
-      if (!actingUser || actingUser.role !== "ADMIN") {
-        return res.status(403).json({ error: "Unauthorized" });
-      }
-
-      const model = req.params.model as string;
-      const version = req.params.version as string;
-      if (!model || !availableModels.includes(model)) {
-        return res
-          .status(400)
-          .json({
-            error: "Invalid or missing model. Use especies|hojas|plantas",
-          });
-      }
-      if (!version) {
-        return res.status(400).json({ error: "Missing version" });
-      }
-
-      const response = await axios.post(
-        `${classifierServiceUrl}/retrain/restore-version`,
-        undefined,
-        { params: { model, version } },
-      );
-      return res.status(200).json(response.data);
+      if (!req.user) return res.status(401).json({ error: "Authentication required" });
+      const actingUser = await prisma.user.findUnique({ where: { id: req.user.id } });
+      const response = await service.restoreModelVersion(req.params.model, req.params.version, actingUser?.role || "");
+      return res.status(200).json(response);
     } catch (error: any) {
-      return res
-        .status(500)
-        .json({ error: error.message || "Failed to restore model version" });
+      if (error.message === "Unauthorized") return res.status(403).json({ error: error.message });
+      if (error.message.includes("Invalid") || error.message.includes("Missing")) return res.status(400).json({ error: error.message });
+      return res.status(500).json({ error: error.message || "Failed to restore model version" });
     }
   };
 
   const retrainModel = async (req: any, res: Response) => {
     try {
-      if (!req.user) {
-        return res.status(401).json({ error: "Authentication required" });
-      }
-      const actingUser = await prisma.user.findUnique({
-        where: { id: req.user.id },
-      });
-      if (!actingUser || actingUser.role !== "ADMIN") {
-        return res.status(403).json({ error: "Unauthorized" });
-      }
-
+      if (!req.user) return res.status(401).json({ error: "Authentication required" });
+      const actingUser = await prisma.user.findUnique({ where: { id: req.user.id } });
       const model = (req.params.model as string) || (req.query.model as string);
-      if (!model || !availableModels.includes(model)) {
-        return res
-          .status(400)
-          .json({
-            error: "Invalid or missing model. Use especies|hojas|plantas",
-          });
-      }
-
-      const response = await axios.post(
-        `${classifierServiceUrl}/retrain`,
-        undefined,
-        { params: { model } },
-      );
-      return res.status(200).json(response.data);
+      const response = await service.retrainModel(model, actingUser?.role || "");
+      return res.status(200).json(response);
     } catch (error: any) {
-      if (error.response?.status === 409) {
-        return res
-          .status(409)
-          .json({
-            error: error.response.data.detail || "Training already in progress",
-          });
-      }
-      return res
-        .status(500)
-        .json({ error: error.message || "Failed to start retraining" });
+      if (error.message === "Unauthorized") return res.status(403).json({ error: error.message });
+      if (error.message.includes("Invalid")) return res.status(400).json({ error: error.message });
+      if (error.response?.status === 409) return res.status(409).json({ error: error.response.data.detail || "Training already in progress" });
+      return res.status(500).json({ error: error.message || "Failed to start retraining" });
     }
   };
 
   const getTrainingStatus = async (req: any, res: Response) => {
     try {
-      if (!req.user) {
-        return res.status(401).json({ error: "Authentication required" });
-      }
-      const actingUser = await prisma.user.findUnique({
-        where: { id: req.user.id },
-      });
-      if (!actingUser || actingUser.role !== "ADMIN") {
-        return res.status(403).json({ error: "Unauthorized" });
-      }
-
+      if (!req.user) return res.status(401).json({ error: "Authentication required" });
+      const actingUser = await prisma.user.findUnique({ where: { id: req.user.id } });
       const model = (req.params.model as string) || (req.query.model as string);
-      if (!model || !availableModels.includes(model)) {
-        return res
-          .status(400)
-          .json({
-            error: "Invalid or missing model. Use especies|hojas|plantas",
-          });
-      }
-
-      const response = await axios.get(
-        `${classifierServiceUrl}/retrain/status`,
-        { params: { model } },
-      );
-      return res.status(200).json(response.data);
+      const response = await service.getTrainingStatus(model, actingUser?.role || "");
+      return res.status(200).json(response);
     } catch (error: any) {
-      return res
-        .status(500)
-        .json({ error: error.message || "Failed to get training status" });
+      if (error.message === "Unauthorized") return res.status(403).json({ error: error.message });
+      if (error.message.includes("Invalid")) return res.status(400).json({ error: error.message });
+      return res.status(500).json({ error: error.message || "Failed to get training status" });
     }
   };
 

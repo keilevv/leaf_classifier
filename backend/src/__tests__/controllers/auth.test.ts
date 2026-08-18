@@ -191,7 +191,7 @@ describe("Auth Controller", () => {
       mockVerifyRefreshToken.mockReturnValue({ id: mockUser.id });
       mockPrismaUser.findUnique.mockResolvedValue(mockUser);
 
-      controller.refreshToken(mockReq, mockRes);
+      await controller.refreshToken(mockReq, mockRes);
 
       // Wait for the promise chain to complete
       // Flush the microtask queue to ensure promises resolve
@@ -236,7 +236,7 @@ describe("Auth Controller", () => {
         return Promise.reject(new Error("Invalid token"));
       });
 
-      controller.refreshToken(mockReq, mockRes);
+      await controller.refreshToken(mockReq, mockRes);
 
       // Wait for the promise chain to complete
       // Promise.resolve returns the rejected promise, which triggers .catch()
@@ -257,7 +257,7 @@ describe("Auth Controller", () => {
       mockVerifyRefreshToken.mockReturnValue({ id: "non-existent-id" });
       mockPrismaUser.findUnique.mockResolvedValue(null);
 
-      controller.refreshToken(mockReq, mockRes);
+      await controller.refreshToken(mockReq, mockRes);
 
       // Wait for the promise chain to complete
       // Flush the microtask queue to ensure promises resolve

@@ -1,23 +1,17 @@
 import passport from "passport";
-import bcrypt from "bcryptjs";
-import prisma from "../lib/prisma";
 import { Request, Response, NextFunction } from "express";
-import {
-  generateAccessToken,
-  generateRefreshToken,
-  verifyRefreshToken,
-} from "../utils/jwt";
+import { generateAccessToken, generateRefreshToken } from "../utils/jwt";
 import { sanitizeUser } from "../utils";
+import { AuthService } from "../services/AuthService";
 
 const frontendUrl = process.env.FRONTEND_URL || "http://plantai.lab.utb.edu.co";
 
 function authController() {
-  // These now return middleware functions that Express can use
+  const authService = new AuthService();
+
   const googleLogin = (req: Request, res: Response, next: NextFunction) => {
     const redirectTo = req.query.redirectTo || "/upload";
-    const state = Buffer.from(JSON.stringify({ redirectTo })).toString(
-      "base64"
-    );
+    const state = Buffer.from(JSON.stringify({ redirectTo })).toString("base64");
 
     const authenticator = passport.authenticate("google", {
       scope: ["profile", "email"],
@@ -27,7 +21,6 @@ function authController() {
     authenticator(req, res, next);
   };
 
-  // Google Callback with dynamic redirect and JWT
   const googleCallback = [
     passport.authenticate("google", {
       failureRedirect: "/login",
@@ -35,36 +28,27 @@ function authController() {
     }),
     (req: Request, res: Response) => {
       try {
-        // Get the state parameter and parse it
         const state = req.query.state as string;
         let redirectPath = "/upload";
         if (state) {
-          const decodedState = JSON.parse(
-            Buffer.from(state, "base64").toString()
-          );
+          const decodedState = JSON.parse(Buffer.from(state, "base64").toString());
           if (decodedState.redirectTo) {
             redirectPath = decodedState.redirectTo;
           }
         }
-        // Generate tokens
         const user = req.user as any;
         const accessToken = generateAccessToken(user);
         const refreshToken = generateRefreshToken(user);
-        // Redirect with tokens as query params (or set cookies in production)
         const redirectUrl = `${frontendUrl}${redirectPath}?accessToken=${accessToken}&refreshToken=${refreshToken}`;
         return res.redirect(redirectUrl);
       } catch (error) {
         console.error("Error processing callback:", error);
-        res.redirect(`${frontendUrl}/upload`); // Fallback to dashboard
+        res.redirect(`${frontendUrl}/upload`);
       }
     },
   ];
 
-  const localLogin = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
+  const localLogin = async (req: Request, res: Response, next: NextFunction) => {
     passport.authenticate("local", (err: any, user: any, info: any) => {
       if (err) return next(err);
       if (!user) {
@@ -77,8 +61,7 @@ function authController() {
       req.logIn(user, (err) => {
         if (err) return next({ message: "Login failed", error: err });
         const accessToken = generateAccessToken(user);
-        const refreshToken = generateRefreshToken(user);
-        return res.json({
+        res.json({
           message: "Login successful",
           user: sanitizeUser(user),
           accessToken,
@@ -88,35 +71,13 @@ function authController() {
   };
 
   const localRegister = async (req: Request, res: Response) => {
-    const { fullName, email, password, phone } = req.body;
-
-    
-
     try {
-      const existing = await prisma.user.findUnique({ where: { email } });
-      if (existing)
-        return res.status(400).json({ error: "User already exists" });
-
-      const hash = await bcrypt.hash(password, 10);
-
-      const user = await prisma.user.create({
-        data: {
-          email,
-          fullName,
-          phone,
-          passwordHash: hash,
-        },
-      });
+      const { user, accessToken, refreshToken } = await authService.register(req.body);
 
       req.login(user, (err) => {
-        if (err)
-          return res.status(500).send({
-            status: "error",
-            message: "Login failed",
-            error: err,
-          });
-        const accessToken = generateAccessToken(user);
-        const refreshToken = generateRefreshToken(user);
+        if (err) {
+          return res.status(500).send({ status: "error", message: "Login failed", error: err });
+        }
         res.status(200).send({
           status: "success",
           message: "Registration successful",
@@ -124,8 +85,10 @@ function authController() {
           accessToken,
         });
       });
-    } catch (error) {
-      console.error("Registration error:", error);
+    } catch (error: any) {
+      if (error.message === "User already exists") {
+        return res.status(400).json({ error: error.message });
+      }
       return res.status(500).json({ error: "Registration failed" });
     }
   };
@@ -134,41 +97,21 @@ function authController() {
     req.logout(() => res.send("Logged out"));
   };
 
-  const isAuthenticated = (
-    req: Request,
-    res: Response,
-    _next: NextFunction
-  ) => {
+  const isAuthenticated = (req: Request, res: Response, _next: NextFunction) => {
     if (!req.user) return res.status(401).json({ error: "Not logged in" });
-    // Optionally, issue a new access token
     const accessToken = generateAccessToken(req.user as any);
     res.json({ user: sanitizeUser(req.user), accessToken });
   };
 
-  const refreshToken = (req: Request, res: Response) => {
-    const { refreshToken } = req.body;
-    if (!refreshToken) {
-      return res.status(400).json({ error: "No refresh token provided" });
+  const refreshToken = async (req: Request, res: Response) => {
+    try {
+      const tokens = await authService.refreshToken(req.body.refreshToken);
+      return res.json(tokens);
+    } catch (error: any) {
+      if (error.message === "No refresh token provided") return res.status(400).json({ error: error.message });
+      if (error.message === "User not found") return res.status(401).json({ error: error.message });
+      return res.status(401).json({ error: "Invalid or expired refresh token" });
     }
-    Promise.resolve(verifyRefreshToken(refreshToken))
-      .then((decoded: any) => {
-        return prisma.user
-          .findUnique({ where: { id: decoded.id } })
-          .then((user) => {
-            if (!user) return res.status(401).json({ error: "User not found" });
-            const newAccessToken = generateAccessToken(user);
-            const newRefreshToken = generateRefreshToken(user);
-            return res.json({
-              accessToken: newAccessToken,
-              refreshToken: newRefreshToken,
-            });
-          });
-      })
-      .catch(() => {
-        return res
-          .status(401)
-          .json({ error: "Invalid or expired refresh token" });
-      });
   };
 
   return {
