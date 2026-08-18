@@ -53,7 +53,7 @@ describe('useClassifier', () => {
       const imageData = new FormData();
       const uploadResult = await result.current.uploadClassification(imageData);
 
-      expect(plantClassifierService.uploadImage).toHaveBeenCalledWith(imageData);
+      expect(plantClassifierService.uploadImage).toHaveBeenCalledWith(imageData, mockAccessToken);
       expect(result.current.isLoading).toBe(false);
       expect(uploadResult).toEqual({
         classification: mockClassification,
