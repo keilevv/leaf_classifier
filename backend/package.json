@@ -10,6 +10,8 @@
     "lint": "bun run eslint .",
     "test": "bun test src/__tests__/controllers src/__tests__/helpers src/__tests__/middleware",
     "test:watch": "bun test --watch",
+    "test:integration": "bun test src/__tests__/integration",
+    "test:stress": "bun run src/__tests__/utils/stress-test-classify.js",
     "prisma:generate": "bunx prisma generate",
     "prisma:migrate": "bunx prisma migrate dev",
     "prisma:studio": "bunx prisma studio",
@@ -23,7 +25,8 @@
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth20": "^2.0.16",
     "@types/passport-local": "^1.0.38",
-    "prisma": "^6.11.1"
+    "prisma": "^6.11.1",
+    "supertest": "^7.2.2"
   },
   "peerDependencies": {
     "typescript": "^5"
