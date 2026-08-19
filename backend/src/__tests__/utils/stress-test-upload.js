@@ -2,7 +2,7 @@ import autocannon from "autocannon"
 import fs from "fs"
 import FormData from "form-data"
 
-async function runTest() {
+async function runTest(amount = 5000, connections = 50) {
   console.log("Authenticating...");
   const loginResponse = await fetch("http://localhost:5000/api/auth/login", {
     method: "POST",
@@ -38,8 +38,8 @@ async function runTest() {
 
   const instance = autocannon({
     url: "http://localhost:5000",
-    connections: 50,
-    amount: 5000, // send number of requests
+    connections: connections,
+    amount: amount, // send number of requests
     requests: [
       {
         method: "POST",
